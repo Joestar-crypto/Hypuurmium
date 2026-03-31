@@ -2444,9 +2444,9 @@
                     if (this.alertEmail) {
                         this._sendAlertEmail(a.level, last.close, a.direction);
                     }
+                    this._saveAlerts();
                 }
             }
-            this._saveAlerts();
             this.renderAlertList();
         }
 
