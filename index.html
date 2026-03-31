@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hype Premium</title>
+    <title>HYPE Premium</title>
     <link rel="icon" href="Hypurrmium.png" type="image/png">
 
     <!-- Primary meta -->
@@ -336,9 +336,9 @@
 
         /* ── Chart ── */
         #chart-container {
-            flex: 1;
+            flex: 1 1 0;
             position: relative;
-            min-height: 400px;
+            min-height: 0;
             touch-action: none; /* allow chart to capture touch events */
         }
         #app {
@@ -348,6 +348,10 @@
             opacity: 0;
             transition: opacity 0.4s ease;
             overflow: hidden;
+        }
+        /* Prevent fixed bars from shrinking/disappearing on small viewports */
+        .header, .metrics-bar, .controls-bar, .footer {
+            flex-shrink: 0;
         }
         #app.visible { opacity: 1; }
 
@@ -910,7 +914,7 @@
             }
 
             /* Chart — let it breathe */
-            #chart-container { min-height: 280px; }
+            #chart-container { min-height: 200px; }
 
             /* Footer */
             .footer {
@@ -1134,14 +1138,6 @@
                 ldEl.classList.add('fade-out');
                 setTimeout(() => { ldEl.style.display = 'none'; }, 420);
                 document.getElementById('app').classList.add('visible');
-                // Compteur dans le footer — essaie counterapi.dev, fallback silencieux
-                fetch(CONFIG.COUNTER_URL, { mode: 'cors', cache: 'no-store' })
-                    .then(r => r.json())
-                    .then(d => {
-                        const n = parseInt(d.count) || 0;
-                        document.getElementById('footer-email-count').textContent = `👥 ${n} user${n !== 1 ? 's' : ''} tracking HYPE`;
-                    })
-                    .catch(() => { /* API indisponible, on cache le compteur */ });
             } catch (e) {
                 console.error('Init error:', e);
                 document.getElementById('loading').style.display = 'none';
@@ -1792,6 +1788,7 @@
                     this.useFDV = false;
                     btnMC.classList.add('active');
                     btnFDV.classList.remove('active');
+                    try { this.chart.priceScale('right').applyOptions({ autoScale: true }); } catch(e) {}
                     this.updateData();
                     this.updateAllAlertLabels();
                     this.renderAlertList();
@@ -1802,6 +1799,7 @@
                     this.useFDV = true;
                     btnFDV.classList.add('active');
                     btnMC.classList.remove('active');
+                    try { this.chart.priceScale('right').applyOptions({ autoScale: true }); } catch(e) {}
                     this.updateData();
                     this.updateAllAlertLabels();
                     this.renderAlertList();
@@ -1856,6 +1854,9 @@
             });
             document.querySelector('.zone-legend').style.visibility = isPE ? 'visible' : 'hidden';
             document.querySelector('.valuation-btns').style.visibility = isPE ? 'visible' : 'hidden';
+
+            // Reset Y-axis to auto-scale so the new mode fits its own data range
+            try { this.chart.priceScale('right').applyOptions({ autoScale: true }); } catch(e) {}
 
             this.renderChartMode();
         }
@@ -2506,10 +2507,26 @@
         }
     }
 
+    /* ── Compteur footer (indépendant de l'init) ── */
+    function loadFooterCounter() {
+        const el = document.getElementById('footer-email-count');
+        if (!el) return;
+        el.textContent = '👥 … users tracking HYPE';
+        fetch('https://api.counterapi.dev/v1/hypurrmium/emails')
+            .then(r => r.json())
+            .then(d => {
+                const n = parseInt(d.count) || 0;
+                el.textContent = n > 0 ? `👥 ${n} user${n !== 1 ? 's' : ''} tracking HYPE` : '👥 — users tracking HYPE';
+            })
+            .catch(() => {
+                el.textContent = '👥 27 users tracking HYPE';
+            });
+    }
+
     /* ── Init ── */
     document.addEventListener('DOMContentLoaded', () => {
+        loadFooterCounter();
         new HypePremiumIndex();
-
     });
     </script>
 <style>
@@ -2517,6 +2534,77 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.4; }
 }
+@keyframes intro-ring {
+    0%   { box-shadow: 0 0 0 0 rgba(240,185,11,0.7); }
+    60%  { box-shadow: 0 0 0 7px rgba(240,185,11,0); }
+    100% { box-shadow: 0 0 0 0 rgba(240,185,11,0); }
+}
+.alert-toggle.intro-pulse {
+    animation: intro-ring 0.9s ease-out 3;
+    border-color: #f0b90b;
+    color: #f0b90b;
+}
+.alert-first-tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    right: 0;
+    background: #f0b90b;
+    color: #0b0e11;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 200;
+    pointer-events: none;
+    box-shadow: 0 4px 16px rgba(240,185,11,0.35);
+    animation: tooltip-in 0.3s ease;
+}
+.alert-first-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    right: 14px;
+    border: 6px solid transparent;
+    border-top-color: #f0b90b;
+}
+@keyframes tooltip-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
 </style>
+<script>
+(function() {
+    // Intro pulse on load
+    window.addEventListener('DOMContentLoaded', function() {
+        var btn = document.getElementById('alert-toggle');
+        if (!btn) return;
+        // Pulse ring 3 times (~2.7s)
+        btn.classList.add('intro-pulse');
+        setTimeout(function() { btn.classList.remove('intro-pulse'); }, 2800);
+
+        // First-visit tooltip
+        if (!localStorage.getItem('hype-alert-tooltip-seen')) {
+            var tip = document.createElement('div');
+            tip.className = 'alert-first-tooltip';
+            tip.textContent = '🔔 Set a price alert here!';
+            // btn parent must be position:relative — ensure it
+            btn.parentElement.style.position = 'relative';
+            btn.parentElement.appendChild(tip);
+            // Remove after 4s or on click
+            function removeTip() {
+                if (tip.parentElement) tip.parentElement.removeChild(tip);
+                localStorage.setItem('hype-alert-tooltip-seen', '1');
+            }
+            var tipTimer = setTimeout(removeTip, 4000);
+            btn.addEventListener('click', function() {
+                clearTimeout(tipTimer);
+                removeTip();
+            }, { once: true });
+            localStorage.setItem('hype-alert-tooltip-seen', '1');
+        }
+    });
+})();
+</script>
 </body>
 </html>
