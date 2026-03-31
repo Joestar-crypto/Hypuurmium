@@ -2226,14 +2226,20 @@
             overlay.addEventListener('click', (e) => { if (e.target === overlay) finish(false); });
         }
 
-        addAlert(level, direction, container) {
+        addAlert(level, direction, container, _isRestore = false) {
             if (!container) container = document.getElementById('chart-container');
             const id = ++this._alertIdCounter;
             const isSell = direction === 'above';
 
-            // Incrément compteur global : 1 seule fois par utilisateur, à la première alerte posée
-            if (!localStorage.getItem('hype_alert_counted')) {
-                fetch(CONFIG.COUNTER_URL + '/up').catch(() => {});
+            // Incrément compteur global : 1 seule fois par utilisateur, seulement quand il pose une vraie alerte (pas restauration)
+            if (!_isRestore && !localStorage.getItem('hype_alert_counted')) {
+                fetch(CONFIG.COUNTER_URL + '/up')
+                    .then(r => r.json())
+                    .then(d => {
+                        const n = d.count || 0;
+                        if (n > 0) document.getElementById('footer-email-count').textContent = `\uD83D\uDC65 ${n} user${n !== 1 ? 's' : ''} tracking HYPE`;
+                    })
+                    .catch(() => {});
                 localStorage.setItem('hype_alert_counted', '1');
             }
 
@@ -2317,7 +2323,7 @@
                 const container = document.getElementById('chart-container');
                 for (const a of data) {
                     if (a.triggered) continue;
-                    this.addAlert(a.level, a.direction, container);
+                    this.addAlert(a.level, a.direction, container, true);
                 }
                 if (this.alerts.length > 0) {
                     document.getElementById('alert-toggle').classList.add('active');
