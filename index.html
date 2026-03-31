@@ -1090,7 +1090,7 @@
         // Compteur d'inscriptions email (sans stocker les emails)
         // Initialiser le compteur (1 seule fois) : https://api.counterapi.dev/v1/hypurrmium/emails/up
         // Consulter le total : https://api.counterapi.dev/v1/hypurrmium/emails
-        COUNTER_URL: 'https://api.counterapi.dev/v1/hypurrmium/alerts',
+        COUNTER_URL: 'https://api.counterapi.dev/v1/hypurrmium/emails',
         HYPE_TOKEN_ID: '0x0d01dc56dcaaca66ad901c959b4011ec',
         // Assistance Fund / buyback accumulation address
         HYPE_BURN_ADDR: '0xfefefefefefefefefefefefefefefefefefefefe',
@@ -1135,11 +1135,14 @@
                 setTimeout(() => { ldEl.style.display = 'none'; }, 420);
                 document.getElementById('app').classList.add('visible');
                 // Compteur dans le footer
-                fetch(CONFIG.COUNTER_URL).then(r => r.json()).then(d => {
+                fetch(CONFIG.COUNTER_URL).then(r => {
+                    if (!r.ok) throw new Error(r.status);
+                    return r.json();
+                }).then(d => {
                     const n = d.count || 0;
                     document.getElementById('footer-email-count').textContent = `👥 ${n} user${n !== 1 ? 's' : ''} tracking HYPE`;
                 }).catch(() => {
-                    document.getElementById('footer-email-count').textContent = '';
+                    document.getElementById('footer-email-count').textContent = '👥 0 users tracking HYPE';
                 });
             } catch (e) {
                 console.error('Init error:', e);
