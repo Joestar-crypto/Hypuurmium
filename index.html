@@ -630,6 +630,17 @@
         .alert-toggle:hover { border-color: var(--accent); color: var(--text-1); }
         .alert-toggle.active { border-color: #f0b90b; color: #f0b90b; }
         .alert-toggle.placing { border-color: #f0b90b; color: #f0b90b; animation: pulse-alert 0.8s infinite; }
+        .alert-badge {
+            background: #f0b90b;
+            color: #0b0e11;
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 1px 5px;
+            min-width: 14px;
+            text-align: center;
+            display: none;
+        }
         .alert-hint {
             position: absolute;
             bottom: -28px;
@@ -1021,6 +1032,7 @@
                 </div>
                 <button class="alert-toggle" id="alert-toggle">
                     <span class="bell">🔔</span> Alert
+                    <span class="alert-badge" id="alert-badge"></span>
                 </button>
                 <div class="alert-hint" id="alert-hint">Click on chart to place alert</div>
                 <div class="alert-panel" id="alert-panel">
@@ -2115,6 +2127,7 @@
                 }
             });
 
+            this._loadAlerts();
         }
 
         _enterPlacingMode(toggle, hint, container, direction) {
@@ -2289,7 +2302,32 @@
 
             this.updateAllAlertLabels();
             this.renderAlertList();
+            this._saveAlerts();
             this.startAutoRefresh();
+        }
+
+        _saveAlerts() {
+            const data = this.alerts.map(a => ({ id: a.id, level: a.level, direction: a.direction, triggered: a.triggered }));
+            try { localStorage.setItem('hype_alerts', JSON.stringify(data)); } catch(e) {}
+        }
+
+        _loadAlerts() {
+            try {
+                const raw = localStorage.getItem('hype_alerts');
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                const container = document.getElementById('chart-container');
+                for (const a of data) {
+                    if (a.triggered) continue;
+                    this.addAlert(a.level, a.direction, container);
+                }
+                if (this.alerts.length > 0) {
+                    document.getElementById('alert-toggle').classList.add('active');
+                    this.startAutoRefresh();
+                }
+            } catch(e) {
+                console.warn('[Alerts] Could not restore alerts:', e);
+            }
         }
 
         removeAlertById(id) {
@@ -2299,6 +2337,7 @@
             this.candleSeries.removePriceLine(alert.line);
             alert.labelEl.remove();
             this.alerts.splice(idx, 1);
+            this._saveAlerts();
             this.renderAlertList();
             if (this.alerts.length === 0) {
                 document.getElementById('alert-toggle').classList.remove('active');
@@ -2312,6 +2351,15 @@
 
         renderAlertList() {
             const list = document.getElementById('alert-list');
+            const badge = document.getElementById('alert-badge');
+            if (badge) {
+                if (this.alerts.length > 0) {
+                    badge.textContent = this.alerts.length;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
             if (this.alerts.length === 0) {
                 list.innerHTML = '<div class="alert-list-empty">No alerts — click chart to add</div>';
                 return;
@@ -2397,6 +2445,7 @@
                     }
                 }
             }
+            this._saveAlerts();
             this.renderAlertList();
         }
 
