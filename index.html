@@ -2286,6 +2286,7 @@
                     labelEl.removeEventListener('pointermove', onMove);
                     labelEl.removeEventListener('pointerup', onUp);
                     labelEl.removeEventListener('pointercancel', onUp);
+                    this._saveAlerts();
                     this.checkAlerts();
                 };
                 labelEl.addEventListener('pointermove', onMove);
