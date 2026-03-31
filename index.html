@@ -1134,16 +1134,14 @@
                 ldEl.classList.add('fade-out');
                 setTimeout(() => { ldEl.style.display = 'none'; }, 420);
                 document.getElementById('app').classList.add('visible');
-                // Compteur dans le footer
-                fetch(CONFIG.COUNTER_URL).then(r => {
-                    if (!r.ok) throw new Error(r.status);
-                    return r.json();
-                }).then(d => {
-                    const n = d.count || 0;
-                    document.getElementById('footer-email-count').textContent = `👥 ${n} user${n !== 1 ? 's' : ''} tracking HYPE`;
-                }).catch(() => {
-                    document.getElementById('footer-email-count').textContent = '👥 0 users tracking HYPE';
-                });
+                // Compteur dans le footer — essaie counterapi.dev, fallback silencieux
+                fetch(CONFIG.COUNTER_URL, { mode: 'cors', cache: 'no-store' })
+                    .then(r => r.json())
+                    .then(d => {
+                        const n = parseInt(d.count) || 0;
+                        document.getElementById('footer-email-count').textContent = `👥 ${n} user${n !== 1 ? 's' : ''} tracking HYPE`;
+                    })
+                    .catch(() => { /* API indisponible, on cache le compteur */ });
             } catch (e) {
                 console.error('Init error:', e);
                 document.getElementById('loading').style.display = 'none';
@@ -1795,6 +1793,8 @@
                     btnMC.classList.add('active');
                     btnFDV.classList.remove('active');
                     this.updateData();
+                    this.updateAllAlertLabels();
+                    this.renderAlertList();
                 }
             });
             btnFDV.addEventListener('click', () => {
@@ -1803,6 +1803,8 @@
                     btnFDV.classList.add('active');
                     btnMC.classList.remove('active');
                     this.updateData();
+                    this.updateAllAlertLabels();
+                    this.renderAlertList();
                 }
             });
 
@@ -2231,7 +2233,7 @@
             overlay.addEventListener('click', (e) => { if (e.target === overlay) finish(false); });
         }
 
-        addAlert(level, direction, container, _isRestore = false) {
+        addAlert(level, direction, container, _isRestore = false, _mode = null) {
             if (!container) container = document.getElementById('chart-container');
             const id = ++this._alertIdCounter;
             const isSell = direction === 'above';
@@ -2262,7 +2264,8 @@
             labelEl.dataset.alertId = id;
             container.appendChild(labelEl);
 
-            const alert = { id, level, direction, line, labelEl, triggered: false };
+            const alertMode = this.useFDV ? 'fdv' : 'mc';
+            const alert = { id, level, direction, mode: alertMode, line, labelEl, triggered: false };
             this.alerts.push(alert);
 
             // Drag to move — pointer events work for both mouse and touch,
@@ -2316,7 +2319,7 @@
         }
 
         _saveAlerts() {
-            const data = this.alerts.map(a => ({ id: a.id, level: a.level, direction: a.direction, triggered: a.triggered }));
+            const data = this.alerts.map(a => ({ id: a.id, level: a.level, direction: a.direction, mode: a.mode || 'mc', triggered: a.triggered }));
             try { localStorage.setItem('hype_alerts', JSON.stringify(data)); } catch(e) {}
         }
 
@@ -2328,7 +2331,7 @@
                 const container = document.getElementById('chart-container');
                 for (const a of data) {
                     if (a.triggered) continue;
-                    this.addAlert(a.level, a.direction, container, true);
+                    this.addAlert(a.level, a.direction, container, true, a.mode || 'mc');
                 }
                 if (this.alerts.length > 0) {
                     document.getElementById('alert-toggle').classList.add('active');
@@ -2361,19 +2364,21 @@
         renderAlertList() {
             const list = document.getElementById('alert-list');
             const badge = document.getElementById('alert-badge');
+            const currentMode = this.useFDV ? 'fdv' : 'mc';
+            const visibleAlerts = this.alerts.filter(a => (a.mode || 'mc') === currentMode);
             if (badge) {
-                if (this.alerts.length > 0) {
-                    badge.textContent = this.alerts.length;
+                if (visibleAlerts.length > 0) {
+                    badge.textContent = visibleAlerts.length;
                     badge.style.display = 'inline-block';
                 } else {
                     badge.style.display = 'none';
                 }
             }
-            if (this.alerts.length === 0) {
+            if (visibleAlerts.length === 0) {
                 list.innerHTML = '<div class="alert-list-empty">No alerts — click chart to add</div>';
                 return;
             }
-            list.innerHTML = this.alerts
+            list.innerHTML = visibleAlerts
                 .sort((a, b) => b.level - a.level)
                 .map(a => {
                     const isSell = a.direction === 'above';
@@ -2395,7 +2400,9 @@
         }
 
         updateAllAlertLabels() {
+            const currentMode = this.useFDV ? 'fdv' : 'mc';
             for (const a of this.alerts) {
+                if (a.mode !== currentMode) { a.labelEl.style.display = 'none'; continue; }
                 const y = this.candleSeries.priceToCoordinate(a.level);
                 if (y !== null && y >= 0) {
                     const arrow = a.direction === 'above' ? '▲' : '▼';
@@ -2428,9 +2435,11 @@
             if (!this._peCandles) return;
             const last = this._peCandles[this._peCandles.length - 1];
             if (!last) return;
+            const currentMode = this.useFDV ? 'fdv' : 'mc';
 
             for (const a of this.alerts) {
                 if (a.triggered) continue;
+                if ((a.mode || 'mc') !== currentMode) continue;
                 const triggered = a.direction === 'above'
                     ? last.close >= a.level
                     : last.close <= a.level;
