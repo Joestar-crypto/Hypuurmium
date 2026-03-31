@@ -2402,7 +2402,13 @@
         updateAllAlertLabels() {
             const currentMode = this.useFDV ? 'fdv' : 'mc';
             for (const a of this.alerts) {
-                if (a.mode !== currentMode) { a.labelEl.style.display = 'none'; continue; }
+                if (a.mode !== currentMode) {
+                    a.labelEl.style.display = 'none';
+                    try { a.line.applyOptions({ color: 'transparent', lineWidth: 0 }); } catch(e) {}
+                    continue;
+                }
+                const isSell = a.direction === 'above';
+                try { a.line.applyOptions({ color: isSell ? '#f6465d' : '#0ecb81', lineWidth: 2 }); } catch(e) {}
                 const y = this.candleSeries.priceToCoordinate(a.level);
                 if (y !== null && y >= 0) {
                     const arrow = a.direction === 'above' ? '▲' : '▼';
