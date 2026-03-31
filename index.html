@@ -723,8 +723,14 @@
         }
         .alert-list-item:last-child { border-bottom: none; }
         .alert-list-item .al-level {
-            color: #f0b90b;
-            font-weight: 600;
+            font-weight: 700;
+            margin-left: 4px;
+        }
+        .alert-list-item .al-type {
+            flex: 1;
+            color: var(--text-2);
+            margin-left: 6px;
+            font-size: 10px;
         }
         .alert-list-item .al-remove {
             color: var(--text-2);
@@ -739,19 +745,43 @@
             text-align: center;
             padding: 6px 0;
         }
-        .alert-panel-add {
+        .alert-add-row {
+            display: flex;
+            gap: 6px;
             margin-top: 8px;
-            width: 100%;
+        }
+        .alert-panel-add {
+            flex: 1;
             background: transparent;
             border: 1px dashed rgba(240, 185, 11, 0.4);
             color: #f0b90b;
-            padding: 5px;
+            padding: 5px 4px;
             border-radius: 4px;
             font-size: 11px;
             cursor: pointer;
             font-family: 'Inter', sans-serif;
         }
-        .alert-panel-add:hover { border-color: #f0b90b; background: rgba(240, 185, 11, 0.05); }
+        .alert-add-buy {
+            border-color: rgba(14, 203, 129, 0.45);
+            color: #0ecb81;
+        }
+        .alert-add-buy:hover { border-color: #0ecb81; background: rgba(14, 203, 129, 0.08); }
+        .alert-add-sell {
+            border-color: rgba(246, 70, 93, 0.45);
+            color: #f6465d;
+        }
+        .alert-add-sell:hover { border-color: #f6465d; background: rgba(246, 70, 93, 0.08); }
+        /* Alert label colour variants */
+        .alert-label.alert-sell {
+            border-color: #f6465d;
+            color: #f6465d;
+            background: #1a1010;
+        }
+        .alert-label.alert-buy {
+            border-color: #0ecb81;
+            color: #0ecb81;
+            background: #101a14;
+        }
 
         /* ── Responsive ── */
         /* ────────────────────────────────────────────
@@ -975,7 +1005,10 @@
                     <div class="alert-list" id="alert-list">
                         <div class="alert-list-empty">No alerts — click chart to add</div>
                     </div>
-                    <button class="alert-panel-add" id="alert-add-btn">+ Add alert on chart</button>
+                    <div class="alert-add-row">
+                        <button class="alert-panel-add alert-add-buy" id="alert-add-buy">▼ Buy (below)</button>
+                        <button class="alert-panel-add alert-add-sell" id="alert-add-sell">▲ Sell (above)</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1940,7 +1973,6 @@
             const emailInput = document.getElementById('alert-email');
             const emailSave = document.getElementById('alert-email-save');
             const emailStatus = document.getElementById('alert-email-status');
-            const addBtn = document.getElementById('alert-add-btn');
 
             // Restore saved email
             const savedEmail = localStorage.getItem('hype_alert_email');
@@ -1953,7 +1985,7 @@
             // Email prompt: always show once per session after first alert
             this._emailPromptShown = false;
 
-            // Click Alert button -> directly enter placement mode
+            // Click Alert button -> pick direction then enter placement mode
             toggle.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (this._placingAlert) {
@@ -1964,7 +1996,8 @@
                     return;
                 }
                 panel.classList.remove('visible');
-                this._enterPlacingMode(toggle, hint, container);
+                // Show a quick direction picker inline (reuse hint area)
+                this._showDirectionPicker(toggle, hint, container);
             });
 
             // Right-click or long-press Alert button -> open panel
@@ -2017,13 +2050,14 @@
                 if (e.key === 'Enter') saveEmail();
             });
 
-            // "+ Add alert" button
-            addBtn.addEventListener('click', () => {
+            // "▼ Buy" / "▲ Sell" buttons in panel
+            document.getElementById('alert-add-buy').addEventListener('click', () => {
                 panel.classList.remove('visible');
-                this._placingAlert = true;
-                toggle.classList.add('placing');
-                hint.classList.add('visible');
-                container.classList.add('placing-alert');
+                this._enterPlacingMode(toggle, hint, container, 'below');
+            });
+            document.getElementById('alert-add-sell').addEventListener('click', () => {
+                panel.classList.remove('visible');
+                this._enterPlacingMode(toggle, hint, container, 'above');
             });
 
             // Click/tap on chart to place alert — uses chart's built-in click API (works on mobile)
@@ -2034,8 +2068,10 @@
                 if (price === null || price <= 0) return;
 
                 const level = Math.round(price * 10) / 10;
-                this.addAlert(level, container);
+                const direction = this._placingAlertDirection || 'below';
+                this.addAlert(level, direction, container);
                 this._placingAlert = false;
+                this._placingAlertDirection = null;
                 toggle.classList.remove('placing');
                 toggle.classList.add('active');
                 hint.classList.remove('visible');
@@ -2056,11 +2092,52 @@
             }
         }
 
-        _enterPlacingMode(toggle, hint, container) {
+        _enterPlacingMode(toggle, hint, container, direction) {
             this._placingAlert = true;
+            this._placingAlertDirection = direction || 'below';
+            const isSell = direction === 'above';
+            hint.textContent = isSell ? '▲ Click chart to place SELL alert (triggers above)' : '▼ Click chart to place BUY alert (triggers below)';
+            hint.style.background = isSell ? 'rgba(246,70,93,0.9)' : 'rgba(14,203,129,0.9)';
+            hint.style.color = '#0b0e11';
             toggle.classList.add('placing');
             hint.classList.add('visible');
             container.classList.add('placing-alert');
+        }
+
+        _showDirectionPicker(toggle, hint, container) {
+            // Show a small floating picker below the toggle button
+            const existing = document.getElementById('alert-dir-picker');
+            if (existing) { existing.remove(); return; }
+
+            const picker = document.createElement('div');
+            picker.id = 'alert-dir-picker';
+            picker.style.cssText = `
+                position: absolute; top: 100%; right: 0; margin-top: 6px;
+                background: var(--bg-2); border: 1px solid var(--border);
+                border-radius: 6px; padding: 6px; z-index: 110;
+                display: flex; gap: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+            `;
+            picker.innerHTML = `
+                <button id="dir-buy" style="flex:1;padding:6px 10px;border:1px solid #0ecb81;background:transparent;color:#0ecb81;border-radius:4px;font-size:12px;cursor:pointer;font-family:inherit;">▼ Buy</button>
+                <button id="dir-sell" style="flex:1;padding:6px 10px;border:1px solid #f6465d;background:transparent;color:#f6465d;border-radius:4px;font-size:12px;cursor:pointer;font-family:inherit;">▲ Sell</button>
+            `;
+            toggle.closest('[style*="position"]').appendChild(picker);
+
+            const pick = (dir) => {
+                picker.remove();
+                document.removeEventListener('click', outsideClose);
+                this._enterPlacingMode(toggle, hint, container, dir);
+            };
+            picker.querySelector('#dir-buy').addEventListener('click', (e) => { e.stopPropagation(); pick('below'); });
+            picker.querySelector('#dir-sell').addEventListener('click', (e) => { e.stopPropagation(); pick('above'); });
+
+            const outsideClose = (e) => {
+                if (!picker.contains(e.target) && e.target !== toggle) {
+                    picker.remove();
+                    document.removeEventListener('click', outsideClose);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', outsideClose), 0);
         }
 
         _showEmailPrompt(onDone) {
@@ -2120,13 +2197,14 @@
             overlay.addEventListener('click', (e) => { if (e.target === overlay) finish(false); });
         }
 
-        addAlert(level, container) {
+        addAlert(level, direction, container) {
             if (!container) container = document.getElementById('chart-container');
             const id = ++this._alertIdCounter;
+            const isSell = direction === 'above';
 
             const line = this.candleSeries.createPriceLine({
                 price: level,
-                color: '#f0b90b',
+                color: isSell ? '#f6465d' : '#0ecb81',
                 lineWidth: 2,
                 lineStyle: 0,
                 axisLabelVisible: false,
@@ -2134,11 +2212,11 @@
             });
 
             const labelEl = document.createElement('div');
-            labelEl.className = 'alert-label';
+            labelEl.className = 'alert-label ' + (isSell ? 'alert-sell' : 'alert-buy');
             labelEl.dataset.alertId = id;
             container.appendChild(labelEl);
 
-            const alert = { id, level, line, labelEl, triggered: false };
+            const alert = { id, level, direction, line, labelEl, triggered: false };
             this.alerts.push(alert);
 
             // Drag to move — pointer events work for both mouse and touch,
@@ -2214,11 +2292,19 @@
                 return;
             }
             list.innerHTML = this.alerts
-                .sort((a, b) => a.level - b.level)
-                .map(a => `<div class="alert-list-item">
-                    <span>🔔 <span class="al-level">${a.level.toFixed(1)}x</span>${a.triggered ? ' — triggered!' : ''}</span>
-                    <span class="al-remove" data-id="${a.id}">✕</span>
-                </div>`).join('');
+                .sort((a, b) => b.level - a.level)
+                .map(a => {
+                    const isSell = a.direction === 'above';
+                    const arrow = isSell ? '▲' : '▼';
+                    const color = isSell ? '#f6465d' : '#0ecb81';
+                    const label = isSell ? 'Sell' : 'Buy';
+                    return `<div class="alert-list-item">
+                        <span style="color:${color}">${arrow}</span>
+                        <span class="al-level" style="color:${color}">${a.level.toFixed(1)}x</span>
+                        <span class="al-type">${label}${a.triggered ? ' — triggered!' : ''}</span>
+                        <span class="al-remove" data-id="${a.id}">✕</span>
+                    </div>`;
+                }).join('');
             list.querySelectorAll('.al-remove').forEach(el => {
                 el.addEventListener('click', () => {
                     this.removeAlertById(parseInt(el.dataset.id));
@@ -2230,7 +2316,8 @@
             for (const a of this.alerts) {
                 const y = this.candleSeries.priceToCoordinate(a.level);
                 if (y !== null && y >= 0) {
-                    a.labelEl.innerHTML = `<span class="alert-x">✕</span>🔔 ${a.level.toFixed(1)}x`;
+                    const arrow = a.direction === 'above' ? '▲' : '▼';
+                    a.labelEl.innerHTML = `<span class="alert-x">✕</span>${arrow} ${a.level.toFixed(1)}x`;
                     a.labelEl.style.top = (y - 10) + 'px';
                     a.labelEl.style.display = 'block';
                 } else {
@@ -2256,18 +2343,20 @@
         }
 
         checkAlerts() {
-            console.log('[checkAlerts] called | peCandles:', this._peCandles?.length, '| alerts:', this.alerts.length, '| email:', this.alertEmail);
-            if (!this._peCandles) { console.warn('[checkAlerts] _peCandles is null, aborting'); return; }
+            if (!this._peCandles) return;
             const last = this._peCandles[this._peCandles.length - 1];
             if (!last) return;
-            console.log('[checkAlerts] last P/E close:', last.close);
 
             for (const a of this.alerts) {
-                console.log(`[checkAlerts] alert id=${a.id} level=${a.level} triggered=${a.triggered} | condition: ${last.close} <= ${a.level} = ${last.close <= a.level}`);
                 if (a.triggered) continue;
-                if (last.close <= a.level) {
+                const triggered = a.direction === 'above'
+                    ? last.close >= a.level
+                    : last.close <= a.level;
+
+                if (triggered) {
                     a.triggered = true;
-                    const msg = `HYPE P/E dropped to ${last.close.toFixed(1)}x (alert: ${a.level}x)`;
+                    const dir = a.direction === 'above' ? 'rose above' : 'dropped below';
+                    const msg = `HYPE P/E ${dir} ${a.level}x (now ${last.close.toFixed(1)}x)`;
 
                     if ('Notification' in window && Notification.permission === 'granted') {
                         new Notification('HYPE Alert Triggered', {
@@ -2279,20 +2368,24 @@
                     document.getElementById('alert-toggle').style.animation = 'pulse-alert 1s infinite';
 
                     if (this.alertEmail) {
-                        this._sendAlertEmail(a.level, last.close);
+                        this._sendAlertEmail(a.level, last.close, a.direction);
                     }
                 }
             }
             this.renderAlertList();
         }
 
-        _sendAlertEmail(alertLevel, currentPE) {
+        _sendAlertEmail(alertLevel, currentPE, direction) {
             if (!this.alertEmail) {
                 console.warn('[Alert] No email set — skipping send');
                 return;
             }
-            console.log('[Alert] Sending email to', this.alertEmail, '| P/E:', currentPE, '| Alert:', alertLevel);
-            emailjs.send('service_p73062q', 'template_vg7l40l', {
+            const isSell = direction === 'above';
+            // Buy alert  → template_vg7l40l
+            // Sell alert → template_SELL_ID  (replace with your EmailJS sell template ID)
+            const templateId = isSell ? 'template_twr8f1h' : 'template_vg7l40l';
+            console.log('[Alert] Sending', isSell ? 'SELL' : 'BUY', 'email to', this.alertEmail, '| P/E:', currentPE, '| Alert:', alertLevel);
+            emailjs.send('service_p73062q', templateId, {
                 to_email: this.alertEmail,
                 alert_level: alertLevel.toFixed(1),
                 current_pe: currentPE.toFixed(1),
