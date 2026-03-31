@@ -82,7 +82,7 @@
             clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
         }
         .title-group h1 {
-            font-size: 28px;
+            font-size: 34px;
             font-weight: 300;
             letter-spacing: 0;
             color: #ffffff;
@@ -108,45 +108,18 @@
             letter-spacing: 0.3px;
             margin-top: 3px;
         }
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .hero-overlay__credit {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            padding: 6px 16px 6px 6px;
-            border-radius: 30px;
-            border: 1px solid rgba(255,213,79,0.35);
-            background: linear-gradient(135deg, var(--bg-2) 60%, rgba(255,213,79,0.06));
-            box-shadow: 0 0 12px rgba(255,213,79,0.1), inset 0 1px 0 rgba(255,213,79,0.15);
-            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-        }
-        .hero-overlay__credit:hover {
-            border-color: var(--accent);
-            background: linear-gradient(135deg, var(--bg-3) 50%, rgba(255,213,79,0.14));
-            box-shadow: 0 0 24px rgba(255,213,79,0.35), inset 0 1px 0 rgba(255,213,79,0.25);
-        }
-        .hero-overlay__credit-avatar img {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            object-fit: cover;
-            display: block;
-        }
-        .hero-overlay__credit-label {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-1);
-            white-space: nowrap;
-        }
-        .hero-overlay__credit:hover .hero-overlay__credit-label {
-            color: var(--accent);
-        }
         .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .badge.bull { background: var(--bull-dim); color: var(--bull); }
+        .badge.bear { background: var(--bear-dim); color: var(--bear); }
             display: inline-flex;
             align-items: center;
             gap: 5px;
@@ -204,7 +177,9 @@
             color: var(--text-1);
             margin-top: 2px;
             font-family: 'JetBrains Mono', monospace;
-            white-space: nowrap;
+            white-space: normal;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .metric-card .value.bull { color: var(--bull); }
         .metric-card .value.bear { color: var(--bear); }
@@ -249,7 +224,12 @@
             background: var(--bg-0);
             border-radius: 6px;
             padding: 2px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            flex-shrink: 0;
         }
+        .period-btns::-webkit-scrollbar { display: none; }
         .period-btn {
             padding: 5px 14px;
             border: none;
@@ -330,13 +310,15 @@
             flex: 1;
             position: relative;
             min-height: 400px;
+            touch-action: none; /* allow chart to capture touch events */
         }
         #app {
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            height: 100dvh; /* dynamic viewport height — fixes mobile browser chrome */
             opacity: 0;
             transition: opacity 0.4s ease;
+            overflow: hidden;
         }
         #app.visible { opacity: 1; }
 
@@ -579,6 +561,27 @@
             opacity: 0.8;
         }
         .footer a:hover { opacity: 1; }
+        .footer-credit {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-2);
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 500;
+            transition: color 0.15s;
+            flex-shrink: 0;
+        }
+        .footer-credit:hover { color: var(--accent); opacity: 1; }
+        .footer-credit-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            opacity: 0.85;
+        }
+        .footer-credit:hover .footer-credit-avatar { opacity: 1; }
 
         /* ── Alert ── */
         .alert-toggle {
@@ -630,6 +633,7 @@
             pointer-events: auto;
             cursor: ns-resize;
             user-select: none;
+            touch-action: none;
             z-index: 10;
             display: none;
             white-space: nowrap;
@@ -750,17 +754,116 @@
         .alert-panel-add:hover { border-color: #f0b90b; background: rgba(240, 185, 11, 0.05); }
 
         /* ── Responsive ── */
+        /* ────────────────────────────────────────────
+           RESPONSIVE
+        ──────────────────────────────────────────── */
+
+        /* ── Tablet (≤900px) ── */
         @media (max-width: 900px) {
+            .header { padding: 6px 16px; }
+            .header-left img { width: 52px; height: 52px; }
+            .title-group h1 { font-size: 26px; }
+            .title-group .subtitle { font-size: 10px; }
+
             .metrics-bar { flex-wrap: wrap; }
-            .metric-card { min-width: 45%; }
+            .metric-card { flex: 1 1 48%; min-width: 0; padding: 10px 16px; }
+
+            .controls-bar {
+                flex-wrap: wrap;
+                gap: 6px;
+                padding: 8px 16px;
+            }
+            .controls-left { flex-wrap: wrap; gap: 8px; }
             .zone-legend { display: none; }
-            .header { padding: 4px 16px; }
-            .controls-bar { padding: 8px 16px; }
+
+            .footer { padding: 6px 16px; font-size: 9px; gap: 8px; }
+            .footer > span:first-child { display: none; }
         }
+
+        /* ── Mobile (≤600px) ── */
         @media (max-width: 600px) {
-            .metric-card { min-width: 100%; }
-            .header-right { display: none; }
+            /* Header — compact single row */
+            .header { padding: 5px 12px; }
+            .header-left { gap: 8px; }
+            .header-left img { width: 38px; height: 38px; }
+            .title-group h1 { font-size: 22px; }
+            .title-group .subtitle { display: none; }
+
+            /* Metrics — compact 2×2 */
+            .metrics-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; }
+            .metric-card { flex: none; width: 100%; padding: 6px 10px; }
+            .metric-card .label { font-size: 9px; letter-spacing: 0.3px; margin-bottom: 2px; }
             .metric-card .value { font-size: 15px; }
+            .metric-card .sub { font-size: 9px; margin-top: 1px; }
+
+            /* Controls — two compact rows */
+            .controls-bar {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 5px 12px;
+                gap: 5px;
+            }
+            /* Row 1: period buttons + MC/FDV */
+            .controls-left {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 6px;
+                flex-wrap: nowrap;
+            }
+            /* Hide chart label on mobile to save space */
+            .controls-left .chart-label { display: none; }
+            .period-btns { flex: 1; min-width: 0; }
+            .period-btn { padding: 4px 8px; font-size: 11px; }
+            .val-btn { padding: 4px 9px; font-size: 10px; }
+
+            /* Row 2: zone legend hidden, alert visible */
+            .controls-right {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 8px;
+            }
+            .zone-legend { display: none; }
+            .alert-toggle {
+                margin-left: 0;
+                flex-shrink: 0;
+                padding: 5px 14px;
+                font-size: 12px;
+            }
+            .alert-panel {
+                right: 0;
+                left: auto;
+                width: calc(100vw - 24px);
+                max-width: 340px;
+            }
+
+            /* Chart — let it breathe */
+            #chart-container { min-height: 280px; }
+
+            /* Footer */
+            .footer {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 4px 12px;
+                padding: 4px 12px;
+                text-align: center;
+            }
+            .footer > span:first-child { display: none; }
+            .footer-credit { font-size: 9px; }
+            .footer-credit-avatar { width: 18px; height: 18px; }
+        }
+
+        /* ── Small phone (≤400px) ── */
+        @media (max-width: 400px) {
+            .header-left img { width: 34px; height: 34px; }
+            .title-group h1 { font-size: 20px; }
+            .metric-card .value { font-size: 14px; }
+            .period-btn { padding: 4px 7px; font-size: 10px; }
+            .val-btn { padding: 4px 8px; font-size: 10px; }
+            .alert-toggle { padding: 5px 10px; font-size: 11px; }
         }
     </style>
 </head>
@@ -802,19 +905,11 @@
         <!-- Header -->
         <div class="header">
             <div class="header-left">
-                <img src="Hypurrmium.png" alt="Hypurrmium" style="width:90px;height:90px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 0 12px rgba(201,168,76,0.5));">
+                <img src="Hypurrmium.png" alt="Hypurrmium" style="width:60px;height:60px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 0 12px rgba(201,168,76,0.5));">
                 <div class="title-group">
                     <h1><span class="brand-bold">Hypurr</span><span class="brand-light">mium</span></h1>
                     <div class="subtitle">Spot the premium before the market does</div>
                 </div>
-            </div>
-            <div class="header-right">
-                <a href="https://x.com/JoestarCrypto" target="_blank" rel="noopener noreferrer" class="hero-overlay__credit">
-                    <span class="hero-overlay__credit-avatar">
-                        <img src="/Jojo2.webp" alt="Joestar" />
-                    </span>
-                    <span class="hero-overlay__credit-label">Made by Joestar</span>
-                </a>
             </div>
         </div>
 
@@ -895,6 +990,10 @@
             <span>Data: <a href="https://defillama.com/protocol/hyperliquid" target="_blank">DefiLlama</a> + <a href="https://app.hyperliquid.xyz" target="_blank">Hyperliquid API</a> · Supply: 333M HYPE · Formula: P/E = Price / (Ann. Revenue / Supply)</span>
             <span id="footer-email-count"></span>
             <span>Rolling: <span id="footer-rolling">30D</span></span>
+            <a href="https://x.com/JoestarCrypto" target="_blank" rel="noopener noreferrer" class="footer-credit">
+                <img src="/Jojo2.webp" alt="Joestar" class="footer-credit-avatar" />
+                <span>Made by Joestar</span>
+            </a>
         </div>
     </div>
 
@@ -918,6 +1017,9 @@
         // Initialiser le compteur (1 seule fois) : https://api.counterapi.dev/v1/hypurrmium/emails/up
         // Consulter le total : https://api.counterapi.dev/v1/hypurrmium/emails
         COUNTER_URL: 'https://api.counterapi.dev/v1/hypurrmium/emails',
+        HYPE_TOKEN_ID: '0x0d01dc56dcaaca66ad901c959b4011ec',
+        // Assistance Fund / buyback accumulation address
+        HYPE_BURN_ADDR: '0xfefefefefefefefefefefefefefefefefefefefe',
         COLORS: {
             bull: '#0ecb81',
             bear: '#f6465d',
@@ -975,7 +1077,7 @@
         }
 
         async fetchAllData() {
-            const [feesRes, candlesRes] = await Promise.all([
+            const [feesRes, candlesRes, tokenDetails] = await Promise.all([
                 fetch(CONFIG.DEFILLAMA_URL).then(r => {
                     if (!r.ok) throw new Error(`DefiLlama API: ${r.status}`);
                     return r.json();
@@ -990,8 +1092,25 @@
                 }).then(r => {
                     if (!r.ok) throw new Error(`Hyperliquid API: ${r.status}`);
                     return r.json();
-                })
+                }),
+                fetch(CONFIG.HL_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'tokenDetails', tokenId: CONFIG.HYPE_TOKEN_ID })
+                }).then(r => r.json()).catch(() => null)
             ]);
+
+            // Extract burned HYPE from tokenDetails nonCirculatingUserBalances
+            let burnedHype = 0;
+            if (tokenDetails && tokenDetails.nonCirculatingUserBalances) {
+                for (const [addr, bal] of tokenDetails.nonCirculatingUserBalances) {
+                    if (addr.toLowerCase() === CONFIG.HYPE_BURN_ADDR ||
+                        addr === '0x0000000000000000000000000000000000000000' ||
+                        addr === '0x000000000000000000000000000000000000dead') {
+                        burnedHype += parseFloat(bal);
+                    }
+                }
+            }
 
             // Parse DefiLlama fees
             const feesByDate = {};
@@ -1019,7 +1138,7 @@
                 };
             }
 
-            return { feesByDate, candlesByDate };
+            return { feesByDate, candlesByDate, burnedHype };
         }
 
         tsToDate(tsSeconds) {
@@ -1165,7 +1284,7 @@
             this._effectiveSupply = effectiveSupply;
 
             // Update metrics (after storing effectiveSupply)
-            this.updateMetrics(peCandles, allDates, feesByDate, candlesByDate, rollingAvg, medianPE);
+            this.updateMetrics(peCandles, allDates, feesByDate, candlesByDate, rollingAvg, medianPE, effectiveSupply);
         }
 
         /* ── Chart Creation ── */
@@ -1211,7 +1330,7 @@
                     timeVisible: false,
                     rightOffset: 5,
                     barSpacing: 8,
-                    minBarSpacing: 1,
+                    minBarSpacing: 0.2,
                 },
                 handleScroll: {
                     mouseWheel: true,
@@ -1383,12 +1502,13 @@
 
         updateBandPositions() {
             if (!this.bandDefs || !this.candleSeries) return;
+            const isPEMode = this.chartMode === 'pe' || !this.chartMode;
             const isPriceMode = this.chartMode === 'price';
 
             // PE bands — only shown in PE mode
             for (const b of this.bandDefs) {
                 const div = document.getElementById(b.id);
-                if (isPriceMode) { if (div) div.style.display = 'none'; continue; }
+                if (!isPEMode) { if (div) div.style.display = 'none'; continue; }
                 const topY = this.candleSeries.priceToCoordinate(b.top);
                 const bottomY = this.candleSeries.priceToCoordinate(b.bottom);
                 if (div && topY !== null && bottomY !== null && topY >= 0 && bottomY >= 0) {
@@ -1496,7 +1616,7 @@
 
         /* ── Metrics Update ── */
 
-        updateMetrics(peCandles, allDates, feesByDate, candlesByDate, rollingAvg, medianPE) {
+        updateMetrics(peCandles, allDates, feesByDate, candlesByDate, rollingAvg, medianPE, effectiveSupply) {
             if (peCandles.length < 2) return;
 
             const last = peCandles[peCandles.length - 1];
@@ -1507,9 +1627,14 @@
             const prevCandle = candlesByDate[prevDate];
             const lastFee = feesByDate[lastDate];
             const lastAvg = rollingAvg[rollingAvg.length - 1];
-            const activeSupply = this._effectiveSupply ? this._effectiveSupply[this._effectiveSupply.length - 1] : (this.useFDV ? CONFIG.FDV_SUPPLY : CONFIG.SUPPLY);
+            const baseSupply = this.useFDV ? CONFIG.FDV_SUPPLY : CONFIG.SUPPLY;
+            const activeSupply = (effectiveSupply && effectiveSupply.length)
+                ? effectiveSupply[effectiveSupply.length - 1]
+                : baseSupply;
             const annualRev = lastAvg * 365;
             const mcap = lastCandle.c * activeSupply;
+            // Use real burned from tokenDetails API, fallback to computed estimate
+            const burnedHype = this.rawData.burnedHype || (baseSupply - activeSupply);
 
             const peChange = last.close - prev.close;
             const peChangePct = (peChange / prev.close * 100);
@@ -1534,8 +1659,7 @@
 
             // Annual revenue
             document.getElementById('annual-rev').textContent = `$${(annualRev / 1e6).toFixed(0)}M`;
-            const burnedTokens = (this.useFDV ? CONFIG.FDV_SUPPLY : CONFIG.SUPPLY) - activeSupply;
-            document.getElementById('mcap-info').textContent = `${this.useFDV ? 'FDV' : 'MCap'}: $${(mcap / 1e9).toFixed(1)}B · Burned: ${(burnedTokens / 1e6).toFixed(2)}M`;
+            document.getElementById('mcap-info').innerHTML = `${this.useFDV ? 'FDV' : 'MCap'}: $${(mcap / 1e9).toFixed(1)}B<br>Burned: ${burnedHype > 0 ? (burnedHype / 1e6).toFixed(1) + 'M HYPE' : '—'}`;
 
             const key = this.useFDV ? 'fdv' : 'mc';
             const z = CONFIG.ZONES[key];
@@ -1701,6 +1825,11 @@
                 try { this.candleSeries.removePriceLine(this.medianLine); } catch(e) {}
                 this.medianLine = null;
             }
+            // Remove zone price lines — they live on candleSeries and pollute the scale in non-PE modes
+            for (const pl of (this.zonePriceLines || [])) {
+                try { this.candleSeries.removePriceLine(pl); } catch(e) {}
+            }
+            this.zonePriceLines = [];
             // Expand scale to full height (no volume space needed)
             this.chart.applyOptions({ rightPriceScale: { scaleMargins: { top: 0.05, bottom: 0.05 } } });
 
@@ -1897,12 +2026,11 @@
                 container.classList.add('placing-alert');
             });
 
-            // Click on chart to place
-            container.addEventListener('click', (e) => {
+            // Click/tap on chart to place alert — uses chart's built-in click API (works on mobile)
+            this.chart.subscribeClick((param) => {
                 if (!this._placingAlert) return;
-                const rect = container.getBoundingClientRect();
-                const y = e.clientY - rect.top;
-                const price = this.candleSeries.coordinateToPrice(y);
+                if (!param.point) return;
+                const price = this.candleSeries.coordinateToPrice(param.point.y);
                 if (price === null || price <= 0) return;
 
                 const level = Math.round(price * 10) / 10;
@@ -2013,12 +2141,15 @@
             const alert = { id, level, line, labelEl, triggered: false };
             this.alerts.push(alert);
 
-            // Drag to move
-            labelEl.addEventListener('mousedown', (e) => {
+            // Drag to move — pointer events work for both mouse and touch,
+            // setPointerCapture prevents the chart canvas from stealing the event.
+            labelEl.addEventListener('pointerdown', (e) => {
                 if (e.target.classList.contains('alert-x')) return;
                 e.preventDefault();
                 e.stopPropagation();
+                labelEl.setPointerCapture(e.pointerId);
                 document.body.style.cursor = 'ns-resize';
+                labelEl.style.cursor = 'ns-resize';
 
                 const onMove = (ev) => {
                     const rect = container.getBoundingClientRect();
@@ -2035,12 +2166,15 @@
                 };
                 const onUp = () => {
                     document.body.style.cursor = '';
-                    document.removeEventListener('mousemove', onMove);
-                    document.removeEventListener('mouseup', onUp);
+                    labelEl.style.cursor = 'ns-resize';
+                    labelEl.removeEventListener('pointermove', onMove);
+                    labelEl.removeEventListener('pointerup', onUp);
+                    labelEl.removeEventListener('pointercancel', onUp);
                     this.checkAlerts();
                 };
-                document.addEventListener('mousemove', onMove);
-                document.addEventListener('mouseup', onUp);
+                labelEl.addEventListener('pointermove', onMove);
+                labelEl.addEventListener('pointerup', onUp);
+                labelEl.addEventListener('pointercancel', onUp);
             });
 
             // X to remove
