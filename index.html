@@ -1090,7 +1090,7 @@
         // Compteur d'inscriptions email (sans stocker les emails)
         // Initialiser le compteur (1 seule fois) : https://api.counterapi.dev/v1/hypurrmium/emails/up
         // Consulter le total : https://api.counterapi.dev/v1/hypurrmium/emails
-        COUNTER_URL: 'https://api.counterapi.dev/v1/hypurrmium/emails',
+        COUNTER_URL: 'https://api.counterapi.dev/v1/hypurrmium/alerts',
         HYPE_TOKEN_ID: '0x0d01dc56dcaaca66ad901c959b4011ec',
         // Assistance Fund / buyback accumulation address
         HYPE_BURN_ADDR: '0xfefefefefefefefefefefefefefefefefefefefe',
@@ -1137,10 +1137,8 @@
                 // Compteur d'emails dans le footer
                 fetch(CONFIG.COUNTER_URL).then(r => r.json()).then(d => {
                     const n = d.count || 0;
-                    document.getElementById('footer-email-count').textContent = `👥 ${n} alert${n !== 1 ? 's' : ''} set up`;
-                }).catch(() => {
-                    document.getElementById('footer-email-count').textContent = `👥 0 alerts set up`;
-                });
+                    if (n > 0) document.getElementById('footer-email-count').textContent = `👥 ${n} user${n !== 1 ? 's' : ''} tracking HYPE`;
+                }).catch(() => {});
             } catch (e) {
                 console.error('Init error:', e);
                 document.getElementById('loading').style.display = 'none';
@@ -2072,13 +2070,6 @@
                 if (email && !emailInput.validity.valid) return;
                 this.alertEmail = email || null;
                 if (email) {
-                    // Incrémente le compteur global la première fois seulement
-                    if (!localStorage.getItem('hype_email_counted')) {
-                        fetch(CONFIG.COUNTER_URL + '/up').then(r => r.json()).then(d => {
-                            console.info(`[Hypurrmium] Email enregistrés : ${d.count} | Consulter : ${CONFIG.COUNTER_URL}`);
-                        }).catch(() => {});
-                        localStorage.setItem('hype_email_counted', '1');
-                    }
                     localStorage.setItem('hype_alert_email', email);
                     emailStatus.textContent = `✓ ${email}`;
                 } else {
@@ -2239,6 +2230,12 @@
             if (!container) container = document.getElementById('chart-container');
             const id = ++this._alertIdCounter;
             const isSell = direction === 'above';
+
+            // Incrément compteur global : 1 seule fois par utilisateur, à la première alerte posée
+            if (!localStorage.getItem('hype_alert_counted')) {
+                fetch(CONFIG.COUNTER_URL + '/up').catch(() => {});
+                localStorage.setItem('hype_alert_counted', '1');
+            }
 
             const line = this.candleSeries.createPriceLine({
                 price: level,
