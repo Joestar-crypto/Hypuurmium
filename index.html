@@ -1134,11 +1134,13 @@
                 ldEl.classList.add('fade-out');
                 setTimeout(() => { ldEl.style.display = 'none'; }, 420);
                 document.getElementById('app').classList.add('visible');
-                // Compteur d'emails dans le footer
+                // Compteur dans le footer
                 fetch(CONFIG.COUNTER_URL).then(r => r.json()).then(d => {
                     const n = d.count || 0;
-                    if (n > 0) document.getElementById('footer-email-count').textContent = `👥 ${n} user${n !== 1 ? 's' : ''} tracking HYPE`;
-                }).catch(() => {});
+                    document.getElementById('footer-email-count').textContent = `👥 ${n} user${n !== 1 ? 's' : ''} tracking HYPE`;
+                }).catch(() => {
+                    document.getElementById('footer-email-count').textContent = '';
+                });
             } catch (e) {
                 console.error('Init error:', e);
                 document.getElementById('loading').style.display = 'none';
