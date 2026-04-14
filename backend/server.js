@@ -255,7 +255,12 @@ function sendSiteFile(res, relativePath) {
 }
 
 function isAgentConfigured() {
-  return !!String(process.env.AGENT_PRIVATE_KEY || '').trim();
+  try {
+    getAgentAccount();
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
 function isBuilderConfigured() {

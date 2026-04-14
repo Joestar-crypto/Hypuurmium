@@ -82,9 +82,23 @@ const AGENT_TYPES = {
 
 // ── Agent wallet ──
 
+function normalizePrivateKey(value, envName = 'private key') {
+  const rawValue = String(value || '').trim();
+  if (!rawValue) throw new Error(`${envName} not set`);
+
+  const unquotedValue = rawValue.replace(/^['"]|['"]$/g, '');
+  const compactValue = unquotedValue.replace(/\s+/g, '');
+  const normalizedValue = compactValue.startsWith('0x') ? compactValue : `0x${compactValue}`;
+
+  if (!/^0x[0-9a-fA-F]{64}$/.test(normalizedValue)) {
+    throw new Error(`${envName} must be 64 hex characters${compactValue.startsWith('0x') ? '' : ' (optionally prefixed with 0x)'}`);
+  }
+
+  return normalizedValue;
+}
+
 function getAgentAccount() {
-  const key = process.env.AGENT_PRIVATE_KEY;
-  if (!key) throw new Error('AGENT_PRIVATE_KEY not set');
+  const key = normalizePrivateKey(process.env.AGENT_PRIVATE_KEY, 'AGENT_PRIVATE_KEY');
   return privateKeyToAccount(key);
 }
 
