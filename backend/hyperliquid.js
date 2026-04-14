@@ -388,15 +388,9 @@ async function getCurrentPE(metric = 'mc', options = {}) {
 
   let pe;
   let mcap;
-  if (normalizedMetric === 'mc' && protocolData?.mcap) {
-    // MC: use DefiLlama mcap directly — matches their displayed P/E
-    mcap = Number(protocolData.mcap);
-    pe = mcap / annualizedRevenue;
-  } else {
-    // FDV: price × supply (DL doesn’t expose FDV mcap easily)
-    pe = hypePrice / (annualizedRevenue / supplyInfo.supplyUsed);
-    mcap = hypePrice * supplyInfo.supplyUsed;
-  }
+  // Always use HL native supply × price for mcap — matches the frontend chart
+  mcap = hypePrice * supplyInfo.supplyUsed;
+  pe = mcap / annualizedRevenue;
 
   return {
     pe: Math.round(pe * 100) / 100,
@@ -448,8 +442,8 @@ async function getMedianPE(metric = 'mc', options = {}) {
       const avgDailyRevenue = getAverageDailyRevenue(window);
       if (avgDailyRevenue <= 0) return null;
       const annualized = avgDailyRevenue * 365;
-      // For current P/E in median: use dlMcap for MC, supply-based for FDV
-      return dlMcap ? (dlMcap / annualized) : (hypePrice / (annualized / supplyInfo.supplyUsed));
+      // Always use HL supply × price — matches the frontend chart
+      return hypePrice / (annualized / supplyInfo.supplyUsed);
     })
     .filter(v => v !== null)
     .sort((a, b) => a - b);
