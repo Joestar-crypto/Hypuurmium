@@ -4371,15 +4371,49 @@
        HYPE Premium Index — Buyback-Adjusted Valuation Chart
        ═══════════════════════════════════════════════════════════ */
 
+    function normalizeBackendApiUrl(value) {
+        const normalized = String(value || '').trim().replace(/\/+$/, '');
+        if (!normalized) return '';
+        return /\/api$/i.test(normalized) ? normalized : normalized + '/api';
+    }
+
+    function resolveBackendApiUrl() {
+        const params = new URLSearchParams(location.search || '');
+        const queryValue = params.get('backendApi');
+        const globalValue = typeof window !== 'undefined'
+            ? (window.HYPURRMIUM_BACKEND_API_URL || window.__HYPURRMIUM_BACKEND_API_URL || '')
+            : '';
+        const metaValue = document.querySelector('meta[name="hypurrmium-backend-api"]')?.getAttribute('content') || '';
+        let storedValue = '';
+        try {
+            storedValue = localStorage.getItem('hypurrmium.backendApiUrl') || '';
+        } catch(e) {}
+
+        if (queryValue) {
+            const normalizedQuery = normalizeBackendApiUrl(queryValue);
+            if (normalizedQuery) {
+                try {
+                    localStorage.setItem('hypurrmium.backendApiUrl', normalizedQuery);
+                } catch(e) {}
+                return normalizedQuery;
+            }
+        }
+
+        const override = [globalValue, metaValue, storedValue].find(value => typeof value === 'string' && value.trim());
+        if (override) return normalizeBackendApiUrl(override);
+
+        return (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+            ? 'http://localhost:3001/api'
+            : '/api';
+    }
+
     const CONFIG = {
         SUPPLY: 333_333_333,      // Circulating supply (MC)
         FDV_SUPPLY: 1_000_000_000, // Total supply (FDV)
         DEFAULT_ROLLING: 30,
         BURN_TOGGLE_STORAGE_KEY: 'hypurrmium.pe.include-burn',
         HISTORICAL_BURN_STORAGE_KEY: 'hypurrmium.pe.history-burn',
-        BACKEND_API_URL: (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-            ? 'http://localhost:3001/api'
-            : '/api',
+        BACKEND_API_URL: resolveBackendApiUrl(),
         ZONES: {
             mc:  { cheap: [6, 8],   fair: [12, 14], expensive: [20, 22] },
             fdv: { cheap: [18, 24], fair: [36, 42], expensive: [60, 66] },
@@ -7511,9 +7545,7 @@
 const AutoBuy = (function() {
     const API = (typeof CONFIG !== 'undefined' && CONFIG.BACKEND_API_URL)
         ? CONFIG.BACKEND_API_URL
-        : ((location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-            ? 'http://localhost:3001/api'
-            : '/api');
+        : resolveBackendApiUrl();
     let provider = null;
     let signer = null;
     let userAddress = null;
@@ -7530,9 +7562,39 @@ const AutoBuy = (function() {
     let alertMetric = 'mc'; // 'mc' | 'fdv' | 'price'
     let priceSource = 'spot'; // 'spot' | 'median'
     let selectedZone = null; // 'cheap' | 'fair' | 'expensive' | null
+    let lastBackendError = '';
 
     // ── Helpers ──
     function $(id) { return document.getElementById(id); }
+
+    function isHtmlDocumentResponse(text) {
+        return /^\s*<!doctype html>|^\s*<html/i.test(String(text || ''));
+    }
+
+    async function fetchBackendJson(path, options = {}) {
+        const url = API + path;
+        const response = await fetch(url, options);
+        const contentType = String(response.headers.get('content-type') || '').toLowerCase();
+        const rawText = await response.text();
+
+        if (!response.ok) {
+            throw new Error(`Backend request failed (${response.status}) for ${url}`);
+        }
+
+        if (contentType.includes('application/json')) {
+            try {
+                return JSON.parse(rawText);
+            } catch (error) {
+                throw new Error(`Backend returned invalid JSON for ${url}`);
+            }
+        }
+
+        if (isHtmlDocumentResponse(rawText)) {
+            throw new Error(`Backend API misconfigured: ${url} returned site HTML instead of JSON. Set the deployed Express URL via ?backendApi=..., localStorage[hypurrmium.backendApiUrl], meta[name="hypurrmium-backend-api"], or window.HYPURRMIUM_BACKEND_API_URL.`);
+        }
+
+        throw new Error(`Backend returned unexpected content-type "${contentType || 'unknown'}" for ${url}`);
+    }
 
     function syncModalSideTheme() {
         const modal = $('ab-modal');
@@ -7913,17 +7975,20 @@ const AutoBuy = (function() {
     }
 
     async function fetchAgentAddress() {
+        lastBackendError = '';
         try {
-            const res = await fetch(API + '/agent-address');
-            if (res.ok) {
-                const data = await res.json();
-                agentAddress = data.agentAddress;
-                builderAddress = data.builderAddress || null;
-                builderMaxFeeRate = data.builderMaxFeeRate || '0.10%';
-                workerDisabled = !!data.workerDisabled;
-                updateBuilderFeePreview();
-            }
-        } catch(e) { console.warn('Could not fetch agent address:', e); }
+            const data = await fetchBackendJson('/agent-address');
+            agentAddress = data.agentAddress;
+            builderAddress = data.builderAddress || null;
+            builderMaxFeeRate = data.builderMaxFeeRate || '0.10%';
+            workerDisabled = !!data.workerDisabled;
+            updateBuilderFeePreview();
+            return data;
+        } catch(e) {
+            lastBackendError = e && e.message ? e.message : 'Could not fetch agent address';
+            console.warn('Could not fetch agent address:', e);
+            return null;
+        }
     }
 
     async function loadStrategiesForUser() {
@@ -8645,7 +8710,7 @@ const AutoBuy = (function() {
 
         if (!agentAddress) {
             statusEl.className = 'ab-status error';
-            statusEl.textContent = 'Backend not reachable, cannot get agent address';
+            statusEl.textContent = lastBackendError || 'Backend not reachable, cannot get agent address';
             return;
         }
 
