@@ -4590,36 +4590,27 @@
             const totalSupply = parseFloat(tokenDetails?.totalSupply) || CONFIG.FDV_SUPPLY;
             // DefiLlama mcap (used for current P/E card — same source as DL)
             const dlMcap = protocolRes?.mcap ? Number(protocolRes.mcap) : null;
-            // Derive implied supply from DL mcap so chart P/E matches card P/E exactly
-            const lastCandleDate = Object.keys(candlesByDate).sort().pop();
-            const lastCandlePrice = lastCandleDate ? parseFloat(candlesByDate[lastCandleDate].c) : null;
-            const dlImpliedSupply = (dlMcap && lastCandlePrice && lastCandlePrice > 0) ? dlMcap / lastCandlePrice : null;
-
-            return { feesByDate, candlesByDate, candles4hByDate, burnedHype, circulatingSupply, totalSupply, dlMcap, dlImpliedSupply };
+            return { feesByDate, candlesByDate, candles4hByDate, burnedHype, circulatingSupply, totalSupply, dlMcap };
         }
 
         async syncCurrentPEFromBackend() {
             try {
                 if (!this.rawData || !this.rawData.feesByDate) return null;
 
-                // Fetch fresh mcap from DefiLlama — same source they display on their site
-                const [protocolData, priceData] = await Promise.all([
-                    fetch(CONFIG.DEFILLAMA_PROTOCOL_URL).then(r => r.json()).catch(() => null),
-                    fetch(CONFIG.HL_API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ type: 'allMids' }),
-                    }).then(r => r.json()).catch(() => null),
-                ]);
+                // Fetch fresh HYPE price from Hyperliquid
+                const priceData = await fetch(CONFIG.HL_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'allMids' }),
+                }).then(r => r.json()).catch(() => null);
 
-                const dlMcap = protocolData?.mcap ? Number(protocolData.mcap) : null;
                 const livePrice = priceData ? parseFloat(priceData['HYPE']) : null;
-                if (!dlMcap || !isFinite(dlMcap)) return null;
+                if (!livePrice || !isFinite(livePrice)) return null;
 
-                // Update stored mcap for use in updateMetrics
-                if (dlMcap) this.rawData.dlMcap = dlMcap;
-                if (livePrice && isFinite(livePrice)) this.rawData.livePrice = livePrice;
-                if (dlMcap && livePrice && isFinite(livePrice)) this.rawData.dlImpliedSupply = dlMcap / livePrice;
+                if (livePrice) this.rawData.livePrice = livePrice;
+
+                const circulatingSupply = Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY;
+                const hlMcap = livePrice * circulatingSupply;
 
                 const { feesByDate } = this.rawData;
                 const allDates = Object.keys(feesByDate).sort();
@@ -4629,14 +4620,14 @@
                 const annualizedRevenue = avgDailyRevenue * 365;
                 if (annualizedRevenue <= 0) return null;
 
-                // P/E = DefiLlama MCap / Annualized Revenue (30d avg × 365)
-                const livePE = dlMcap / annualizedRevenue;
+                // P/E = HL MCap (circulatingSupply × price) / Annualized Revenue
+                const livePE = hlMcap / annualizedRevenue;
                 if (!isFinite(livePE)) return null;
 
                 const peValueEl = document.getElementById('pe-value');
                 if (peValueEl) peValueEl.textContent = `${livePE.toFixed(1)}x`;
 
-                return { pe: livePE, mcap: dlMcap, price: livePrice };
+                return { pe: livePE, mcap: hlMcap, price: livePrice };
             } catch (e) {
                 return null;
             }
@@ -5064,7 +5055,7 @@
             // Use live supply from HL tokenDetails API — circulatingSupply already excludes burn+locked
             const baseSupply = this.useFDV
                 ? (Number(this.rawData.totalSupply) || CONFIG.FDV_SUPPLY)
-                : (Number(this.rawData.dlImpliedSupply) || Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
+                : (Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
             const burnedHype = Number(this.rawData.burnedHype) || 0;
             // Burn model only applies to FDV (circulatingSupply already excludes burn for MC)
             const historicalBurnModel = (this.includeBurnInPe && this.useFDV)
@@ -5735,7 +5726,7 @@
             const lastAvg = rollingAvg[rollingAvg.length - 1];
             const baseSupply = this.useFDV
                 ? (Number(this.rawData.totalSupply) || CONFIG.FDV_SUPPLY)
-                : (Number(this.rawData.dlImpliedSupply) || Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
+                : (Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
             // MC: circulatingSupply already excludes burn — only apply burn toggle for FDV
             const burnedHype = Number(this.rawData.burnedHype) || 0;
             const activeSupply = this.useFDV
@@ -5743,9 +5734,7 @@
                 : baseSupply;
             const annualRev = lastAvg * 365;
             // Use DefiLlama mcap when available (same source as their P/E display)
-            const mcap = (this.rawData.dlMcap && !this.useFDV)
-                ? this.rawData.dlMcap
-                : lastCandle.c * activeSupply;
+            const mcap = lastCandle.c * activeSupply;
             const feeValues = allDates.map(d => feesByDate[d]);
             const buybackRevenuePct = annualRev > 0 ? 100 : 0;
 
@@ -6105,7 +6094,7 @@
             const feeValues = allDates.map(d => feesByDate[d]);
             const baseSupply = this.useFDV
                 ? (Number(this.rawData.totalSupply) || CONFIG.FDV_SUPPLY)
-                : (Number(this.rawData.dlImpliedSupply) || Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
+                : (Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
             const burnedHype = Number(this.rawData.burnedHype) || 0;
 
             const effectiveDays = this.rollingDays === 0 ? feeValues.length : this.rollingDays;
@@ -6881,7 +6870,7 @@
                         Number(this.rawData?.totalSupply) || CONFIG.FDV_SUPPLY,
                         Number(this.rawData?.burnedHype) || 0,
                       )
-                    : (Number(this.rawData?.dlImpliedSupply) || Number(this.rawData?.circulatingSupply) || CONFIG.SUPPLY);
+                    : (Number(this.rawData?.circulatingSupply) || CONFIG.SUPPLY);
                 const lastRollingAvg = this._rollingAvg && this._rollingAvg.length
                     ? this._rollingAvg[this._rollingAvg.length - 1] : 0;
                 const annRevPerToken = (lastRollingAvg * 365) / lastSupply;
