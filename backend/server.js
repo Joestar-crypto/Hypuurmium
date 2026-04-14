@@ -247,6 +247,14 @@ function sendSiteFile(res, relativePath) {
   res.sendFile(path.join(SITE_ROOT, relativePath));
 }
 
+function isAgentConfigured() {
+  return !!String(process.env.AGENT_PRIVATE_KEY || '').trim();
+}
+
+function isBuilderConfigured() {
+  return !!String(process.env.BUILDER_ADDRESS || '').trim();
+}
+
 function getOrderOidFromPayload(hlResponse) {
   if (!hlResponse) return null;
 
@@ -582,7 +590,10 @@ app.get('/api/agent-address', (_req, res) => {
       workerDisabled: DISABLE_WORKER,
     });
   } catch (err) {
-    res.status(500).json({ error: 'Agent not configured' });
+    res.status(500).json({
+      error: 'Agent not configured',
+      detail: err && err.message ? err.message : 'Unknown configuration error',
+    });
   }
 });
 
@@ -590,6 +601,10 @@ app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
     workerDisabled: DISABLE_WORKER,
+    agentConfigured: isAgentConfigured(),
+    builderConfigured: isBuilderConfigured(),
+    emailConfigured: !!RESEND_API_KEY,
+    dbPath: DB_PATH,
     origins: ALLOWED_ORIGINS,
   });
 });
