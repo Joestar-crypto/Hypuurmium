@@ -5,13 +5,22 @@ echo  ================================================
 echo   HYPE Premium Index - Hyperliquid Buyback Chart
 echo  ================================================
 echo.
-echo  Demarrage du serveur local...
-echo  Le navigateur va s'ouvrir sur http://localhost:8080
+echo  Demarrage des serveurs...
+echo  Frontend : http://localhost:8080
+echo  Backend  : http://localhost:3001
+echo  Mode local: worker auto desactive
 echo.
-echo  Appuyez sur Ctrl+C pour arreter le serveur.
+echo  Appuyez sur Ctrl+C pour arreter les serveurs.
 echo.
 
-:: Try Python 3 first
+:: Start backend in background with worker disabled in the parent shell
+cd backend
+set "DISABLE_WORKER=true"
+start "HYPE Premium Backend" /B cmd /c "node server.js"
+set "DISABLE_WORKER="
+cd ..
+
+:: Start frontend
 where python >nul 2>nul
 if %ERRORLEVEL% equ 0 (
     start http://localhost:8080
@@ -19,7 +28,6 @@ if %ERRORLEVEL% equ 0 (
     goto :end
 )
 
-:: Try Python via py launcher
 where py >nul 2>nul
 if %ERRORLEVEL% equ 0 (
     start http://localhost:8080
@@ -27,7 +35,6 @@ if %ERRORLEVEL% equ 0 (
     goto :end
 )
 
-:: Try npx serve (requires Node.js)
 where npx >nul 2>nul
 if %ERRORLEVEL% equ 0 (
     start http://localhost:8080
@@ -37,12 +44,6 @@ if %ERRORLEVEL% equ 0 (
 
 echo.
 echo  ERREUR: Ni Python ni Node.js n'ont ete trouves.
-echo.
-echo  Installez l'un des deux:
-echo    - Python: https://www.python.org/downloads/
-echo    - Node.js: https://nodejs.org/
-echo.
-echo  Ou ouvrez index.html avec l'extension "Live Server" de VS Code.
 echo.
 pause
 

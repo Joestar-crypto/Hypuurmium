@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-DCA Documentation · Hypurrmium</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #070e0a;
+            --bg-card: #0d1a10;
+            --bg-card-2: #111f14;
+            --border: #1a2e1e;
+            --accent: #e8b923;
+            --bull: #4db87a;
+            --bear: #ff5757;
+            --text-0: #e8f0ea;
+            --text-1: #c0c8c2;
+            --text-2: #8aaa96;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text-1);
+            font-family: 'Inter', -apple-system, sans-serif;
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        .docs-container {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        .docs-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-2);
+            text-decoration: none;
+            font-size: 13px;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 32px;
+            transition: color 0.2s;
+        }
+        .docs-back:hover { color: var(--accent); }
+
+        .docs-header {
+            margin-bottom: 48px;
+        }
+
+        .docs-header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-0);
+            margin-bottom: 8px;
+        }
+        .docs-header h1 span { color: var(--accent); }
+
+        .docs-header p {
+            font-size: 15px;
+            color: var(--text-2);
+        }
+
+        .docs-toc {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 48px;
+        }
+        .docs-toc h3 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-2);
+            margin-bottom: 12px;
+        }
+        .docs-toc ol {
+            list-style: none;
+            counter-reset: toc;
+        }
+        .docs-toc li {
+            counter-increment: toc;
+            margin-bottom: 6px;
+        }
+        .docs-toc li a {
+            color: var(--text-1);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .docs-toc li a:hover { color: var(--accent); }
+        .docs-toc li a::before {
+            content: counter(toc) ". ";
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            margin-right: 4px;
+        }
+
+        section {
+            margin-bottom: 48px;
+        }
+
+        h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-0);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        h2 span { color: var(--accent); }
+
+        h3 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-0);
+            margin-top: 24px;
+            margin-bottom: 10px;
+        }
+
+        p { margin-bottom: 14px; font-size: 14px; }
+
+        ul, ol {
+            padding-left: 20px;
+            margin-bottom: 14px;
+        }
+        li {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .green { color: var(--bull); }
+        .red { color: var(--bear); }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            background: var(--bg-card-2);
+            border: 1px solid var(--border);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--accent);
+        }
+
+        .info-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 16px 0;
+        }
+        .info-box.security {
+            border-color: rgba(77,184,122,0.3);
+            background: rgba(77,184,122,0.05);
+        }
+        .info-box.warning {
+            border-color: rgba(255,213,79,0.3);
+            background: rgba(255,213,79,0.05);
+        }
+        .info-box strong {
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .info-box.security strong { color: var(--bull); }
+        .info-box.warning strong { color: var(--accent); }
+        .info-box p { margin-bottom: 6px; font-size: 13px; }
+        .info-box p:last-child { margin-bottom: 0; }
+
+        .formula-box {
+            background: var(--bg-card-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin: 16px 0;
+            text-align: center;
+        }
+        .formula-box .formula {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            color: var(--accent);
+            font-weight: 700;
+        }
+        .formula-box .formula-desc {
+            font-size: 12px;
+            color: var(--text-2);
+            margin-top: 8px;
+        }
+
+        .zones-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+        .zones-table th, .zones-table td {
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border);
+        }
+        .zones-table th {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-2);
+        }
+        .zones-table td:first-child { font-weight: 600; }
+
+        .step-list {
+            list-style: none;
+            counter-reset: steps;
+            padding-left: 0;
+        }
+        .step-list li {
+            counter-increment: steps;
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 20px;
+        }
+        .step-list li::before {
+            content: counter(steps);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 26px;
+            height: 26px;
+            background: var(--bg-card-2);
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .step-list li strong {
+            color: var(--text-0);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .params-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .param-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+        }
+        .param-card .param-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+        .param-card .param-desc {
+            font-size: 12px;
+            color: var(--text-2);
+        }
+
+        .docs-footer {
+            margin-top: 64px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-2);
+        }
+        .docs-footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .docs-footer a:hover { text-decoration: underline; }
+
+        @media (max-width: 600px) {
+            .docs-container { padding: 24px 16px 60px; }
+            .docs-header h1 { font-size: 22px; }
+            h2 { font-size: 17px; }
+            .params-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="docs-container">
+        <a href="index.html" class="docs-back">← Back to Dashboard</a>
+
+        <div class="docs-header">
+            <h1>Auto-DCA <span>Documentation</span></h1>
+            <p>Automated Dollar-Cost Averaging on Hyperliquid, powered by the P/E ratio</p>
+        </div>
+
+        <nav class="docs-toc">
+            <h3>Table of Contents</h3>
+            <ol>
+                <li><a href="#what-is-dca">What is Auto-DCA?</a></li>
+                <li><a href="#pe-ratio">The P/E Ratio Explained</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#setup-guide">Setup Guide</a></li>
+                <li><a href="#parameters">Strategy Parameters</a></li>
+                <li><a href="#buy-vs-sell">Buy vs Sell Strategies</a></li>
+                <li><a href="#security">Security & Trust</a></li>
+                <li><a href="#dashboard">Managing Your Strategy</a></li>
+                <li><a href="#faq">FAQ</a></li>
+            </ol>
+        </nav>
+
+        <!-- 1. What is Auto-DCA -->
+        <section id="what-is-dca">
+            <h2><span>1.</span> What is Auto-DCA?</h2>
+            <p>Auto-DCA (Dollar-Cost Averaging) is an automated trading tool that places buy or sell orders for <span class="highlight">$HYPE</span> on your behalf when the P/E ratio crosses a threshold you define.</p>
+            <p>Instead of watching charts 24/7, you set your conditions once and the system monitors the market every 60 seconds. When your trigger is hit, an order is placed directly on Hyperliquid, even if you're offline.</p>
+
+            <div class="info-box">
+                <strong>Why DCA?</strong>
+                <p>Dollar-Cost Averaging is a proven investment strategy that reduces the impact of volatility by spreading purchases over time. Combined with a fundamental metric like P/E, it helps you accumulate $HYPE when the market signals value.</p>
+            </div>
+        </section>
+
+        <!-- 2. P/E Ratio -->
+        <section id="pe-ratio">
+            <h2><span>2.</span> The P/E Ratio Explained</h2>
+            <p>The Price-to-Earnings ratio measures how expensive $HYPE is relative to the protocol's actual revenue.</p>
+
+            <div class="formula-box">
+                <div class="formula">P/E = HYPE Price / (Annualized Revenue / Supply)</div>
+                <div class="formula-desc">Supply = 333,333,333 HYPE &nbsp;·&nbsp; Revenue = Daily Buyback × 365</div>
+            </div>
+
+            <p>Hyperliquid generates revenue from trading fees, which are used to buy back $HYPE. This buyback acts as "earnings" for the protocol.</p>
+
+            <h3>P/E Zones</h3>
+            <table class="zones-table">
+                <thead>
+                    <tr>
+                        <th>Zone</th>
+                        <th>P/E Range</th>
+                        <th>Interpretation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="green">Cheap</td>
+                        <td>Below 8x</td>
+                        <td>Strong value signal, price is low relative to earnings</td>
+                    </tr>
+                    <tr>
+                        <td style="color:var(--text-0)">Fair</td>
+                        <td>12x – 14x</td>
+                        <td>Market is pricing $HYPE reasonably</td>
+                    </tr>
+                    <tr>
+                        <td class="red">Expensive</td>
+                        <td>Above 20x</td>
+                        <td>Price is stretched, potential sell signal</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>Data sources: <a href="https://defillama.com/protocol/hyperliquid" target="_blank" style="color:var(--accent)">DefiLlama</a> for revenue data, <a href="https://app.hyperliquid.xyz" target="_blank" style="color:var(--accent)">Hyperliquid API</a> for real-time $HYPE price.</p>
+        </section>
+
+        <!-- 3. How It Works -->
+        <section id="how-it-works">
+            <h2><span>3.</span> How It Works</h2>
+            <ol class="step-list">
+                <li>
+                    <strong>Connect your wallet</strong>
+                    You connect your EVM wallet (MetaMask, Rabby, etc.) to identify your Hyperliquid account.
+                </li>
+                <li>
+                    <strong>Configure your strategy</strong>
+                    Choose a P/E trigger, order type, amount, cooldown, and budget cap.
+                </li>
+                <li>
+                    <strong>Sign an agent authorization</strong>
+                    You sign an EIP-712 message that authorizes Hypurrmium's agent to place orders on your behalf. This is sent directly to Hyperliquid, not to us.
+                </li>
+                <li>
+                    <strong>The server monitors 24/7</strong>
+                    Every 60 seconds, the backend checks the live P/E ratio against your trigger. When conditions are met, it places an order on Hyperliquid using the agent authorization.
+                </li>
+                <li>
+                    <strong>You stay in control</strong>
+                    Pause, resume, edit, or fully revoke your strategy at any time from the dashboard.
+                </li>
+            </ol>
+        </section>
+
+        <!-- 4. Setup Guide -->
+        <section id="setup-guide">
+            <h2><span>4.</span> Setup Guide</h2>
+
+            <h3>Prerequisites</h3>
+            <ul>
+                <li>An EVM wallet (MetaMask, Rabby, or WalletConnect-compatible)</li>
+                <li>A Hyperliquid account with <span class="highlight">USDC deposited</span></li>
+                <li>Your wallet must be on the <strong>Arbitrum One</strong> network</li>
+            </ul>
+
+            <div class="info-box warning">
+                <strong>Important</strong>
+                <p>You must have USDC deposited on your Hyperliquid account before activating the agent authorization. If you don't, the strategy will be saved in "Pending Deposit" status until you deposit and retry.</p>
+            </div>
+
+            <h3>Quick Start</h3>
+            <ol>
+                <li>Click the <strong>Auto-DCA</strong> button in the header</li>
+                <li>Connect your wallet</li>
+                <li>Choose <strong>BUY</strong> or <strong>SELL</strong> mode</li>
+                <li>Set your P/E trigger (e.g., 10x for buying the dip)</li>
+                <li>Pick your amount per trigger and total budget cap</li>
+                <li>Set a cooldown to avoid overtrading</li>
+                <li>Review and sign the authorization</li>
+            </ol>
+        </section>
+
+        <!-- 5. Parameters -->
+        <section id="parameters">
+            <h2><span>5.</span> Strategy Parameters</h2>
+            <div class="params-grid">
+                <div class="param-card">
+                    <div class="param-name">P/E Trigger</div>
+                    <div class="param-desc">The P/E threshold that activates your order. Buy mode triggers below this value; sell triggers above.</div>
+                </div>
+                <div class="param-card">
+                    <div class="param-name">Order Type</div>
+                    <div class="param-desc"><strong>Market</strong>: executes immediately at best price (IOC). <strong>Limit</strong>: places an order at a set offset below/above current price.</div>
+                </div>
+                <div class="param-card">
+                    <div class="param-name">Amount per Trigger</div>
+                    <div class="param-desc">The USDC amount spent on each individual order. Quick presets: $25, $50, $100, $250, $500, $1K, $2.5K, $5K.</div>
+                </div>
+                <div class="param-card">
+                    <div class="param-name">Max Triggers</div>
+                    <div class="param-desc">Maximum number of orders to execute. After this, the strategy automatically stops.</div>
+                </div>
+                <div class="param-card">
+                    <div class="param-name">Total Budget Cap</div>
+                    <div class="param-desc">Hard cap on total USDC spent. The strategy stops even if max triggers isn't reached.</div>
+                </div>
+                <div class="param-card">
+                    <div class="param-name">Cooldown</div>
+                    <div class="param-desc">Minimum time between two orders: 15min, 30min, 1h, 2h, 4h, 8h, 12h, 24h, 2 days, or 1 week.</div>
+                </div>
+                <div class="param-card">
+                    <div class="param-name">Expiry Date</div>
+                    <div class="param-desc">The strategy automatically deactivates after this date. Orders placed before expiry remain filled.</div>
+                </div>
+                <div class="param-card">
+                    <div class="param-name">Limit Offset %</div>
+                    <div class="param-desc">Only for limit orders. How far below (buy) or above (sell) the current price to place the order.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. Buy vs Sell -->
+        <section id="buy-vs-sell">
+            <h2><span>6.</span> Buy vs Sell Strategies</h2>
+
+            <h3 class="green">BUY Strategy</h3>
+            <p>Triggers when P/E drops <strong>below</strong> your threshold. Lower P/E means $HYPE is cheap relative to protocol earnings, a value accumulation signal.</p>
+            <p><strong>Example:</strong> P/E trigger at 10x, amount $500, cooldown 4h. Every time P/E goes below 10x, the system buys $500 of $HYPE, waiting at least 4 hours between buys.</p>
+
+            <h3 class="red">SELL Strategy</h3>
+            <p>Triggers when P/E rises <strong>above</strong> your threshold. Higher P/E means $HYPE is expensive relative to earnings, a take-profit signal.</p>
+            <p><strong>Example:</strong> P/E trigger at 25x, amount $1000, cooldown 24h. When P/E exceeds 25x, the system sells $1000 of $HYPE once per day.</p>
+
+            <div class="info-box">
+                <strong>Combine both</strong>
+                <p>Advanced users can set up a buy strategy on one account and a sell strategy on another to create a fully automated range-trading system based on fundamentals.</p>
+            </div>
+        </section>
+
+        <!-- 7. Security -->
+        <section id="security">
+            <h2><span>7.</span> Security & Trust</h2>
+
+            <div class="info-box security">
+                <strong>Your funds stay on Hyperliquid</strong>
+                <p>The agent authorization only grants permission to <strong>place and cancel orders</strong>. It cannot withdraw funds, transfer assets, or access your private keys.</p>
+            </div>
+
+            <h3>How Agent Authorization Works</h3>
+            <ul>
+                <li>You sign an EIP-712 typed message sent to <strong>Hyperliquid directly</strong>, not stored by Hypurrmium</li>
+                <li>The message authorizes a specific agent address (controlled by the Hypurrmium server) to trade on your behalf</li>
+                <li>The agent can only execute market/limit orders for $HYPE, nothing else</li>
+                <li>You can <strong>revoke access instantly</strong> from the dashboard or directly from your Hyperliquid account settings</li>
+            </ul>
+
+            <h3>What the Agent Cannot Do</h3>
+            <ul>
+                <li>Withdraw or transfer any funds</li>
+                <li>Access your wallet private key</li>
+                <li>Trade tokens other than $HYPE</li>
+                <li>Modify your Hyperliquid account settings</li>
+                <li>Place orders exceeding your configured budget cap</li>
+            </ul>
+
+            <h3>Revoking Access</h3>
+            <p>Click the <strong>Revoke</strong> button on the dashboard. This sends a revocation transaction to Hyperliquid (setting the agent to <code>0x0000...0000</code>) and deletes your strategy from the server.</p>
+        </section>
+
+        <!-- 8. Dashboard -->
+        <section id="dashboard">
+            <h2><span>8.</span> Managing Your Strategy</h2>
+
+            <h3>Strategy Statuses</h3>
+            <ul>
+                <li><span class="green"><strong>Active</strong></span>: strategy is live and monitoring P/E every 60 seconds</li>
+                <li><span class="highlight"><strong>Paused</strong></span>: strategy is saved but not executing. Resume anytime</li>
+                <li><span class="highlight"><strong>Pending Deposit</strong></span>: strategy saved but agent not activated. Deposit USDC on Hyperliquid and click "Retry Authorization"</li>
+                <li><span class="red"><strong>Expired</strong></span>: past the expiry date. Create a new strategy to continue</li>
+            </ul>
+
+            <h3>Dashboard Features</h3>
+            <ul>
+                <li><strong>P/E Progress Bar</strong>: visual gauge showing current P/E vs your trigger with zone indicators</li>
+                <li><strong>Budget Tracking</strong>: used budget / total cap, with trigger count</li>
+                <li><strong>Order History</strong>: all executed orders with timestamps, amounts, and prices</li>
+                <li><strong>Email Notifications</strong>: get notified when an order executes</li>
+                <li><strong>Quick Access</strong>: "My Strategy" button appears in the header when a strategy is active</li>
+            </ul>
+
+            <h3>Actions</h3>
+            <ul>
+                <li><strong>Pause / Resume</strong>: temporarily stop or restart monitoring</li>
+                <li><strong>Edit</strong>: go back to configuration to adjust parameters</li>
+                <li><strong>Revoke</strong>: fully deactivate and remove the agent authorization</li>
+            </ul>
+        </section>
+
+        <!-- 9. FAQ -->
+        <section id="faq">
+            <h2><span>9.</span> FAQ</h2>
+
+            <h3>Do I need to keep the site open?</h3>
+            <p>No. The server monitors the P/E ratio independently. Once your strategy is activated, orders execute whether you're online or not.</p>
+
+            <h3>What happens if I run out of USDC?</h3>
+            <p>The order will fail on Hyperliquid's side. The strategy remains active and will retry at the next check cycle. Your trigger count and budget are only updated on successful fills.</p>
+
+            <h3>Can I have multiple strategies?</h3>
+            <p>Currently, one strategy per wallet address. To run both a buy and sell strategy, use two different wallets.</p>
+
+            <h3>How is the P/E calculated?</h3>
+            <p>The dashboard reads the live P/E from the Hypurrmium chart, which uses the 30-day rolling average of Hyperliquid buyback revenue (via DefiLlama), annualized, divided by the burn-adjusted HYPE supply for MC or FDV.</p>
+
+            <h3>Is there a fee?</h3>
+            <p>Orders can include a <strong>dynamic builder fee</strong> that declines as trade size increases. By default the app asks you to approve a <strong>0.10%</strong> maximum fee cap on Hyperliquid, but the actual fee charged per order is usually lower and is reduced automatically on larger trades.</p>
+
+            <h3>What is the "chart alert" feature?</h3>
+            <p>If you've set P/E alerts on the Hypurrmium chart, they appear as clickable chips in the Auto-DCA setup. Click one to automatically fill the trigger value and buy/sell direction.</p>
+
+            <h3>How do I revoke manually?</h3>
+            <p>Go to <a href="https://app.hyperliquid.xyz" target="_blank" style="color:var(--accent)">app.hyperliquid.xyz</a> → Settings → API/Agent → find the Hypurrmium agent and revoke it.</p>
+        </section>
+
+        <div class="docs-footer">
+            <p><a href="index.html">Hypurrmium.xyz</a> · Auto-DCA Documentation</p>
+            <p style="margin-top:8px;">Made by <a href="https://x.com/JoestarCrypto" target="_blank">Joestar</a></p>
+        </div>
+    </div>
+</body>
+</html>

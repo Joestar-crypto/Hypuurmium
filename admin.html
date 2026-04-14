@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Hypurrmium — Admin Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg-0:#070e0a; --bg-1:#0c1812; --bg-2:#112018; --bg-3:#172a1f;
+    --border:#1f3829; --text-0:#ede9dc; --text-1:#8aaa96; --text-2:#567060;
+    --accent:#e8b923; --bull:#4db87a; --bear:#e05252;
+    --bull-dim:rgba(77,184,122,.15); --bear-dim:rgba(224,82,82,.15);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg-0);color:var(--text-0);font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;min-height:100vh}
+
+  /* ── Login overlay ── */
+  #login-overlay{position:fixed;inset:0;background:var(--bg-0);display:flex;align-items:center;justify-content:center;z-index:999}
+  .login-box{background:var(--bg-1);border:1px solid var(--border);border-radius:12px;padding:40px;width:360px;text-align:center}
+  .login-box h1{font-size:20px;color:var(--accent);margin-bottom:8px}
+  .login-box p{font-size:13px;color:var(--text-1);margin-bottom:24px}
+  .login-box input{width:100%;padding:10px 14px;background:var(--bg-0);border:1px solid var(--border);border-radius:6px;color:var(--text-0);font-size:14px;outline:none;margin-bottom:12px}
+  .login-box input:focus{border-color:var(--accent)}
+  .login-box button{width:100%;padding:10px;background:var(--accent);color:#000;font-weight:600;border:none;border-radius:6px;cursor:pointer;font-size:14px}
+  .login-box button:hover{opacity:.9}
+  .login-box .error{color:var(--bear);font-size:12px;margin-top:8px;display:none}
+
+  /* ── Layout ── */
+  .header{padding:20px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .header h1{font-size:18px;color:var(--accent);letter-spacing:.5px}
+  .header .meta{font-size:12px;color:var(--text-2)}
+  .header a{color:var(--text-1);font-size:12px;text-decoration:none}
+  .header a:hover{color:var(--accent)}
+  .dash{padding:24px 32px;max-width:1400px;margin:0 auto;display:none}
+
+  /* ── KPI cards ── */
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:28px}
+  .kpi{background:var(--bg-1);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
+  .kpi .label{font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+  .kpi .value{font-size:26px;font-weight:700;color:var(--text-0);line-height:1.2}
+  .kpi .sub{font-size:11px;color:var(--text-1);margin-top:4px}
+  .kpi.accent .value{color:var(--accent)}
+  .kpi.bull .value{color:var(--bull)}
+  .kpi.bear .value{color:var(--bear)}
+
+  /* ── Charts ── */
+  .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px}
+  @media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
+  .chart-card{background:var(--bg-1);border:1px solid var(--border);border-radius:10px;padding:20px}
+  .chart-card h3{font-size:13px;color:var(--text-1);margin-bottom:14px;text-transform:uppercase;letter-spacing:.4px}
+  .chart-card canvas{width:100%!important;max-height:260px}
+
+  /* ── Tables ── */
+  .table-card{background:var(--bg-1);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px;overflow-x:auto}
+  .table-card h3{font-size:13px;color:var(--text-1);margin-bottom:14px;text-transform:uppercase;letter-spacing:.4px}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{text-align:left;color:var(--text-2);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+  td{padding:8px 10px;border-bottom:1px solid rgba(31,56,41,.4);color:var(--text-0);white-space:nowrap}
+  tr:hover td{background:var(--bg-2)}
+  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+  .badge.green{background:var(--bull-dim);color:var(--bull)}
+  .badge.red{background:var(--bear-dim);color:var(--bear)}
+  .badge.gold{background:rgba(232,185,35,.15);color:var(--accent)}
+
+  /* ── Refresh ── */
+  .refresh-bar{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .refresh-bar button{padding:6px 16px;background:var(--bg-2);border:1px solid var(--border);color:var(--text-0);border-radius:6px;cursor:pointer;font-size:12px}
+  .refresh-bar button:hover{border-color:var(--accent)}
+  .refresh-bar .ts{font-size:11px;color:var(--text-2)}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-overlay">
+  <div class="login-box">
+    <h1>HYPURRMIUM</h1>
+    <p>Admin Dashboard</p>
+    <input type="password" id="login-key" placeholder="Admin key" autofocus>
+    <button onclick="tryLogin()">Access</button>
+    <div class="error" id="login-error">Invalid key</div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div class="header">
+  <h1>HYPURRMIUM ADMIN</h1>
+  <div style="display:flex;align-items:center;gap:20px">
+    <span class="meta" id="last-refresh"></span>
+    <a href="/">← Back to site</a>
+  </div>
+</div>
+
+<div class="dash" id="dash">
+
+  <div class="refresh-bar">
+    <button onclick="loadAll()">↻ Refresh</button>
+    <span class="ts" id="refresh-ts"></span>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid" id="kpis"></div>
+
+  <!-- Charts -->
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Orders per Day</h3>
+      <canvas id="chart-orders"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Volume (USDC) per Day</h3>
+      <canvas id="chart-volume"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Emails per Day</h3>
+      <canvas id="chart-emails"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Strategy Split</h3>
+      <canvas id="chart-split"></canvas>
+    </div>
+  </div>
+
+  <!-- Recent orders -->
+  <div class="table-card">
+    <h3>Recent Orders</h3>
+    <table id="tbl-orders">
+      <thead><tr><th>Date</th><th>Wallet</th><th>Side</th><th>P/E</th><th>Price</th><th>HYPE</th><th>USDC</th><th>Status</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Users -->
+  <div class="table-card">
+    <h3>All Users</h3>
+    <table id="tbl-users">
+      <thead><tr><th>Wallet</th><th>Side</th><th>Trigger</th><th>Amount</th><th>Triggers</th><th>Budget</th><th>Orders</th><th>Active</th><th>Email</th><th>Created</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Recent emails -->
+  <div class="table-card">
+    <h3>Recent Emails</h3>
+    <table id="tbl-emails">
+      <thead><tr><th>Date</th><th>Wallet</th><th>Template</th><th>Recipient</th><th>Subject</th><th>Status</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:3001/api/admin';
+let adminKey = '';
+
+// ── Chart.js defaults ──
+Chart.defaults.color = '#8aaa96';
+Chart.defaults.borderColor = 'rgba(31,56,41,.4)';
+Chart.defaults.font.family = 'Inter, sans-serif';
+Chart.defaults.font.size = 11;
+
+let charts = {};
+
+function shortAddr(a){ return a ? a.slice(0,6)+'...'+a.slice(-4) : ''; }
+function fmtDate(d){ return d ? new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '-'; }
+function fmtDateTime(d){ return d ? new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '-'; }
+function $(id){ return document.getElementById(id); }
+function hdr(){ return { 'X-Admin-Key': adminKey }; }
+
+async function api(path){
+  const r = await fetch(API + path, { headers: hdr() });
+  if(r.status === 403) throw new Error('forbidden');
+  return r.json();
+}
+
+// ── Login ──
+async function tryLogin(){
+  adminKey = $('login-key').value.trim();
+  try {
+    await api('/stats');
+    $('login-overlay').style.display = 'none';
+    $('dash').style.display = 'block';
+    loadAll();
+  } catch(e){
+    $('login-error').style.display = 'block';
+  }
+}
+$('login-key').addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
+
+// ── Load all data ──
+async function loadAll(){
+  try {
+    const [stats, ordersHist, emailsHist, recentOrders, users, recentEmails] = await Promise.all([
+      api('/stats'),
+      api('/orders-history?days=30'),
+      api('/emails-history?days=30'),
+      api('/recent-orders?limit=50'),
+      api('/users'),
+      api('/recent-emails?limit=50'),
+    ]);
+    renderKPIs(stats);
+    renderOrdersChart(ordersHist.rows);
+    renderVolumeChart(ordersHist.rows);
+    renderEmailsChart(emailsHist.rows);
+    renderSplitChart(stats);
+    renderOrdersTable(recentOrders.orders);
+    renderUsersTable(users.users);
+    renderEmailsTable(recentEmails.emails);
+    $('refresh-ts').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+  } catch(e) {
+    console.error('Load error:', e);
+  }
+}
+
+// ── KPIs ──
+function renderKPIs(s){
+  const cards = [
+    { label:'Total Users', value:s.users.total, cls:'' },
+    { label:'Active Strategies', value:s.users.active, cls:'accent', sub:`${s.users.authorized} authorized` },
+    { label:'Email Notifications', value:s.users.emailEnabled, cls:'', sub:'users opted-in' },
+    { label:'Total Orders', value:s.orders.total, cls:'accent', sub:`${s.orders.filled} filled · ${s.orders.failed} failed` },
+    { label:'Volume (USDC)', value:'$'+Number(s.orders.volumeUsdc).toLocaleString('en',{maximumFractionDigits:0}), cls:'bull' },
+    { label:'HYPE Traded', value:Number(s.orders.totalHype).toLocaleString('en',{maximumFractionDigits:2}), cls:'bull' },
+    { label:'Emails Sent', value:s.emails.sent, cls:'', sub:s.emails.failed+' failed' },
+    { label:'Avg Trigger', value:Number(s.strategies.avgTrigger).toFixed(1)+'x', cls:'accent' },
+    { label:'Buy / Sell', value:s.strategies.buy+' / '+s.strategies.sell, cls:'', sub:'active strategies' },
+    { label:'Total Budget', value:'$'+Number(s.strategies.totalBudget).toLocaleString('en',{maximumFractionDigits:0}), cls:'accent', sub:'$'+Number(s.strategies.budgetUsed).toLocaleString('en',{maximumFractionDigits:0})+' used' },
+  ];
+  $('kpis').innerHTML = cards.map(c =>
+    `<div class="kpi ${c.cls}"><div class="label">${c.label}</div><div class="value">${c.value}</div>${c.sub?'<div class="sub">'+c.sub+'</div>':''}</div>`
+  ).join('');
+}
+
+// ── Charts ──
+function destroyChart(id){ if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
+
+function renderOrdersChart(rows){
+  destroyChart('orders');
+  const labels = rows.map(r=>r.day);
+  charts.orders = new Chart($('chart-orders'),{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        { label:'Filled', data:rows.map(r=>r.filled), backgroundColor:'rgba(77,184,122,.6)', borderRadius:3 },
+        { label:'Failed', data:rows.map(r=>r.failed), backgroundColor:'rgba(224,82,82,.6)', borderRadius:3 },
+      ]
+    },
+    options:{ responsive:true, plugins:{legend:{position:'top'}}, scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true}} }
+  });
+}
+
+function renderVolumeChart(rows){
+  destroyChart('volume');
+  charts.volume = new Chart($('chart-volume'),{
+    type:'line',
+    data:{
+      labels:rows.map(r=>r.day),
+      datasets:[{
+        label:'USDC Volume',
+        data:rows.map(r=>r.volume),
+        borderColor:'#e8b923',
+        backgroundColor:'rgba(232,185,35,.1)',
+        fill:true, tension:.3, pointRadius:3
+      }]
+    },
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}},y:{beginAtZero:true}} }
+  });
+}
+
+function renderEmailsChart(rows){
+  destroyChart('emails');
+  // Aggregate by day
+  const byDay = {};
+  rows.forEach(r => {
+    if(!byDay[r.day]) byDay[r.day] = {sent:0, failed:0};
+    byDay[r.day].sent += r.sent;
+    byDay[r.day].failed += r.failed;
+  });
+  const days = Object.keys(byDay).sort();
+  charts.emails = new Chart($('chart-emails'),{
+    type:'bar',
+    data:{
+      labels:days,
+      datasets:[
+        { label:'Sent', data:days.map(d=>byDay[d].sent), backgroundColor:'rgba(77,184,122,.6)', borderRadius:3 },
+        { label:'Failed', data:days.map(d=>byDay[d].failed), backgroundColor:'rgba(224,82,82,.6)', borderRadius:3 },
+      ]
+    },
+    options:{ responsive:true, plugins:{legend:{position:'top'}}, scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true}} }
+  });
+}
+
+function renderSplitChart(stats){
+  destroyChart('split');
+  charts.split = new Chart($('chart-split'),{
+    type:'doughnut',
+    data:{
+      labels:['Buy Strategies','Sell Strategies','Inactive'],
+      datasets:[{
+        data:[stats.strategies.buy, stats.strategies.sell, stats.users.total - stats.users.active],
+        backgroundColor:['rgba(77,184,122,.7)','rgba(224,82,82,.7)','rgba(86,112,96,.4)'],
+        borderWidth:0
+      }]
+    },
+    options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
+  });
+}
+
+// ── Tables ──
+function renderOrdersTable(orders){
+  const tb = $('tbl-orders').querySelector('tbody');
+  tb.innerHTML = orders.map(o => `<tr>
+    <td>${fmtDateTime(o.created_at)}</td>
+    <td style="font-family:monospace;font-size:11px">${shortAddr(o.address)}</td>
+    <td>—</td>
+    <td>${Number(o.pe_at_trigger).toFixed(2)}x</td>
+    <td>$${Number(o.price).toFixed(2)}</td>
+    <td>${Number(o.size_hype).toFixed(4)}</td>
+    <td>$${Number(o.amount_usdc).toFixed(2)}</td>
+    <td><span class="badge ${o.status==='filled'?'green':'red'}">${o.status}</span></td>
+  </tr>`).join('');
+}
+
+function renderUsersTable(users){
+  const tb = $('tbl-users').querySelector('tbody');
+  tb.innerHTML = users.map(u => `<tr>
+    <td style="font-family:monospace;font-size:11px">${shortAddr(u.address)}</td>
+    <td><span class="badge ${u.side==='buy'?'green':'red'}">${u.side}</span></td>
+    <td>${Number(u.pe_trigger).toFixed(1)}x</td>
+    <td>$${Number(u.amount_usdc).toFixed(0)}</td>
+    <td>${u.triggers_used}/${u.max_triggers}</td>
+    <td>$${Number(u.budget_used).toFixed(0)}/$${Number(u.total_budget).toFixed(0)}</td>
+    <td>${u.order_count} (${u.filled_count}✓)</td>
+    <td><span class="badge ${u.active?'green':'red'}">${u.active?'yes':'no'}</span></td>
+    <td>${u.notify_enabled ? '<span class="badge gold">on</span>' : '<span style="color:var(--text-2)">off</span>'}</td>
+    <td>${fmtDate(u.created_at)}</td>
+  </tr>`).join('');
+}
+
+function renderEmailsTable(emails){
+  const tb = $('tbl-emails').querySelector('tbody');
+  tb.innerHTML = emails.map(e => `<tr>
+    <td>${fmtDateTime(e.created_at)}</td>
+    <td style="font-family:monospace;font-size:11px">${shortAddr(e.address)}</td>
+    <td><span class="badge gold">${e.template}</span></td>
+    <td>${e.recipient || '-'}</td>
+    <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">${e.subject || '-'}</td>
+    <td><span class="badge ${e.status==='sent'?'green':'red'}">${e.status}</span></td>
+  </tr>`).join('');
+}
+
+// Auto-refresh every 60s
+setInterval(()=>{ if($('dash').style.display==='block') loadAll(); }, 60000);
+</script>
+</body>
+</html>
