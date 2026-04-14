@@ -30,6 +30,7 @@ const { alertBuy, alertSell, orderBuy, orderSell } = require('./email-templates'
 // ── Config ──
 
 const PORT         = process.env.PORT || 3001;
+const HOST         = process.env.HOST || '0.0.0.0';
 const DB_PATH      = process.env.DB_PATH || path.join(__dirname, 'autobuy.db');
 const SITE_ROOT    = path.resolve(__dirname, '..');
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
@@ -45,8 +46,13 @@ const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || 'https://hypurrmium.xyz,htt
 
 let db; // initialized in main()
 
+function ensureDbDirectory() {
+  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+}
+
 /** Save database to disk */
 function saveDb() {
+  ensureDbDirectory();
   const data = db.export();
   fs.writeFileSync(DB_PATH, Buffer.from(data));
 }
@@ -102,6 +108,7 @@ async function sendEmail(to, { subject, html }, templateName, address) {
 
 async function initDatabase() {
   const SQL = await initSqlJs();
+  ensureDbDirectory();
 
   if (fs.existsSync(DB_PATH)) {
     const buffer = fs.readFileSync(DB_PATH);
@@ -1079,10 +1086,11 @@ async function main() {
     });
   }
 
-  app.listen(PORT, () => {
+  app.listen(PORT, HOST, () => {
     console.log(`\n  ╔══════════════════════════════════════════╗`);
     console.log(`  ║  Hypurrmium Auto-Buy Backend             ║`);
-    console.log(`  ║  Port: ${PORT}                              ║`);
+    console.log(`  ║  Host: ${HOST.padEnd(35, ' ')}║`);
+    console.log(`  ║  Port: ${String(PORT).padEnd(35, ' ')}║`);
     console.log(`  ║  P/E Worker: ${DISABLE_WORKER ? 'disabled (local mode)' : 'every 60s'}${DISABLE_WORKER ? '          ' : '                   '}║`);
     console.log(`  ╚══════════════════════════════════════════╝\n`);
 
