@@ -7509,7 +7509,11 @@
 <!-- ═══ Auto-Buy Logic ═══ -->
 <script>
 const AutoBuy = (function() {
-    const API = 'http://localhost:3001/api';
+    const API = (typeof CONFIG !== 'undefined' && CONFIG.BACKEND_API_URL)
+        ? CONFIG.BACKEND_API_URL
+        : ((location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+            ? 'http://localhost:3001/api'
+            : '/api');
     let provider = null;
     let signer = null;
     let userAddress = null;
