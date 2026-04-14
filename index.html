@@ -5055,12 +5055,18 @@
             const feeValues = allDates.map(d => feesByDate[d]);
 
             // Use live supply from HL tokenDetails API — circulatingSupply already excludes burn+locked
+            const circulatingSupply = Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY;
+            const burnedHype = Number(this.rawData.burnedHype) || 0;
+            // Burn-adjusted base supply:
+            //   FDV: totalSupply (1B, all tokens ever) — subtract cumulative burn per date
+            //   MC:  circulatingSupply + burnedHype (pre-burn approx) — subtract same way,
+            //        so the result is the circulating supply that existed at each historical date.
+            //        At last date: (circ + burned) - burned ≈ circ ✓
+            //        At first date: (circ + burned) - 0 ≈ pre-burn supply ✓
             const baseSupply = this.useFDV
                 ? (Number(this.rawData.totalSupply) || CONFIG.FDV_SUPPLY)
-                : (Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
-            const burnedHype = Number(this.rawData.burnedHype) || 0;
-            // Burn model only applies to FDV (circulatingSupply already excludes burn for MC)
-            const historicalBurnModel = (this.includeBurnInPe && this.useFDV)
+                : (this.includeBurnInPe ? (circulatingSupply + burnedHype) : circulatingSupply);
+            const historicalBurnModel = this.includeBurnInPe
                 ? this.buildHistoricalBurnModel(allDates, feesByDate, candlesByDate, burnedHype)
                 : null;
             const effectiveSupply = allDates.map((date) => this.getHistoricalSupplyForDate(date, baseSupply, historicalBurnModel));
