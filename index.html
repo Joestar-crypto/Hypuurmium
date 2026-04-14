@@ -4030,9 +4030,9 @@
 
                 <!-- STEP 3: Authorize -->
                 <div class="ab-step-content" id="ab-step-3" style="display:none;">
-                    <div class="ab-section-title">Review & Authorize</div>
+                    <div class="ab-section-title" id="ab-step3-title">Review & Authorize</div>
                     <div class="ab-summary" id="ab-summary"></div>
-                    <div class="ab-warning">
+                    <div class="ab-warning" id="ab-step3-warning">
                         <strong style="color:#ccc;">What you are authorizing:</strong><br>
                         You authorize Hypurrmium to place <strong id="ab-warn-side">buy</strong> orders for <strong>$HYPE</strong> on your behalf, within the limits above.<br><br>
                         <span style="color:var(--text-0);">+ Hypurrmium can only place/cancel orders</span><br>
@@ -7739,7 +7739,17 @@ const AutoBuy = (function() {
             else if (s < n) dot.classList.add('done');
         });
         if (n === 2) { fetchPE(); loadChartAlerts(); fetchStep2Balances(); }
-        if (n === 3) buildSummary();
+        if (n === 3) {
+            buildSummary();
+            // In edit mode, change button label and hide the authorization warning
+            const authBtn = $('ab-authorize-btn');
+            const warning = $('ab-step3-warning');
+            const title = $('ab-step3-title');
+            const isEdit = !!editingStrategyId;
+            if (authBtn) authBtn.textContent = isEdit ? 'Save Changes' : 'Sign & Activate';
+            if (warning) warning.style.display = isEdit ? 'none' : '';
+            if (title) title.textContent = isEdit ? 'Review Changes' : 'Review & Authorize';
+        }
         if (n === 4) loadDashboard();
     }
 
@@ -8833,6 +8843,57 @@ const AutoBuy = (function() {
 
         try {
             btn.disabled = true;
+
+            // ── EDIT MODE: agent already approved, no Hyperliquid signing needed ──
+            if (editingStrategyId) {
+                btn.textContent = '⏳ Saving...';
+                statusEl.textContent = 'Saving changes...';
+
+                const existing = strategies.find(x => x.id === editingStrategyId);
+                const agentAuth = existing ? existing.agent_authorized : 1;
+                const config = getConfig();
+                const body = {
+                    address: userAddress,
+                    signature: 'edit-' + editingStrategyId + '-' + Date.now(),
+                    nonce: Date.now(),
+                    agent_authorized: agentAuth,
+                    config: config,
+                    strategy_id: editingStrategyId,
+                };
+                const apiRes = await fetch(API + '/strategies', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
+                if (!apiRes.ok) {
+                    const err = await apiRes.json();
+                    throw new Error(err.error || 'Backend error');
+                }
+                const result = await apiRes.json();
+                strategy = result.strategy;
+                editingStrategyId = null;
+
+                statusEl.className = 'ab-status success';
+                statusEl.textContent = 'Strategy updated.';
+                btn.textContent = 'Saved';
+                btn.style.background = 'var(--bull)';
+
+                setTimeout(() => {
+                    close();
+                    fetch(API + '/strategies/' + userAddress).then(r => r.ok ? r.json() : null).then(data => {
+                        if (data && data.strategies) {
+                            strategies = data.strategies;
+                            strategy = strategies[0] || null;
+                        }
+                        updateHeaderButtons();
+                        updateStrategyBar();
+                        openDashboard();
+                    }).catch(() => { updateHeaderButtons(); });
+                }, 800);
+                return;
+            }
+
+            // ── NEW STRATEGY: full Hyperliquid agent approval flow ──
             btn.textContent = '⏳ Signing...';
             statusEl.textContent = builderAddress
                 ? 'Please sign 1/2: agent approval in your wallet...'
