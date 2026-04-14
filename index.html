@@ -420,16 +420,33 @@
             box-shadow: 0 14px 32px rgba(0,0,0,0.22);
             transform: translateY(-1px);
         }
-        .header-wallet .value {
-            font-size: 12px;
+        .wallet-trigger-copy {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            min-width: 0;
+            line-height: 1.05;
+        }
+        .wallet-trigger-main {
+            font-size: 11px;
             color: var(--text-0);
             font-family: 'JetBrains Mono', monospace;
             font-weight: 700;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 150px;
+            max-width: 160px;
             letter-spacing: 0.3px;
+        }
+        .wallet-trigger-sub {
+            font-size: 10px;
+            color: var(--text-2);
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
         }
         .notify-count {
             display: none;
@@ -1773,6 +1790,9 @@
             text-align: center;
             margin-bottom: 20px;
         }
+        .ab-modal-wallet .wallet-trigger-copy {
+            align-items: center;
+        }
         .ab-header .ab-logo {
             font-size: 32px;
         }
@@ -2497,7 +2517,8 @@
             font-family: 'JetBrains Mono', monospace;
             letter-spacing: 1px;
         }
-        .dash-wallet {
+        .dash-wallet,
+        .ab-modal-wallet {
             appearance: none;
             display: inline-flex;
             align-items: center;
@@ -2513,18 +2534,27 @@
             cursor: pointer;
             transition: border-color 0.18s ease, transform 0.18s ease;
         }
-        .dash-wallet:hover {
+        .dash-wallet:hover,
+        .ab-modal-wallet:hover {
             border-color: rgba(232,185,35,0.34);
             transform: translateY(-1px);
         }
-        .dash-wallet.has-unread {
+        .dash-wallet.has-unread,
+        .ab-modal-wallet.has-unread {
             border-color: rgba(232,185,35,0.34);
         }
-        .dash-wallet-value {
+        .ab-modal-wallet {
+            display: none;
+            justify-content: center;
+            margin: 14px auto 0;
+            width: fit-content;
+            max-width: 100%;
+        }
+        .dash-wallet .wallet-trigger-main,
+        .dash-wallet .wallet-trigger-sub,
+        .ab-modal-wallet .wallet-trigger-main,
+        .ab-modal-wallet .wallet-trigger-sub {
             max-width: 140px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
         .dash-balances {
             display: grid;
@@ -3605,7 +3635,8 @@
                 position: static;
                 padding: 8px 12px;
             }
-            .header-wallet .value { max-width: 108px; font-size: 10px; }
+            .header-wallet .wallet-trigger-main { max-width: 108px; font-size: 10px; }
+            .header-wallet .wallet-trigger-sub { max-width: 108px; }
 
             /* Metrics — compact 2×2 */
             .metrics-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; }
@@ -3621,7 +3652,8 @@
             .forecast-chart-wrap { height: 220px; }
             .forecast-window-title { font-size: 17px; }
             .wallet-profile-actions { grid-template-columns: 1fr; }
-            .dash-wallet { width: 100%; justify-content: space-between; margin-left: 0; }
+            .dash-wallet,
+            .ab-modal-wallet { width: 100%; justify-content: space-between; margin-left: 0; }
             .ab-order-item,
             .dash-order-item { grid-template-columns: 1fr 1fr; gap: 6px 10px; }
 
@@ -3768,7 +3800,10 @@
                 <button class="autobuy-btn" id="dashboard-btn" onclick="AutoBuy.openDashboard()" style="display:none;">Dashboard</button>
                 <div class="header-account-col" id="header-account-col" style="display:none;">
                     <button class="header-wallet" id="header-wallet" type="button" onclick="AutoBuy.toggleWalletProfileMenu(event, 'header')" style="display:none;">
-                        <span class="value" id="header-wallet-address"></span>
+                        <span class="wallet-trigger-copy">
+                            <span class="wallet-trigger-main" id="header-wallet-balance">Loading balance...</span>
+                            <span class="wallet-trigger-sub" id="header-wallet-address"></span>
+                        </span>
                         <span class="notify-count" id="header-wallet-count"></span>
                         <span class="wallet-chevron">▾</span>
                     </button>
@@ -3786,6 +3821,14 @@
                 <div class="ab-header">
                     <h2>Auto-DCA HYPE</h2>
                     <p class="ab-desc">Automated strategy on Hyperliquid</p>
+                    <button class="ab-modal-wallet" id="ab-modal-wallet" type="button" onclick="AutoBuy.toggleWalletProfileMenu(event, 'modal')" style="display:none;">
+                        <span class="wallet-trigger-copy">
+                            <span class="wallet-trigger-main" id="ab-modal-wallet-balance">Loading balance...</span>
+                            <span class="wallet-trigger-sub" id="ab-modal-wallet-address">—</span>
+                        </span>
+                        <span class="notify-count" id="ab-modal-wallet-count"></span>
+                        <span class="wallet-chevron">▾</span>
+                    </button>
                 </div>
 
                 <!-- Step indicators -->
@@ -4016,7 +4059,10 @@
                     <div class="dash-header-top">
                         <h2>Dashboard</h2>
                         <button class="dash-wallet" id="dash-wallet" type="button" onclick="AutoBuy.toggleWalletProfileMenu(event, 'dashboard')">
-                            <span class="dash-wallet-value" id="dash-wallet-address">—</span>
+                            <span class="wallet-trigger-copy">
+                                <span class="wallet-trigger-main" id="dash-wallet-balance">Loading balance...</span>
+                                <span class="wallet-trigger-sub" id="dash-wallet-address">—</span>
+                            </span>
                             <span class="notify-count" id="dash-wallet-count"></span>
                             <span class="wallet-chevron">▾</span>
                         </button>
@@ -7925,7 +7971,7 @@ const AutoBuy = (function() {
     }
 
     function updateOrderBadges() {
-        [['header-wallet', 'header-wallet-count'], ['dash-wallet', 'dash-wallet-count']].forEach(([buttonId, badgeId]) => {
+        [['header-wallet', 'header-wallet-count'], ['dash-wallet', 'dash-wallet-count'], ['ab-modal-wallet', 'ab-modal-wallet-count']].forEach(([buttonId, badgeId]) => {
             const trigger = $(buttonId);
             const badge = $(badgeId);
             if (trigger) trigger.classList.toggle('has-unread', unreadOrderCount > 0);
@@ -7949,6 +7995,28 @@ const AutoBuy = (function() {
         });
     }
 
+    function formatWalletTriggerBalanceText() {
+        if (isFinite(Number(walletBalanceSnapshot.usdc))) {
+            return formatWalletBalance(walletBalanceSnapshot.usdc, { prefix: '$', min: 2, max: 2 }) + ' USDC';
+        }
+        return walletBalanceLoading ? 'Loading balance...' : 'Balance unavailable';
+    }
+
+    function setWalletBalancePending() {
+        walletBalanceLoading = true;
+        walletBalanceSnapshot = { usdc: null, hype: null };
+
+        ['wallet-profile-usdc', 'wallet-profile-hype', 'ab-step2-usdc', 'ab-step2-hype', 'dash-usdc', 'dash-hype'].forEach((id) => {
+            const el = $(id);
+            if (el) el.textContent = '—';
+        });
+
+        const connectUsdc = $('ab-usdc-balance');
+        if (connectUsdc) connectUsdc.textContent = 'Loading...';
+
+        updateConnectedWalletBadge();
+    }
+
     function applyWalletBalances(balances) {
         const nextBalances = balances && typeof balances === 'object'
             ? {
@@ -7957,6 +8025,7 @@ const AutoBuy = (function() {
             }
             : { usdc: null, hype: null };
 
+        walletBalanceLoading = false;
         walletBalanceSnapshot = nextBalances;
 
         const usdcText = formatWalletBalance(nextBalances.usdc, { prefix: '$', min: 2, max: 2 });
@@ -7977,20 +8046,31 @@ const AutoBuy = (function() {
         if (dashUsdc) dashUsdc.textContent = usdcText;
         if (dashHype) dashHype.textContent = hypeText;
         if (connectUsdc) connectUsdc.textContent = nextBalances.usdc === null ? 'Could not fetch' : usdcText;
+
+        updateConnectedWalletBadge();
     }
 
     async function refreshWalletBalances(address = userAddress) {
         if (!address) {
+            walletBalanceLoading = false;
             applyWalletBalances(null);
             return null;
         }
+        walletBalanceLoading = true;
+        updateConnectedWalletBadge();
         try {
             const res = await fetch(API + '/balance/' + address);
-            if (!res.ok) return null;
+            if (!res.ok) {
+                walletBalanceLoading = false;
+                updateConnectedWalletBadge();
+                return null;
+            }
             const balances = await res.json();
             applyWalletBalances(balances);
             return walletBalanceSnapshot;
         } catch(e) {
+            walletBalanceLoading = false;
+            updateConnectedWalletBadge();
             return null;
         }
     }
@@ -8193,22 +8273,33 @@ const AutoBuy = (function() {
         markOrdersSeen();
     }
 
-    async function toggleWalletProfileMenu(event, origin) {
+    function toggleWalletProfileMenu(event, origin) {
         if (event) {
             event.preventDefault();
             event.stopPropagation();
         }
-        const triggerEl = event && event.currentTarget ? event.currentTarget : (origin === 'dashboard' ? $('dash-wallet') : $('header-wallet'));
+        const triggerEl = event && event.currentTarget
+            ? event.currentTarget
+            : origin === 'dashboard'
+                ? $('dash-wallet')
+                : origin === 'modal'
+                    ? $('ab-modal-wallet')
+                    : $('header-wallet');
+        if (!triggerEl) return;
         const menuOpen = isWalletProfileMenuOpen();
         if (menuOpen && activeProfileTrigger === triggerEl) {
             closeWalletProfileMenu();
             return;
         }
-        await Promise.all([
+        openWalletProfileMenu(triggerEl);
+        Promise.allSettled([
             fetchOrdersForUser({ showToasts: false }),
             refreshWalletBalances(),
-        ]);
-        openWalletProfileMenu(triggerEl);
+        ]).then(() => {
+            if (isWalletProfileMenuOpen() && activeProfileTrigger === triggerEl) {
+                positionWalletProfileMenu(triggerEl);
+            }
+        });
     }
 
     async function fetchOrdersForUser({ showToasts = false } = {}) {
@@ -8386,17 +8477,24 @@ const AutoBuy = (function() {
             signer = await provider.getSigner();
             userAddress = (await signer.getAddress()).toLowerCase();
 
-            $('ab-address').textContent = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
-            const balances = await refreshWalletBalances(userAddress).catch(() => null);
+            setWalletBalancePending();
+            updateHeaderButtons();
+
+            $('ab-address').textContent = formatWalletAddress(userAddress);
             $('ab-wallet-info').style.display = 'block';
             btn.textContent = 'Connected';
             btn.style.background = 'var(--bull)';
+
+            const balancePromise = refreshWalletBalances(userAddress).catch(() => null);
+            const strategiesPromise = loadStrategiesForUser();
+            const ordersPromise = primeOrderCount();
+            const [balanceResult] = await Promise.allSettled([balancePromise, strategiesPromise, ordersPromise]);
+
+            const balances = balanceResult.status === 'fulfilled' ? balanceResult.value : null;
             if (!balances) $('ab-usdc-balance').textContent = 'Could not fetch';
 
-            await loadStrategiesForUser();
             updateHeaderButtons();
             updateStrategyBar();
-            await primeOrderCount();
 
             if (strategies.length > 0) {
                 close();
@@ -8914,12 +9012,20 @@ const AutoBuy = (function() {
             await provider.send('eth_requestAccounts', []);
             signer = await provider.getSigner();
             userAddress = (await signer.getAddress()).toLowerCase();
-            await fetchAgentAddress();
-            await loadStrategiesForUser();
-            await refreshWalletBalances();
+
+            setWalletBalancePending();
             updateHeaderButtons();
             updateStrategyBar();
-            await primeOrderCount();
+
+            await Promise.allSettled([
+                fetchAgentAddress(),
+                loadStrategiesForUser(),
+                refreshWalletBalances(),
+                primeOrderCount(),
+            ]);
+
+            updateHeaderButtons();
+            updateStrategyBar();
             close();
         } catch(err) {
             console.error('Header connect error:', err);
@@ -8934,6 +9040,7 @@ const AutoBuy = (function() {
     let unreadOrderCount = 0;
     let activeProfileTrigger = null;
     let walletBalanceSnapshot = { usdc: null, hype: null };
+    let walletBalanceLoading = false;
     let orderTraceMap = new Map();
     let orderTraceMapUser = null;
     let orderTraceFetchedAt = 0;
@@ -9337,6 +9444,10 @@ const AutoBuy = (function() {
                 if (accs && accs.length > 0) {
                     userAddress = accs[0].toLowerCase();
                     provider = new ethers.BrowserProvider(window.ethereum);
+                    setWalletBalancePending();
+                    updateHeaderButtons();
+                    refreshWalletBalances(userAddress).catch(() => {});
+                    primeOrderCount().catch(() => {});
                 }
             } catch(e) {}
         }
@@ -9347,12 +9458,16 @@ const AutoBuy = (function() {
                     const data = await res.json();
                     strategies = data.strategies || (data.strategy ? [data.strategy] : []);
                     strategy = data.strategy || (strategies.length > 0 ? strategies[0] : null);
+                    updateHeaderButtons();
+                    updateStrategyBar();
                     if (strategies.length > 0) {
                         showStep(4);
                         return;
                     }
                 }
             } catch(e) {}
+            updateHeaderButtons();
+            updateStrategyBar();
         }
         showStep(1);
     }
@@ -9554,27 +9669,55 @@ const AutoBuy = (function() {
 
     function updateConnectedWalletBadge() {
         const badge = document.getElementById('header-wallet');
+        const balance = document.getElementById('header-wallet-balance');
         const value = document.getElementById('header-wallet-address');
         const accountCol = document.getElementById('header-account-col');
         const dashWallet = document.getElementById('dash-wallet');
+        const dashBalance = document.getElementById('dash-wallet-balance');
         const dashValue = document.getElementById('dash-wallet-address');
+        const modalWallet = document.getElementById('ab-modal-wallet');
+        const modalBalance = document.getElementById('ab-modal-wallet-balance');
+        const modalValue = document.getElementById('ab-modal-wallet-address');
         const profileAddress = document.getElementById('wallet-profile-address');
-        if (!badge || !value) return;
+        const balanceText = formatWalletTriggerBalanceText();
+
         if (!userAddress) {
-            badge.style.display = 'none';
+            if (badge) badge.style.display = 'none';
             if (accountCol) accountCol.style.display = 'none';
-            value.textContent = '';
-            badge.removeAttribute('title');
+            if (balance) balance.textContent = 'Loading balance...';
+            if (value) value.textContent = '';
+            if (badge) badge.removeAttribute('title');
+            if (dashBalance) dashBalance.textContent = 'Loading balance...';
             if (dashValue) dashValue.textContent = '—';
+            if (dashWallet) dashWallet.removeAttribute('title');
+            if (modalWallet) {
+                modalWallet.style.display = 'none';
+                modalWallet.removeAttribute('title');
+            }
+            if (modalBalance) modalBalance.textContent = 'Loading balance...';
+            if (modalValue) modalValue.textContent = '—';
             if (profileAddress) profileAddress.textContent = '—';
             return;
         }
-        badge.style.display = 'inline-flex';
+
+        const shortAddress = formatWalletAddress(userAddress);
+
+        if (badge) {
+            badge.style.display = 'inline-flex';
+            badge.title = userAddress;
+        }
         if (accountCol) accountCol.style.display = 'flex';
-        value.textContent = formatWalletAddress(userAddress);
-        badge.title = userAddress;
+        if (balance) balance.textContent = balanceText;
+        if (value) value.textContent = shortAddress;
         if (dashWallet) dashWallet.title = userAddress;
-        if (dashValue) dashValue.textContent = formatWalletAddress(userAddress);
+        if (dashBalance) dashBalance.textContent = balanceText;
+        if (dashValue) dashValue.textContent = shortAddress;
+        if (modalWallet) {
+            modalWallet.style.display = 'inline-flex';
+            modalWallet.title = userAddress;
+        }
+        if (modalBalance) modalBalance.textContent = balanceText;
+        if (modalValue) modalValue.textContent = shortAddress;
         if (profileAddress) profileAddress.textContent = userAddress;
         updateOrderBadges();
     }
@@ -9651,6 +9794,11 @@ const AutoBuy = (function() {
         if (openProfileBtn) {
             openProfileBtn.addEventListener('click', function() {
                 closeWalletProfileMenu();
+                if (userAddress && overlay && overlay.style.display !== 'none') {
+                    loadDashboard();
+                    showStep(4);
+                    return;
+                }
                 openDashboard();
             });
         }
@@ -9685,13 +9833,14 @@ const AutoBuy = (function() {
                 if (accs && accs.length > 0) {
                     userAddress = accs[0].toLowerCase();
                     provider = new ethers.BrowserProvider(window.ethereum);
+                    setWalletBalancePending();
+                    updateHeaderButtons();
+                    refreshWalletBalances().catch(() => {});
                     loadStrategiesForUser().then(() => {
                         updateHeaderButtons();
                         updateStrategyBar();
-
-                        // Get initial order count for notification tracking
-                        return primeOrderCount();
                     }).catch(() => {});
+                    primeOrderCount().catch(() => {});
 
                     // Refresh strategy bar every 1s (live cooldown ticker)
                     setInterval(() => updateStrategyBar(), 1000);
@@ -9711,6 +9860,7 @@ const AutoBuy = (function() {
                             }
                         }).catch(() => {});
 
+                        refreshWalletBalances().catch(() => {});
                         fetchOrdersForUser({ showToasts: true }).catch(() => {});
                     }, 30000);
                 }
