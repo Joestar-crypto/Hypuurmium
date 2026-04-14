@@ -4614,9 +4614,11 @@
 
                 const { feesByDate } = this.rawData;
                 const allDates = Object.keys(feesByDate).sort();
-                const window30 = allDates.slice(-30);
-                if (!window30.length) return null;
-                const avgDailyRevenue = window30.reduce((sum, d) => sum + (feesByDate[d] || 0), 0) / window30.length;
+                // Use same rolling window as chart so card and chart always match
+                const windowSize = (this.rollingDays > 0) ? this.rollingDays : allDates.length;
+                const windowDates = allDates.slice(-windowSize);
+                if (!windowDates.length) return null;
+                const avgDailyRevenue = windowDates.reduce((sum, d) => sum + (feesByDate[d] || 0), 0) / windowDates.length;
                 const annualizedRevenue = avgDailyRevenue * 365;
                 if (annualizedRevenue <= 0) return null;
 
