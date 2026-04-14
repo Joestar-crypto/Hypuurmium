@@ -412,17 +412,33 @@ app.post('/api/strategies', (req, res) => {
 
 /**
  * GET /api/strategies/:address — returns ALL strategies for a wallet
+ * Also returns current backend-computed P/E so the dashboard can show any front/back divergence.
  */
-app.get('/api/strategies/:address', (req, res) => {
+app.get('/api/strategies/:address', async (req, res) => {
   const { address } = req.params;
   if (!isValidAddress(address)) return res.status(400).json({ error: 'Invalid address' });
 
   const strategies = dbAll('SELECT * FROM strategies WHERE LOWER(address) = ? AND active = 1 ORDER BY created_at DESC', [address.toLowerCase()]);
   if (!strategies || strategies.length === 0) return res.status(404).json({ error: 'No strategy found' });
 
+  // Always compute fresh MC P/E so the dashboard shows exactly what the backend sees,
+  // making any front/backend divergence immediately visible.
+  let backendPE = null;
+  try {
+    const mcData = await getCurrentPE('mc');
+    backendPE = { mc: Math.round(mcData.pe * 100) / 100, price: mcData.price };
+    const needsFdv = strategies.some(s => normalizePeMetric(s.alert_metric || 'mc') === 'fdv');
+    if (needsFdv) {
+      const fdvData = await getCurrentPE('fdv');
+      backendPE.fdv = Math.round(fdvData.pe * 100) / 100;
+    }
+  } catch (e) {
+    console.warn('[GET /api/strategies] Could not compute backend P/E:', e.message);
+  }
+
   // Backward compat: also return first active strategy as `strategy`
   const active = strategies.find(s => s.active) || strategies[0];
-  res.json({ strategy: active, strategies });
+  res.json({ strategy: active, strategies, backendPE });
 });
 
 /**
@@ -966,6 +982,8 @@ async function checkStrategies() {
             ? medianSnapshots[metricKey]
             : spotPE;
         }
+
+        console.log(`[Worker] Strategy #${fresh.id} (${side.toUpperCase()}) | ${source === 'median' ? 'Median' : 'Spot'} ${metricKey.toUpperCase()} P/E = ${compareValue.toFixed(2)} | trigger = ${fresh.pe_trigger}x | ${side === 'buy' ? `need < ${fresh.pe_trigger}` : `need > ${fresh.pe_trigger}`}`);
 
         // Check trigger: buy = below, sell = above
         let triggered;

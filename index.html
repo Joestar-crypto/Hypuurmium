@@ -9280,12 +9280,14 @@ const AutoBuy = (function() {
         if (price !== null) $('dash-price').textContent = '$' + price.toFixed(2);
 
         // Fetch strategies
+        let backendPE = null;
         try {
             const res = await fetch(API + '/strategies/' + userAddress);
             if (res.ok) {
                 const data = await res.json();
                 strategies = data.strategies || [];
                 strategy = strategies.length > 0 ? strategies[0] : null;
+                backendPE = data.backendPE || null; // { mc, fdv, price } — what the backend actually computes
             }
         } catch(e) {}
 
@@ -9305,7 +9307,11 @@ const AutoBuy = (function() {
                 const statusText = isExpired ? 'EXPIRED' : needsDeposit ? 'DEPOSIT REQUIRED' : isActive ? 'ACTIVE' : 'PAUSED';
                 const statusBg = isExpired ? 'rgba(224,82,82,0.08)' : needsDeposit ? 'rgba(255,165,0,0.08)' : isActive ? 'rgba(77,184,122,0.08)' : 'rgba(128,128,128,0.06)';
                 const statusBorder = isExpired ? 'rgba(224,82,82,0.2)' : needsDeposit ? 'rgba(255,165,0,0.2)' : isActive ? 'rgba(77,184,122,0.2)' : 'rgba(128,128,128,0.1)';
-                const triggered = pe !== null ? (sd === 'buy' ? pe < s.pe_trigger : pe > s.pe_trigger) : false;
+                // Use backend P/E for trigger decision — this is what the worker actually compares
+                const stratMetric = (s.alert_metric === 'fdv') ? 'fdv' : 'mc';
+                const backendStratPE = backendPE ? (backendPE[stratMetric] ?? backendPE.mc ?? null) : null;
+                const peForTrigger = backendStratPE !== null ? backendStratPE : pe; // prefer backend, fallback to chart
+                const triggered = peForTrigger !== null ? (sd === 'buy' ? peForTrigger < s.pe_trigger : peForTrigger > s.pe_trigger) : false;
                 const budgetLeft = Math.max(0, s.total_budget - (s.budget_used || 0));
                 const remainingTriggers = Math.max(0, s.max_triggers - s.triggers_used);
                 const passedOrders = s.triggers_used || 0;
@@ -9360,9 +9366,15 @@ const AutoBuy = (function() {
                             nextActionBg = 'rgba(77,184,122,0.08)';
                             nextActionBorder = 'rgba(77,184,122,0.22)';
                             nextActionColor = 'var(--bull)';
-                        } else if (pe !== null) {
-                            const distPct = (Math.abs(pe - s.pe_trigger) / s.pe_trigger * 100).toFixed(1);
-                            nextActionText = `${distPct}% ${sd === 'buy' ? 'above' : 'below'} trigger · checked every 60s`;
+                        } else if (peForTrigger !== null) {
+                            const distPct = (Math.abs(peForTrigger - s.pe_trigger) / s.pe_trigger * 100).toFixed(1);
+                            const dirLabel = sd === 'buy'
+                                ? `needs to fall to ${s.pe_trigger}x`
+                                : `needs to rise to ${s.pe_trigger}x`;
+                            const backendNote = backendStratPE !== null && Math.abs(backendStratPE - (pe || 0)) > 0.15
+                                ? ` (backend: ${backendStratPE.toFixed(1)}x)`
+                                : '';
+                            nextActionText = `Backend P/E ${peForTrigger.toFixed(2)}x — ${dirLabel} (${distPct}% away)${backendNote}`;
                         }
                     }
                 }
@@ -9389,7 +9401,7 @@ const AutoBuy = (function() {
                         </div>
                     </div>
                     <div class="dash-simple-grid">
-                        <div class="dash-simple-stat"><span class="label">Current P/E</span><span class="value">${pe !== null ? pe.toFixed(2) + 'x' : '—'}</span></div>
+                        <div class="dash-simple-stat"><span class="label">Backend P/E</span><span class="value">${peForTrigger !== null ? peForTrigger.toFixed(2) + 'x' : '—'}</span></div>
                         <div class="dash-simple-stat"><span class="label">Budget Left</span><span class="value">$${budgetLeft.toFixed(0)}</span></div>
                         <div class="dash-simple-stat"><span class="label">Order Size</span><span class="value">$${s.amount_usdc}</span></div>
                         <div class="dash-simple-stat"><span class="label">Expires</span><span class="value">${expiryLabel}</span></div>
