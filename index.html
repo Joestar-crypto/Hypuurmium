@@ -9296,7 +9296,7 @@ const AutoBuy = (function() {
                     nextActionBg = 'rgba(224,82,82,0.08)';
                     nextActionBorder = 'rgba(224,82,82,0.22)';
                     nextActionColor = 'var(--bear)';
-                } else if (isActive && budgetLeft < s.amount_usdc) {
+                } else if (isActive && sd === 'buy' && budgetLeft < s.amount_usdc) {
                     nextActionText = 'Budget exhausted — increase budget or reduce order size';
                     nextActionBg = 'rgba(224,82,82,0.08)';
                     nextActionBorder = 'rgba(224,82,82,0.22)';

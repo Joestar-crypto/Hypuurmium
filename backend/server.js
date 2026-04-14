@@ -788,7 +788,8 @@ async function executeStrategyIfTriggered(s) {
     const strat = dbGet('SELECT * FROM strategies WHERE id = ?', [s.id]);
     if (!strat || !strat.active || !strat.agent_authorized) return;
     if (strat.triggers_used >= strat.max_triggers) return;
-    if (strat.budget_used + strat.amount_usdc > strat.total_budget) return;
+    // Budget check only applies to buys (for sells the constraint is HYPE balance, not USDC budget)
+    if ((strat.side || 'buy') === 'buy' && strat.budget_used + strat.amount_usdc > strat.total_budget) return;
     if (new Date(strat.expires_at) <= new Date()) return;
     if (strat.last_triggered_at) {
       const elapsed = (Date.now() - new Date(strat.last_triggered_at).getTime()) / 1000;
@@ -979,7 +980,8 @@ async function checkStrategies() {
         if (fresh.triggers_used >= fresh.max_triggers) continue;
 
         // Check budget
-        if (fresh.budget_used + fresh.amount_usdc > fresh.total_budget) continue;
+        // Budget check only applies to buys (for sells the constraint is HYPE balance, not USDC budget)
+        if (side === 'buy' && fresh.budget_used + fresh.amount_usdc > fresh.total_budget) continue;
 
         // Check cooldown (using fresh DB data)
         if (fresh.last_triggered_at) {
