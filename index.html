@@ -7875,23 +7875,34 @@ const AutoBuy = (function() {
         }
     }
 
+    function parseHyperliquidSpotBalances(data) {
+        let usdc = 0;
+        let hype = 0;
+        if (Array.isArray(data?.balances)) {
+            for (const balance of data.balances) {
+                const coin = typeof balance?.coin === 'string' ? balance.coin.toUpperCase() : '';
+                const token = Number(balance?.token);
+                const amount = parseFloat(balance?.total || balance?.hold || balance?.amount || '0');
+                if (!isFinite(amount)) continue;
+                if (coin === 'USDC' || token === 0) usdc = amount;
+                if (coin === 'HYPE') hype = amount;
+            }
+        }
+        return { usdc, hype };
+    }
+
     async function fetchHyperliquidBalances(address = userAddress) {
         if (!address) return { usdc: 0, hype: 0 };
-        const res = await fetch('https://api.hyperliquid.xyz/info', {
+        const res = await fetch((typeof CONFIG !== 'undefined' && CONFIG.HL_API_URL) ? CONFIG.HL_API_URL : 'https://api.hyperliquid.xyz/info', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ type: 'spotClearinghouseState', user: address }),
         });
-        const data = await res.json();
-        let usdc = 0;
-        let hype = 0;
-        if (data.balances) {
-            for (const b of data.balances) {
-                if (b.coin === 'USDC' || b.token === 0) usdc = parseFloat(b.total || '0');
-                if (b.coin === 'HYPE') hype = parseFloat(b.total || '0');
-            }
+        if (!res.ok) {
+            throw new Error('Hyperliquid balance request failed with status ' + res.status);
         }
-        return { usdc, hype };
+        const data = await res.json();
+        return parseHyperliquidSpotBalances(data);
     }
 
     async function fetchStep2Balances() {
@@ -8063,19 +8074,21 @@ const AutoBuy = (function() {
         walletBalanceLoading = true;
         updateConnectedWalletBadge();
         try {
-            const res = await fetch(API + '/balance/' + address);
-            if (!res.ok) {
-                walletBalanceLoading = false;
-                updateConnectedWalletBadge();
-                return null;
-            }
-            const balances = await res.json();
+            const balances = await fetchHyperliquidBalances(address);
             applyWalletBalances(balances);
             return walletBalanceSnapshot;
         } catch(e) {
-            walletBalanceLoading = false;
-            updateConnectedWalletBadge();
-            return null;
+            try {
+                const res = await fetch(API + '/balance/' + address);
+                if (!res.ok) throw new Error('Backend balance request failed with status ' + res.status);
+                const balances = await res.json();
+                applyWalletBalances(balances);
+                return walletBalanceSnapshot;
+            } catch(_fallbackError) {
+                walletBalanceLoading = false;
+                applyWalletBalances(null);
+                return null;
+            }
         }
     }
 
