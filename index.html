@@ -4162,7 +4162,7 @@
                 <div class="sub" id="fair-value">Fair: —</div>
             </div>
             <div class="metric-card metric-card--link" id="card-buyback" data-mode="buyback">
-                <div class="label">Buybacks ↗</div>
+                <div class="label">Daily Revenue ↗</div>
                 <div class="value" id="daily-buyback">—</div>
                 <div class="sub" id="avg-buyback">Avg: —</div>
             </div>
@@ -4181,7 +4181,7 @@
         <!-- Controls -->
         <div class="controls-bar">
             <div class="controls-left">
-                <span class="chart-label" id="chart-mode-label">HYPE / BUYBACK · P/E</span>
+                <span class="chart-label" id="chart-mode-label">HYPE / Revenue · P/E</span>
                 <div class="valuation-btns">
                     <button class="val-btn active" id="btn-mc">MC</button>
                     <button class="val-btn" id="btn-fdv">FDV</button>
@@ -4588,17 +4588,39 @@
 
         async syncCurrentPEFromBackend() {
             try {
-                const metric = this.useFDV ? 'fdv' : 'mc';
-                const includeBurn = this.includeBurnInPe ? '&includeBurn=1' : '';
-                const res = await fetch(`${CONFIG.BACKEND_API_URL}/pe?metric=${metric}${includeBurn}`);
-                if (!res.ok) return null;
-                const data = await res.json();
-                if (!isFinite(Number(data.pe))) return null;
+                // Compute live P/E client-side using same revenue data as chart + fresh Hyperliquid price
+                // This keeps the card consistent with the chart (same formula, same revenue dataset)
+                if (!this.rawData || !this.rawData.feesByDate) return null;
+
+                const priceRes = await fetch(CONFIG.HL_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'allMids' }),
+                });
+                const priceData = await priceRes.json();
+                const livePrice = parseFloat(priceData['HYPE']);
+                if (!livePrice || !isFinite(livePrice)) return null;
+
+                const { feesByDate } = this.rawData;
+                const allDates = Object.keys(feesByDate).sort();
+                const window30 = allDates.slice(-30);
+                if (!window30.length) return null;
+                const avgDailyRevenue = window30.reduce((sum, d) => sum + (feesByDate[d] || 0), 0) / window30.length;
+                const annualizedRevenue = avgDailyRevenue * 365;
+
+                const baseSupply = this.useFDV ? CONFIG.FDV_SUPPLY : CONFIG.SUPPLY;
+                const burnedHype = Number(this.rawData.burnedHype) || 0;
+                const activeSupply = this.getEffectiveSupply(baseSupply, burnedHype);
+                const revenuePerToken = annualizedRevenue / activeSupply;
+                if (revenuePerToken <= 0) return null;
+
+                const livePE = livePrice / revenuePerToken;
+                if (!isFinite(livePE)) return null;
 
                 const peValueEl = document.getElementById('pe-value');
-                if (peValueEl) peValueEl.textContent = `${Number(data.pe).toFixed(1)}x`;
+                if (peValueEl) peValueEl.textContent = `${livePE.toFixed(1)}x`;
 
-                return data;
+                return { pe: livePE, price: livePrice };
             } catch (e) {
                 return null;
             }
@@ -6676,9 +6698,9 @@
             });
 
             const labels = {
-                pe: 'HYPE / BUYBACK · P/E',
+                pe: 'HYPE / Revenue · P/E',
                 price: 'HYPE Price',
-                buyback: `Buybacks (${this.formatBuybackWindowLabel(this.buybackWindowDays)})`,
+                buyback: `Daily Revenue (${this.formatBuybackWindowLabel(this.buybackWindowDays)})`,
                 revenue: 'Annualized Revenue (USD)',
                 forecast: 'HYPE Forecast · Monthly',
             };
