@@ -4590,8 +4590,12 @@
             const totalSupply = parseFloat(tokenDetails?.totalSupply) || CONFIG.FDV_SUPPLY;
             // DefiLlama mcap (used for current P/E card — same source as DL)
             const dlMcap = protocolRes?.mcap ? Number(protocolRes.mcap) : null;
+            // Derive implied supply from DL mcap so chart P/E matches card P/E exactly
+            const lastCandleDate = Object.keys(candlesByDate).sort().pop();
+            const lastCandlePrice = lastCandleDate ? parseFloat(candlesByDate[lastCandleDate].c) : null;
+            const dlImpliedSupply = (dlMcap && lastCandlePrice && lastCandlePrice > 0) ? dlMcap / lastCandlePrice : null;
 
-            return { feesByDate, candlesByDate, candles4hByDate, burnedHype, circulatingSupply, totalSupply, dlMcap };
+            return { feesByDate, candlesByDate, candles4hByDate, burnedHype, circulatingSupply, totalSupply, dlMcap, dlImpliedSupply };
         }
 
         async syncCurrentPEFromBackend() {
@@ -4615,6 +4619,7 @@
                 // Update stored mcap for use in updateMetrics
                 if (dlMcap) this.rawData.dlMcap = dlMcap;
                 if (livePrice && isFinite(livePrice)) this.rawData.livePrice = livePrice;
+                if (dlMcap && livePrice && isFinite(livePrice)) this.rawData.dlImpliedSupply = dlMcap / livePrice;
 
                 const { feesByDate } = this.rawData;
                 const allDates = Object.keys(feesByDate).sort();
@@ -5059,7 +5064,7 @@
             // Use live supply from HL tokenDetails API — circulatingSupply already excludes burn+locked
             const baseSupply = this.useFDV
                 ? (Number(this.rawData.totalSupply) || CONFIG.FDV_SUPPLY)
-                : (Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
+                : (Number(this.rawData.dlImpliedSupply) || Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
             const burnedHype = Number(this.rawData.burnedHype) || 0;
             // Burn model only applies to FDV (circulatingSupply already excludes burn for MC)
             const historicalBurnModel = (this.includeBurnInPe && this.useFDV)
@@ -5730,7 +5735,7 @@
             const lastAvg = rollingAvg[rollingAvg.length - 1];
             const baseSupply = this.useFDV
                 ? (Number(this.rawData.totalSupply) || CONFIG.FDV_SUPPLY)
-                : (Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
+                : (Number(this.rawData.dlImpliedSupply) || Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
             // MC: circulatingSupply already excludes burn — only apply burn toggle for FDV
             const burnedHype = Number(this.rawData.burnedHype) || 0;
             const activeSupply = this.useFDV
@@ -6100,7 +6105,7 @@
             const feeValues = allDates.map(d => feesByDate[d]);
             const baseSupply = this.useFDV
                 ? (Number(this.rawData.totalSupply) || CONFIG.FDV_SUPPLY)
-                : (Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
+                : (Number(this.rawData.dlImpliedSupply) || Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
             const burnedHype = Number(this.rawData.burnedHype) || 0;
 
             const effectiveDays = this.rollingDays === 0 ? feeValues.length : this.rollingDays;
@@ -6876,7 +6881,7 @@
                         Number(this.rawData?.totalSupply) || CONFIG.FDV_SUPPLY,
                         Number(this.rawData?.burnedHype) || 0,
                       )
-                    : (Number(this.rawData?.circulatingSupply) || CONFIG.SUPPLY);
+                    : (Number(this.rawData?.dlImpliedSupply) || Number(this.rawData?.circulatingSupply) || CONFIG.SUPPLY);
                 const lastRollingAvg = this._rollingAvg && this._rollingAvg.length
                     ? this._rollingAvg[this._rollingAvg.length - 1] : 0;
                 const annRevPerToken = (lastRollingAvg * 365) / lastSupply;
