@@ -8875,10 +8875,15 @@ const AutoBuy = (function() {
 
             if (builderAddress && builderFeeAppliesForOrder(side, 'spot')) {
                 statusEl.textContent = 'Please sign 2/2: builder fee approval...';
-                await approveBuilderFeeOnHyperliquid(builderMaxFeeRate);
+                try {
+                    await approveBuilderFeeOnHyperliquid(builderMaxFeeRate);
+                } catch (feeErr) {
+                    console.warn('[HL] Builder fee approval failed (non-blocking):', feeErr.message);
+                    // Continue — strategy will still work, builder fee just won't apply
+                }
             }
 
-            statusEl.textContent = 'Saving strategy...';
+            statusEl.textContent = 'Saving strategy...'
 
             // Then save to our backend
             const config = getConfig();
@@ -9585,7 +9590,11 @@ const AutoBuy = (function() {
                 console.log('[HL] Agent already approved — continuing');
             }
             if (builderAddress && builderFeeAppliesForOrder(strategy?.side || side, strategy?.market_type || 'spot')) {
-                await approveBuilderFeeOnHyperliquid(builderMaxFeeRate);
+                try {
+                    await approveBuilderFeeOnHyperliquid(builderMaxFeeRate);
+                } catch (feeErr) {
+                    console.warn('[HL] Builder fee approval failed (non-blocking):', feeErr.message);
+                }
             }
             // Update backend
             await fetch(API + '/strategies/' + userAddress + '/authorize', { method: 'PATCH' });
