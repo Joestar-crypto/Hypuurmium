@@ -1,0 +1,14 @@
+{
+  "name": "hypurrmium-unified-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Unified Hypurrmium site + API service",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js",
+    "postinstall": "npm --prefix backend install"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

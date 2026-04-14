@@ -31,11 +31,15 @@ const { alertBuy, alertSell, orderBuy, orderSell } = require('./email-templates'
 
 const PORT         = process.env.PORT || 3001;
 const DB_PATH      = process.env.DB_PATH || path.join(__dirname, 'autobuy.db');
+const SITE_ROOT    = path.resolve(__dirname, '..');
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const EMAIL_FROM     = process.env.EMAIL_FROM || 'Hypurrmium <noreply@hypurrmium.xyz>';
 const ADMIN_KEY      = process.env.ADMIN_KEY || '';
 const DISABLE_WORKER = /^(1|true|yes)$/i.test(process.env.DISABLE_WORKER || '');
-const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || 'https://hypurrmium.xyz,http://localhost:3000,http://localhost:8080').split(',');
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || 'https://hypurrmium.xyz,https://www.hypurrmium.xyz,http://localhost:3000,http://localhost:8080')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
 
 // ── Database (sql.js) ──
 
@@ -237,6 +241,10 @@ function normalizePeMetric(metric) {
 
 function parseBooleanFlag(value) {
   return /^(1|true|yes|on)$/i.test(String(value || ''));
+}
+
+function sendSiteFile(res, relativePath) {
+  res.sendFile(path.join(SITE_ROOT, relativePath));
 }
 
 function getOrderOidFromPayload(hlResponse) {
@@ -578,6 +586,14 @@ app.get('/api/agent-address', (_req, res) => {
   }
 });
 
+app.get('/api/health', (_req, res) => {
+  res.json({
+    ok: true,
+    workerDisabled: DISABLE_WORKER,
+    origins: ALLOWED_ORIGINS,
+  });
+});
+
 // ── Admin Dashboard API ──
 
 function requireAdmin(req, res, next) {
@@ -691,6 +707,32 @@ app.get('/api/admin/recent-emails', requireAdmin, (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Internal error' });
   }
+});
+
+// ── Frontend Pages & Assets ──
+
+app.get(['/', '/index.html'], (_req, res) => {
+  sendSiteFile(res, 'index.html');
+});
+
+app.get(['/docs', '/docs.html'], (_req, res) => {
+  sendSiteFile(res, 'docs.html');
+});
+
+app.get(['/admin', '/admin.html'], (_req, res) => {
+  sendSiteFile(res, 'admin.html');
+});
+
+app.get('/Hypurrmium.png', (_req, res) => {
+  sendSiteFile(res, 'Hypurrmium.png');
+});
+
+app.get('/Hypurrmium2.png', (_req, res) => {
+  sendSiteFile(res, 'Hypurrmium2.png');
+});
+
+app.get('/Jojo2.webp', (_req, res) => {
+  sendSiteFile(res, 'Jojo2.webp');
 });
 
 // ── P/E Surveillance Worker ──
