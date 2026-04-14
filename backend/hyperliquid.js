@@ -16,7 +16,8 @@ const { encode: msgpackEncode } = require('@msgpack/msgpack');
 
 const HL_EXCHANGE_URL = 'https://api.hyperliquid.xyz/exchange';
 const HL_INFO_URL     = 'https://api.hyperliquid.xyz/info';
-const DEFILLAMA_URL   = 'https://api.llama.fi/summary/fees/hyperliquid?dataType=dailyRevenue';
+const DEFILLAMA_URL          = 'https://api.llama.fi/summary/fees/hyperliquid?dataType=dailyRevenue';
+const DEFILLAMA_PROTOCOL_URL = 'https://api.llama.fi/protocol/hyperliquid';
 const SUPPLY          = 333_333_333;
 const FDV_SUPPLY      = 1_000_000_000;
 const REVENUE_WINDOW_DAYS = 30;
@@ -357,18 +358,20 @@ function getAverageDailyRevenue(entries) {
 
 /**
  * Fetch the current P/E ratio of HYPE.
- * P/E = Price / (Annualized Revenue / Supply)
+ * MC mode: P/E = DefiLlama MCap / Annualized Revenue (same as DefiLlama UI)
+ * FDV mode: P/E = (Price × TotalSupply) / Annualized Revenue
  */
 async function getCurrentPE(metric = 'mc', options = {}) {
   const normalizedMetric = metric === 'fdv' ? 'fdv' : 'mc';
   const includeBurn = options.includeBurn === true;
-  const [priceData, feesData, supplyInfo] = await Promise.all([
+  const [priceData, feesData, protocolData, supplyInfo] = await Promise.all([
     fetch(HL_INFO_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'allMids' }),
     }).then(r => r.json()),
     fetch(DEFILLAMA_URL).then(r => r.json()),
+    fetch(DEFILLAMA_PROTOCOL_URL).then(r => r.json()).catch(() => null),
     getAdjustedSupply(normalizedMetric, includeBurn),
   ]);
 
@@ -376,20 +379,29 @@ async function getCurrentPE(metric = 'mc', options = {}) {
   const hypePrice = parseFloat(priceData['HYPE']);
   if (!hypePrice || isNaN(hypePrice)) throw new Error('Could not fetch HYPE price');
 
-  // Daily revenue from DefiLlama — last entry in totalDataChart
   const chart = feesData.totalDataChart;
   if (!chart || chart.length === 0) throw new Error('No fee data from DefiLlama');
 
-  // Use the last 30 days annualized revenue everywhere for consistency.
   const recentDays = getRecentRevenueWindow(chart);
   const avgDailyRevenue = getAverageDailyRevenue(recentDays);
   const annualizedRevenue = avgDailyRevenue * 365;
-  const revenuePerToken = annualizedRevenue / supplyInfo.supplyUsed;
-  const pe = hypePrice / revenuePerToken;
+
+  let pe;
+  let mcap;
+  if (normalizedMetric === 'mc' && protocolData?.mcap) {
+    // MC: use DefiLlama mcap directly — matches their displayed P/E
+    mcap = Number(protocolData.mcap);
+    pe = mcap / annualizedRevenue;
+  } else {
+    // FDV: price × supply (DL doesn’t expose FDV mcap easily)
+    pe = hypePrice / (annualizedRevenue / supplyInfo.supplyUsed);
+    mcap = hypePrice * supplyInfo.supplyUsed;
+  }
 
   return {
     pe: Math.round(pe * 100) / 100,
     price: hypePrice,
+    mcap,
     dailyRevenue: avgDailyRevenue,
     annualizedRevenue,
     metric: normalizedMetric,
@@ -409,13 +421,14 @@ async function getCurrentPE(metric = 'mc', options = {}) {
 async function getMedianPE(metric = 'mc', options = {}) {
   const normalizedMetric = metric === 'fdv' ? 'fdv' : 'mc';
   const includeBurn = options.includeBurn === true;
-  const [priceData, feesData, supplyInfo] = await Promise.all([
+  const [priceData, feesData, protocolData, supplyInfo] = await Promise.all([
     fetch(HL_INFO_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'allMids' }),
     }).then(r => r.json()),
     fetch(DEFILLAMA_URL).then(r => r.json()),
+    fetch(DEFILLAMA_PROTOCOL_URL).then(r => r.json()).catch(() => null),
     getAdjustedSupply(normalizedMetric, includeBurn),
   ]);
 
@@ -425,6 +438,8 @@ async function getMedianPE(metric = 'mc', options = {}) {
   const chart = feesData.totalDataChart;
   if (!chart || chart.length < 2) throw new Error('Not enough fee data for median');
 
+  const dlMcap = (normalizedMetric === 'mc' && protocolData?.mcap) ? Number(protocolData.mcap) : null;
+
   const startIndex = Math.max(0, chart.length - REVENUE_WINDOW_DAYS);
   const dailyPEs = chart
     .map((entry, index) => {
@@ -433,7 +448,8 @@ async function getMedianPE(metric = 'mc', options = {}) {
       const avgDailyRevenue = getAverageDailyRevenue(window);
       if (avgDailyRevenue <= 0) return null;
       const annualized = avgDailyRevenue * 365;
-      return hypePrice / (annualized / supplyInfo.supplyUsed);
+      // For current P/E in median: use dlMcap for MC, supply-based for FDV
+      return dlMcap ? (dlMcap / annualized) : (hypePrice / (annualized / supplyInfo.supplyUsed));
     })
     .filter(v => v !== null)
     .sort((a, b) => a - b);

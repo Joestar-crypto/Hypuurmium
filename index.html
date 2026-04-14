@@ -4421,6 +4421,7 @@
         },
         CANDLE_START: 1731628800000, // Nov 15 2024 — covers TGE + early trading
         DEFILLAMA_URL: 'https://api.llama.fi/summary/fees/hyperliquid?dataType=dailyRevenue',
+        DEFILLAMA_PROTOCOL_URL: 'https://api.llama.fi/protocol/hyperliquid',
         HL_API_URL: 'https://api.hyperliquid.xyz/info',
         // Compteur d'inscriptions email (sans stocker les emails)
         // Initialiser le compteur (1 seule fois) : https://api.counterapi.dev/v1/hypurrmium/emails/up
@@ -4492,7 +4493,7 @@
         }
 
         async fetchAllData() {
-            const [feesRes, candlesRes, candles4hRes, tokenDetails] = await Promise.all([
+            const [feesRes, candlesRes, candles4hRes, tokenDetails, protocolRes] = await Promise.all([
                 fetch(CONFIG.DEFILLAMA_URL).then(r => {
                     if (!r.ok) throw new Error(`DefiLlama API: ${r.status}`);
                     return r.json();
@@ -4520,7 +4521,8 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type: 'tokenDetails', tokenId: CONFIG.HYPE_TOKEN_ID })
-                }).then(r => r.json()).catch(() => null)
+                }).then(r => r.json()).catch(() => null),
+                fetch(CONFIG.DEFILLAMA_PROTOCOL_URL).then(r => r.json()).catch(() => null)
             ]);
 
             // Extract burned HYPE from tokenDetails nonCirculatingUserBalances
@@ -4586,24 +4588,33 @@
             // Extract live supply figures from HL tokenDetails
             const circulatingSupply = parseFloat(tokenDetails?.circulatingSupply) || CONFIG.SUPPLY;
             const totalSupply = parseFloat(tokenDetails?.totalSupply) || CONFIG.FDV_SUPPLY;
+            // DefiLlama mcap (used for current P/E card — same source as DL)
+            const dlMcap = protocolRes?.mcap ? Number(protocolRes.mcap) : null;
 
-            return { feesByDate, candlesByDate, candles4hByDate, burnedHype, circulatingSupply, totalSupply };
+            return { feesByDate, candlesByDate, candles4hByDate, burnedHype, circulatingSupply, totalSupply, dlMcap };
         }
 
         async syncCurrentPEFromBackend() {
             try {
-                // Compute live P/E client-side using same revenue data as chart + fresh Hyperliquid price
-                // This keeps the card consistent with the chart (same formula, same revenue dataset)
                 if (!this.rawData || !this.rawData.feesByDate) return null;
 
-                const priceRes = await fetch(CONFIG.HL_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'allMids' }),
-                });
-                const priceData = await priceRes.json();
-                const livePrice = parseFloat(priceData['HYPE']);
-                if (!livePrice || !isFinite(livePrice)) return null;
+                // Fetch fresh mcap from DefiLlama — same source they display on their site
+                const [protocolData, priceData] = await Promise.all([
+                    fetch(CONFIG.DEFILLAMA_PROTOCOL_URL).then(r => r.json()).catch(() => null),
+                    fetch(CONFIG.HL_API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type: 'allMids' }),
+                    }).then(r => r.json()).catch(() => null),
+                ]);
+
+                const dlMcap = protocolData?.mcap ? Number(protocolData.mcap) : null;
+                const livePrice = priceData ? parseFloat(priceData['HYPE']) : null;
+                if (!dlMcap || !isFinite(dlMcap)) return null;
+
+                // Update stored mcap for use in updateMetrics
+                if (dlMcap) this.rawData.dlMcap = dlMcap;
+                if (livePrice && isFinite(livePrice)) this.rawData.livePrice = livePrice;
 
                 const { feesByDate } = this.rawData;
                 const allDates = Object.keys(feesByDate).sort();
@@ -4611,23 +4622,16 @@
                 if (!window30.length) return null;
                 const avgDailyRevenue = window30.reduce((sum, d) => sum + (feesByDate[d] || 0), 0) / window30.length;
                 const annualizedRevenue = avgDailyRevenue * 365;
+                if (annualizedRevenue <= 0) return null;
 
-                const baseSupply = this.useFDV
-                    ? (Number(this.rawData.totalSupply) || CONFIG.FDV_SUPPLY)
-                    : (Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
-                // MC: circulatingSupply already excludes burn — only apply burn toggle for FDV
-                const burnedHype = this.useFDV ? (Number(this.rawData.burnedHype) || 0) : 0;
-                const activeSupply = this.getEffectiveSupply(baseSupply, burnedHype);
-                const revenuePerToken = annualizedRevenue / activeSupply;
-                if (revenuePerToken <= 0) return null;
-
-                const livePE = livePrice / revenuePerToken;
+                // P/E = DefiLlama MCap / Annualized Revenue (30d avg × 365)
+                const livePE = dlMcap / annualizedRevenue;
                 if (!isFinite(livePE)) return null;
 
                 const peValueEl = document.getElementById('pe-value');
                 if (peValueEl) peValueEl.textContent = `${livePE.toFixed(1)}x`;
 
-                return { pe: livePE, price: livePrice };
+                return { pe: livePE, mcap: dlMcap, price: livePrice };
             } catch (e) {
                 return null;
             }
@@ -5733,7 +5737,10 @@
                 ? this.getEffectiveSupply(baseSupply, burnedHype)
                 : baseSupply;
             const annualRev = lastAvg * 365;
-            const mcap = lastCandle.c * activeSupply;
+            // Use DefiLlama mcap when available (same source as their P/E display)
+            const mcap = (this.rawData.dlMcap && !this.useFDV)
+                ? this.rawData.dlMcap
+                : lastCandle.c * activeSupply;
             const feeValues = allDates.map(d => feesByDate[d]);
             const buybackRevenuePct = annualRev > 0 ? 100 : 0;
 
