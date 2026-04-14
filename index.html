@@ -3924,6 +3924,7 @@
                         <label class="ab-field">
                             <span id="ab-amount-label">Amount per trigger (USDC)</span>
                             <input type="number" id="ab-amount" value="250" min="10" max="100000">
+                            <span class="ab-field-hint" style="color:var(--text-muted);font-size:11px;">Minimum $10 per order</span>
                             <div class="ab-presets">
                                 <button class="ab-preset" onclick="AutoBuy.setAmount(25)">$25</button>
                                 <button class="ab-preset" onclick="AutoBuy.setAmount(50)">$50</button>
@@ -4419,7 +4420,7 @@
             fdv: { cheap: [18, 24], fair: [36, 42], expensive: [60, 66] },
         },
         CANDLE_START: 1731628800000, // Nov 15 2024 — covers TGE + early trading
-        DEFILLAMA_URL: 'https://api.llama.fi/summary/fees/hyperliquid',
+        DEFILLAMA_URL: 'https://api.llama.fi/summary/fees/hyperliquid?dataType=dailyRevenue',
         HL_API_URL: 'https://api.hyperliquid.xyz/info',
         // Compteur d'inscriptions email (sans stocker les emails)
         // Initialiser le compteur (1 seule fois) : https://api.counterapi.dev/v1/hypurrmium/emails/up
@@ -8539,6 +8540,43 @@ const AutoBuy = (function() {
             });
             ci.updateBandPositions();
         }
+    }
+
+    // ── Wallet change detection ──
+    // Listen for account switches in the wallet extension (Rabby, MetaMask, etc.)
+    if (window.ethereum) {
+        window.ethereum.on('accountsChanged', async (accounts) => {
+            if (!accounts || accounts.length === 0) {
+                // User disconnected all accounts
+                if (userAddress) disconnectWallet();
+                return;
+            }
+            const newAddr = accounts[0].toLowerCase();
+            if (newAddr === userAddress) return; // same address, ignore
+            console.log('[Wallet] Account changed:', userAddress, '→', newAddr);
+            // Re-initialize with new address
+            provider = new ethers.BrowserProvider(window.ethereum);
+            signer = await provider.getSigner();
+            userAddress = newAddr;
+            // Reset strategy state for new user
+            strategies = [];
+            editingStrategyId = null;
+            agentAddress = null;
+            // Update UI
+            $('ab-address').textContent = formatWalletAddress(userAddress);
+            setWalletBalancePending();
+            updateHeaderButtons();
+            updateStrategyBar();
+            // Reload data for new wallet
+            await Promise.allSettled([
+                fetchAgentAddress(),
+                loadStrategiesForUser(),
+                refreshWalletBalances(),
+                primeOrderCount(),
+            ]);
+            updateHeaderButtons();
+            updateStrategyBar();
+        });
     }
 
     async function connectWallet() {

@@ -16,7 +16,7 @@ const { encode: msgpackEncode } = require('@msgpack/msgpack');
 
 const HL_EXCHANGE_URL = 'https://api.hyperliquid.xyz/exchange';
 const HL_INFO_URL     = 'https://api.hyperliquid.xyz/info';
-const DEFILLAMA_URL   = 'https://api.llama.fi/summary/fees/hyperliquid';
+const DEFILLAMA_URL   = 'https://api.llama.fi/summary/fees/hyperliquid?dataType=dailyRevenue';
 const SUPPLY          = 333_333_333;
 const FDV_SUPPLY      = 1_000_000_000;
 const REVENUE_WINDOW_DAYS = 30;
