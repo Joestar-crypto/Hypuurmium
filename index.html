@@ -8877,13 +8877,16 @@ const AutoBuy = (function() {
                 statusEl.textContent = 'Please sign 2/2: builder fee approval...';
                 try {
                     await approveBuilderFeeOnHyperliquid(builderMaxFeeRate);
+                    statusEl.textContent = 'Builder fee approved ✓';
                 } catch (feeErr) {
                     console.warn('[HL] Builder fee approval failed (non-blocking):', feeErr.message);
-                    // Continue — strategy will still work, builder fee just won't apply
+                    statusEl.className = 'ab-status';
+                    statusEl.textContent = `⚠ Builder fee approval failed (${feeErr.message}) — continuing without it`;
+                    await new Promise(r => setTimeout(r, 1800));
                 }
             }
 
-            statusEl.textContent = 'Saving strategy...'
+            statusEl.textContent = 'Saving strategy...';
 
             // Then save to our backend
             const config = getConfig();
