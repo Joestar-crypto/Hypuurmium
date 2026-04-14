@@ -9308,23 +9308,28 @@ const AutoBuy = (function() {
                     nextActionBg = 'rgba(255,165,0,0.08)';
                     nextActionBorder = 'rgba(255,165,0,0.22)';
                     nextActionColor = '#c77d00';
-                } else if (isActive && s.last_triggered_at && remainingTriggers > 0) {
-                    const lastT = new Date(s.last_triggered_at).getTime();
-                    const cdEnd = lastT + s.cooldown_seconds * 1000;
-                    const rem = cdEnd - Date.now();
-                    if (rem > 0) {
-                        const h = Math.floor(rem / 3600000);
-                        const m = Math.floor((rem % 3600000) / 60000);
-                        const sec = Math.floor((rem % 60000) / 1000);
-                        nextActionText = `Cooldown active: ${h}h ${m}m ${sec}s remaining`;
-                    } else if (triggered) {
-                        nextActionText = `Threshold reached: ${sd === 'buy' ? 'buy' : 'sell'} on next cycle`;
-                        nextActionBg = 'rgba(77,184,122,0.08)';
-                        nextActionBorder = 'rgba(77,184,122,0.22)';
-                        nextActionColor = 'var(--bull)';
-                    } else if (pe !== null) {
-                        const distPct = (Math.abs(pe - s.pe_trigger) / s.pe_trigger * 100).toFixed(1);
-                        nextActionText = `${distPct}% ${sd === 'buy' ? 'above' : 'below'} trigger`;
+                } else if (isActive && remainingTriggers > 0) {
+                    if (s.last_triggered_at) {
+                        const lastT = new Date(s.last_triggered_at).getTime();
+                        const cdEnd = lastT + s.cooldown_seconds * 1000;
+                        const rem = cdEnd - Date.now();
+                        if (rem > 0) {
+                            const h = Math.floor(rem / 3600000);
+                            const m = Math.floor((rem % 3600000) / 60000);
+                            const sec = Math.floor((rem % 60000) / 1000);
+                            nextActionText = `Cooldown active: ${h}h ${m}m ${sec}s remaining`;
+                        }
+                    }
+                    if (nextActionText === 'Watching market') {
+                        if (triggered) {
+                            nextActionText = `Threshold reached: ${sd === 'buy' ? 'buy' : 'sell'} on next cycle`;
+                            nextActionBg = 'rgba(77,184,122,0.08)';
+                            nextActionBorder = 'rgba(77,184,122,0.22)';
+                            nextActionColor = 'var(--bull)';
+                        } else if (pe !== null) {
+                            const distPct = (Math.abs(pe - s.pe_trigger) / s.pe_trigger * 100).toFixed(1);
+                            nextActionText = `${distPct}% ${sd === 'buy' ? 'above' : 'below'} trigger · checked every 60s`;
+                        }
                     }
                 }
 
