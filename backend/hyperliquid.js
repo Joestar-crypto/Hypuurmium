@@ -37,6 +37,8 @@ const BURN_ADDRESSES = new Set([
 let burnedSupplyCache = {
   fetchedAt: 0,
   burnedHype: 0,
+  circulatingSupply: SUPPLY,
+  totalSupply: FDV_SUPPLY,
 };
 
 let builderPerpBalanceCache = {
@@ -312,15 +314,24 @@ async function getBurnedHype() {
   burnedSupplyCache = {
     fetchedAt: Date.now(),
     burnedHype,
+    circulatingSupply: parseFloat(tokenDetails?.circulatingSupply) || SUPPLY,
+    totalSupply: parseFloat(tokenDetails?.totalSupply) || FDV_SUPPLY,
   };
   return burnedHype;
 }
 
 async function getAdjustedSupply(metric = 'mc', includeBurn = false) {
   const normalizedMetric = metric === 'fdv' ? 'fdv' : 'mc';
-  const baseSupply = normalizedMetric === 'fdv' ? FDV_SUPPLY : SUPPLY;
   const burnedHype = await getBurnedHype();
-  const adjustedSupply = Math.max(baseSupply - burnedHype, 1);
+  // Use live supply from HL tokenDetails API
+  const circulatingSupply = burnedSupplyCache.circulatingSupply || SUPPLY;  // already excludes burn
+  const fdvTotal = burnedSupplyCache.totalSupply || FDV_SUPPLY;
+  // MC: circulatingSupply already excludes burn — don't subtract again
+  // FDV: totalSupply includes everything; subtract burn if requested
+  const baseSupply = normalizedMetric === 'fdv' ? fdvTotal : circulatingSupply;
+  const adjustedSupply = (normalizedMetric === 'fdv')
+    ? Math.max(baseSupply - burnedHype, 1)
+    : baseSupply; // no burn adjustment for MC
 
   return {
     metric: normalizedMetric,
@@ -328,7 +339,7 @@ async function getAdjustedSupply(metric = 'mc', includeBurn = false) {
     burnedHype,
     adjustedSupply,
     includeBurn,
-    supplyUsed: includeBurn ? adjustedSupply : baseSupply,
+    supplyUsed: (normalizedMetric === 'fdv' && includeBurn) ? adjustedSupply : baseSupply,
   };
 }
 

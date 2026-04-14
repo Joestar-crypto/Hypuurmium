@@ -4583,7 +4583,11 @@
                 }
             }
 
-            return { feesByDate, candlesByDate, candles4hByDate, burnedHype };
+            // Extract live supply figures from HL tokenDetails
+            const circulatingSupply = parseFloat(tokenDetails?.circulatingSupply) || CONFIG.SUPPLY;
+            const totalSupply = parseFloat(tokenDetails?.totalSupply) || CONFIG.FDV_SUPPLY;
+
+            return { feesByDate, candlesByDate, candles4hByDate, burnedHype, circulatingSupply, totalSupply };
         }
 
         async syncCurrentPEFromBackend() {
@@ -4608,8 +4612,11 @@
                 const avgDailyRevenue = window30.reduce((sum, d) => sum + (feesByDate[d] || 0), 0) / window30.length;
                 const annualizedRevenue = avgDailyRevenue * 365;
 
-                const baseSupply = this.useFDV ? CONFIG.FDV_SUPPLY : CONFIG.SUPPLY;
-                const burnedHype = Number(this.rawData.burnedHype) || 0;
+                const baseSupply = this.useFDV
+                    ? (Number(this.rawData.totalSupply) || CONFIG.FDV_SUPPLY)
+                    : (Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
+                // MC: circulatingSupply already excludes burn — only apply burn toggle for FDV
+                const burnedHype = this.useFDV ? (Number(this.rawData.burnedHype) || 0) : 0;
                 const activeSupply = this.getEffectiveSupply(baseSupply, burnedHype);
                 const revenuePerToken = annualizedRevenue / activeSupply;
                 if (revenuePerToken <= 0) return null;
@@ -5045,10 +5052,13 @@
             // Fee values aligned
             const feeValues = allDates.map(d => feesByDate[d]);
 
-            // Match backend P/E logic: fixed supply basis plus rolling revenue.
-            const baseSupply = this.useFDV ? CONFIG.FDV_SUPPLY : CONFIG.SUPPLY;
+            // Use live supply from HL tokenDetails API — circulatingSupply already excludes burn+locked
+            const baseSupply = this.useFDV
+                ? (Number(this.rawData.totalSupply) || CONFIG.FDV_SUPPLY)
+                : (Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
             const burnedHype = Number(this.rawData.burnedHype) || 0;
-            const historicalBurnModel = this.includeBurnInPe
+            // Burn model only applies to FDV (circulatingSupply already excludes burn for MC)
+            const historicalBurnModel = (this.includeBurnInPe && this.useFDV)
                 ? this.buildHistoricalBurnModel(allDates, feesByDate, candlesByDate, burnedHype)
                 : null;
             const effectiveSupply = allDates.map((date) => this.getHistoricalSupplyForDate(date, baseSupply, historicalBurnModel));
@@ -5714,9 +5724,14 @@
             const prevCandle = candlesByDate[prevDate];
             const lastFee = feesByDate[lastDate];
             const lastAvg = rollingAvg[rollingAvg.length - 1];
-            const baseSupply = this.useFDV ? CONFIG.FDV_SUPPLY : CONFIG.SUPPLY;
+            const baseSupply = this.useFDV
+                ? (Number(this.rawData.totalSupply) || CONFIG.FDV_SUPPLY)
+                : (Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
+            // MC: circulatingSupply already excludes burn — only apply burn toggle for FDV
             const burnedHype = Number(this.rawData.burnedHype) || 0;
-            const activeSupply = this.getEffectiveSupply(baseSupply, burnedHype);
+            const activeSupply = this.useFDV
+                ? this.getEffectiveSupply(baseSupply, burnedHype)
+                : baseSupply;
             const annualRev = lastAvg * 365;
             const mcap = lastCandle.c * activeSupply;
             const feeValues = allDates.map(d => feesByDate[d]);
@@ -5755,7 +5770,8 @@
             const tokenRightBurnMode = document.getElementById('token-right-burn-mode');
             const tokenRightRevenuePct = document.getElementById('token-right-revenue-pct');
             const tokenRightBurned = this.rawData.burnedHype || burnedHype;
-            const burnedPct = CONFIG.FDV_SUPPLY > 0 ? (tokenRightBurned / CONFIG.FDV_SUPPLY) * 100 : 0;
+            const fdvSupply = Number(this.rawData?.totalSupply) || CONFIG.FDV_SUPPLY;
+            const burnedPct = fdvSupply > 0 ? (tokenRightBurned / fdvSupply) * 100 : 0;
             if (tokenRightBuybacks) tokenRightBuybacks.textContent = tokenRightBurned > 0 ? 'Yes' : 'No';
             if (tokenRightRevenuePct) tokenRightRevenuePct.textContent = `${buybackRevenuePct.toFixed(0)}%`;
             if (tokenRightPct) tokenRightPct.textContent = `${burnedPct.toFixed(2)}%`;
@@ -6075,7 +6091,9 @@
             if (!allDates.length) return null;
 
             const feeValues = allDates.map(d => feesByDate[d]);
-            const baseSupply = this.useFDV ? CONFIG.FDV_SUPPLY : CONFIG.SUPPLY;
+            const baseSupply = this.useFDV
+                ? (Number(this.rawData.totalSupply) || CONFIG.FDV_SUPPLY)
+                : (Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
             const burnedHype = Number(this.rawData.burnedHype) || 0;
 
             const effectiveDays = this.rollingDays === 0 ? feeValues.length : this.rollingDays;
@@ -6087,7 +6105,7 @@
 
             const lastDate = allDates[allDates.length - 1];
             const annualRev = rollingAvg[rollingAvg.length - 1] * 365;
-            const activeSupply = this.getEffectiveSupply(baseSupply, burnedHype);
+            const activeSupply = this.useFDV ? this.getEffectiveSupply(baseSupply, burnedHype) : baseSupply;
             const currentPrice = candlesByDate[lastDate].c;
             const key = this.useFDV ? 'fdv' : 'mc';
 
@@ -6846,10 +6864,12 @@
                 this.setCurrentTimeBoundsFromSeries(displayPriceCandles);
 
                 // Compute zone dollar prices and push into priceBandDefs
-                const lastSupply = this.getEffectiveSupply(
-                    this.useFDV ? CONFIG.FDV_SUPPLY : CONFIG.SUPPLY,
-                    Number(this.rawData?.burnedHype) || 0,
-                );
+                const lastSupply = this.useFDV
+                    ? this.getEffectiveSupply(
+                        Number(this.rawData?.totalSupply) || CONFIG.FDV_SUPPLY,
+                        Number(this.rawData?.burnedHype) || 0,
+                      )
+                    : (Number(this.rawData?.circulatingSupply) || CONFIG.SUPPLY);
                 const lastRollingAvg = this._rollingAvg && this._rollingAvg.length
                     ? this._rollingAvg[this._rollingAvg.length - 1] : 0;
                 const annRevPerToken = (lastRollingAvg * 365) / lastSupply;
