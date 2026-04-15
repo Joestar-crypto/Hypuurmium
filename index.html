@@ -1752,6 +1752,54 @@
         }
 
         /* ═══ Auto-Buy Modal ═══ */
+        /* ── First-visit onboarding tooltip ── */
+        .onboarding-tooltip {
+            position: absolute;
+            top: calc(100% + 14px);
+            right: 0;
+            background: linear-gradient(135deg, rgba(255,213,79,0.14), rgba(20,35,28,0.97));
+            border: 1px solid rgba(255,213,79,0.45);
+            color: var(--text-0);
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.45;
+            white-space: nowrap;
+            z-index: 100;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 20px rgba(232,185,35,0.12);
+            animation: onboardingPulse 2s ease-in-out infinite;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+        .onboarding-tooltip::before {
+            content: '';
+            position: absolute;
+            top: -7px;
+            right: 24px;
+            width: 12px;
+            height: 12px;
+            background: rgba(20,35,28,0.97);
+            border-top: 1px solid rgba(255,213,79,0.45);
+            border-left: 1px solid rgba(255,213,79,0.45);
+            transform: rotate(45deg);
+        }
+        .onboarding-tooltip .onboarding-arrow {
+            color: var(--accent);
+            margin-right: 6px;
+        }
+        .onboarding-tooltip .onboarding-dismiss {
+            color: var(--text-2);
+            font-size: 11px;
+            margin-left: 10px;
+            opacity: 0.7;
+        }
+        @keyframes onboardingPulse {
+            0%, 100% { box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 20px rgba(232,185,35,0.12); }
+            50% { box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 28px rgba(232,185,35,0.25); }
+        }
+
         .autobuy-btn {
             background: linear-gradient(135deg, rgba(255,213,79,0.15), rgba(255,213,79,0.05));
             border: 1px solid rgba(255,213,79,0.5);
@@ -3823,6 +3871,9 @@
             </div>
             <div class="header-right">
                 <button class="autobuy-btn" id="connect-wallet-btn" onclick="AutoBuy.connectFromHeader()" style="display:inline-block;">Connect Wallet</button>
+                <div class="onboarding-tooltip" id="onboarding-tooltip" style="display:none;" onclick="this.style.display='none'; localStorage.setItem('hypurrmium-onboarded','1');">
+                    <span class="onboarding-arrow">👆</span>Click here to create an automated buy or sell strategy<span class="onboarding-dismiss">✕</span>
+                </div>
                 <button class="autobuy-btn" id="setup-strategy-btn" onclick="AutoBuy.open()" style="display:none;">Set Up Strategy</button>
                 <button class="ab-strategy-btn" id="add-strategy-btn" onclick="AutoBuy.newStrategy()" style="display:none;">+ Add Strategy</button>
                 <button class="autobuy-btn" id="dashboard-btn" onclick="AutoBuy.openDashboard()" style="display:none;">Dashboard</button>
@@ -9270,6 +9321,10 @@ const AutoBuy = (function() {
 
     // ── Connect from header button ──
     async function connectFromHeader() {
+        // Dismiss onboarding tooltip
+        var _tip = document.getElementById('onboarding-tooltip');
+        if (_tip) _tip.style.display = 'none';
+        localStorage.setItem('hypurrmium-onboarded', '1');
         try {
             if (!window.ethereum) {
                 $('ab-overlay').style.display = 'flex';
@@ -10118,11 +10173,22 @@ const AutoBuy = (function() {
             }
         }, true);
 
+        // Show first-visit onboarding tooltip
+        (function() {
+            if (!localStorage.getItem('hypurrmium-onboarded')) {
+                var tip = document.getElementById('onboarding-tooltip');
+                if (tip) tip.style.display = 'block';
+            }
+        })();
+
         // Auto-check if user has an existing strategy
         if (window.ethereum) {
             window.ethereum.request({ method: 'eth_accounts' }).then(accs => {
                 if (accs && accs.length > 0) {
                     userAddress = accs[0].toLowerCase();
+                    // Hide onboarding tooltip for returning users
+                    var _tip = document.getElementById('onboarding-tooltip');
+                    if (_tip) _tip.style.display = 'none';
                     provider = new ethers.BrowserProvider(window.ethereum);
                     setWalletBalancePending();
                     updateHeaderButtons();
