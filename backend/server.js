@@ -562,7 +562,7 @@ app.get('/api/balance/:address', async (req, res) => {
  * GET /api/email-preview/:template — preview email templates in browser
  * Templates: alert-buy, alert-sell, order-buy, order-sell
  */
-app.get('/api/email-preview/:template', (req, res) => {
+app.get('/api/email-preview/:template', requireAdmin, (req, res) => {
   const sample = {
     address: '0x1234567890abcdef1234567890abcdef12345678',
     metric: 'mc', triggerValue: 12, currentValue: 9.8,
@@ -632,16 +632,15 @@ app.get('/api/health', (_req, res) => {
     agentConfigured: isAgentConfigured(),
     builderConfigured: isBuilderConfigured(),
     emailConfigured: !!RESEND_API_KEY,
-    dbPath: DB_PATH,
-    origins: ALLOWED_ORIGINS,
   });
 });
 
 // ── Admin Dashboard API ──
 
 function requireAdmin(req, res, next) {
+  if (!ADMIN_KEY) return res.status(503).json({ error: 'Admin not configured' });
   const key = req.headers['x-admin-key'] || req.query.key;
-  if (key !== ADMIN_KEY) return res.status(403).json({ error: 'Forbidden' });
+  if (!key || key !== ADMIN_KEY) return res.status(403).json({ error: 'Forbidden' });
   next();
 }
 
