@@ -4665,8 +4665,15 @@
 
                 if (livePrice) this.rawData.livePrice = livePrice;
 
-                const circulatingSupply = Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY;
-                const hlMcap = livePrice * circulatingSupply;
+                // Use same supply logic as updateMetrics (respect useFDV + burn toggle)
+                const burnedHype = Number(this.rawData.burnedHype) || 0;
+                const baseSupply = this.useFDV
+                    ? (Number(this.rawData.totalSupply) || CONFIG.FDV_SUPPLY)
+                    : (Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
+                const activeSupply = this.useFDV
+                    ? this.getEffectiveSupply(baseSupply, burnedHype)
+                    : baseSupply;
+                const hlMcap = livePrice * activeSupply;
 
                 const { feesByDate } = this.rawData;
                 const allDates = Object.keys(feesByDate).sort();
@@ -4678,12 +4685,36 @@
                 const annualizedRevenue = avgDailyRevenue * 365;
                 if (annualizedRevenue <= 0) return null;
 
-                // P/E = HL MCap (circulatingSupply × price) / Annualized Revenue
                 const livePE = hlMcap / annualizedRevenue;
                 if (!isFinite(livePE)) return null;
 
+                // Update P/E text
                 const peValueEl = document.getElementById('pe-value');
                 if (peValueEl) peValueEl.textContent = `${livePE.toFixed(1)}x`;
+
+                // Apply zone-based color (same logic as updateMetrics)
+                const key = this.useFDV ? 'fdv' : 'mc';
+                const z = CONFIG.ZONES[key];
+                const cheapMid = (z.cheap[0] + z.cheap[1]) / 2;
+                const fairMid  = (z.fair[0]  + z.fair[1])  / 2;
+                const expMid   = (z.expensive[0] + z.expensive[1]) / 2;
+                const dCheap = Math.abs(livePE - cheapMid);
+                const dFair  = Math.abs(livePE - fairMid);
+                const dExp   = Math.abs(livePE - expMid);
+                const closest = Math.min(dCheap, dFair, dExp);
+                let peColor, peShadow;
+                if (closest === dCheap) {
+                    peColor = '#0ecb81'; peShadow = 'rgba(14,203,129,0.6)';
+                } else if (closest === dFair) {
+                    peColor = '#f0b90b'; peShadow = 'rgba(240,185,11,0.6)';
+                } else {
+                    peColor = '#f6465d'; peShadow = 'rgba(246,70,93,0.6)';
+                }
+                if (peValueEl) {
+                    peValueEl.className = 'value';
+                    peValueEl.style.color = peColor;
+                    peValueEl.style.textShadow = `0 0 14px ${peShadow}`;
+                }
 
                 return { pe: livePE, mcap: hlMcap, price: livePrice };
             } catch (e) {
