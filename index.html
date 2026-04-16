@@ -4663,60 +4663,24 @@
                 const livePrice = priceData ? parseFloat(priceData['HYPE']) : null;
                 if (!livePrice || !isFinite(livePrice)) return null;
 
-                if (livePrice) this.rawData.livePrice = livePrice;
+                this.rawData.livePrice = livePrice;
 
-                // Use same supply logic as updateMetrics (respect useFDV + burn toggle)
-                const burnedHype = Number(this.rawData.burnedHype) || 0;
-                const baseSupply = this.useFDV
-                    ? (Number(this.rawData.totalSupply) || CONFIG.FDV_SUPPLY)
-                    : (Number(this.rawData.circulatingSupply) || CONFIG.SUPPLY);
-                const activeSupply = this.useFDV
-                    ? this.getEffectiveSupply(baseSupply, burnedHype)
-                    : baseSupply;
-                const hlMcap = livePrice * activeSupply;
-
-                const { feesByDate } = this.rawData;
-                const allDates = Object.keys(feesByDate).sort();
-                // Use same rolling window as chart so card and chart always match
-                const windowSize = (this.rollingDays > 0) ? this.rollingDays : allDates.length;
-                const windowDates = allDates.slice(-windowSize);
-                if (!windowDates.length) return null;
-                const avgDailyRevenue = windowDates.reduce((sum, d) => sum + (feesByDate[d] || 0), 0) / windowDates.length;
-                const annualizedRevenue = avgDailyRevenue * 365;
-                if (annualizedRevenue <= 0) return null;
-
-                const livePE = hlMcap / annualizedRevenue;
-                if (!isFinite(livePE)) return null;
-
-                // Update P/E text
-                const peValueEl = document.getElementById('pe-value');
-                if (peValueEl) peValueEl.textContent = `${livePE.toFixed(1)}x`;
-
-                // Apply zone-based color (same logic as updateMetrics)
-                const key = this.useFDV ? 'fdv' : 'mc';
-                const z = CONFIG.ZONES[key];
-                const cheapMid = (z.cheap[0] + z.cheap[1]) / 2;
-                const fairMid  = (z.fair[0]  + z.fair[1])  / 2;
-                const expMid   = (z.expensive[0] + z.expensive[1]) / 2;
-                const dCheap = Math.abs(livePE - cheapMid);
-                const dFair  = Math.abs(livePE - fairMid);
-                const dExp   = Math.abs(livePE - expMid);
-                const closest = Math.min(dCheap, dFair, dExp);
-                let peColor, peShadow;
-                if (closest === dCheap) {
-                    peColor = '#0ecb81'; peShadow = 'rgba(14,203,129,0.6)';
-                } else if (closest === dFair) {
-                    peColor = '#f0b90b'; peShadow = 'rgba(240,185,11,0.6)';
-                } else {
-                    peColor = '#f6465d'; peShadow = 'rgba(246,70,93,0.6)';
-                }
-                if (peValueEl) {
-                    peValueEl.className = 'value';
-                    peValueEl.style.color = peColor;
-                    peValueEl.style.textShadow = `0 0 14px ${peShadow}`;
+                // Inject live price into today's candle so updateData/updateMetrics
+                // compute the same PE the card and chart will display.
+                const { candlesByDate } = this.rawData;
+                const allDates = Object.keys(candlesByDate).sort();
+                const lastDate = allDates[allDates.length - 1];
+                if (lastDate && candlesByDate[lastDate]) {
+                    const c = candlesByDate[lastDate];
+                    c.c = livePrice;
+                    if (livePrice > c.h) c.h = livePrice;
+                    if (livePrice < c.l) c.l = livePrice;
                 }
 
-                return { pe: livePE, mcap: hlMcap, price: livePrice };
+                // Re-render chart + card so everything stays in sync
+                this.updateData();
+
+                return { price: livePrice };
             } catch (e) {
                 return null;
             }
