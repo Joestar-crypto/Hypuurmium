@@ -4417,7 +4417,7 @@
                 <span>Hypurrmium</span>
             </a>
             <a href="https://x.com/JoestarCrypto" target="_blank" rel="noopener noreferrer" class="footer-credit">
-                <img src="/Jojo2.webp" alt="Joestar" class="footer-credit-avatar" />
+                <img src="Jojo2.webp" alt="Joestar" class="footer-credit-avatar" />
                 <span>Made by Joestar</span>
             </a>
         </div>
@@ -4432,6 +4432,10 @@
         const normalized = String(value || '').trim().replace(/\/+$/, '');
         if (!normalized) return '';
         return /\/api$/i.test(normalized) ? normalized : normalized + '/api';
+    }
+
+    function isLocalRuntime() {
+        return location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
     }
 
     function resolveBackendApiUrl() {
@@ -4459,9 +4463,13 @@
         const override = [globalValue, metaValue, storedValue].find(value => typeof value === 'string' && value.trim());
         if (override) return normalizeBackendApiUrl(override);
 
-        return (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+        return isLocalRuntime()
             ? 'http://localhost:3001/api'
             : '/api';
+    }
+
+    function resolveLocalProxyUrl(path, fallbackUrl) {
+        return isLocalRuntime() ? `${resolveBackendApiUrl()}${path}` : fallbackUrl;
     }
 
     const CONFIG = {
@@ -4476,9 +4484,10 @@
             fdv: { cheap: [18, 24], fair: [36, 42], expensive: [60, 66] },
         },
         CANDLE_START: 1731628800000, // Nov 15 2024 — covers TGE + early trading
-        DEFILLAMA_URL: 'https://api.llama.fi/summary/fees/hyperliquid?dataType=dailyRevenue',
-        DEFILLAMA_PROTOCOL_URL: 'https://api.llama.fi/protocol/hyperliquid',
-        HL_API_URL: 'https://api.hyperliquid.xyz/info',
+        DEFILLAMA_URL: resolveLocalProxyUrl('/defillama/fees', 'https://api.llama.fi/summary/fees/hyperliquid?dataType=dailyRevenue'),
+        DEFILLAMA_PROTOCOL_URL: resolveLocalProxyUrl('/defillama/protocol', 'https://api.llama.fi/protocol/hyperliquid'),
+        HL_API_URL: resolveLocalProxyUrl('/hl-info', 'https://api.hyperliquid.xyz/info'),
+        HL_EXCHANGE_URL: resolveLocalProxyUrl('/hl-exchange', 'https://api.hyperliquid.xyz/exchange'),
         // Compteur d'inscriptions email (sans stocker les emails)
         // Initialiser le compteur (1 seule fois) : https://api.counterapi.dev/v1/hypurrmium/emails/up
         // Consulter le total : https://api.counterapi.dev/v1/hypurrmium/emails
@@ -4543,8 +4552,11 @@
                 console.error('Init error:', e);
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('error').style.display = 'flex';
+                const localHint = location.protocol === 'file:'
+                    ? 'Start the local backend with start.bat, or open http://localhost:8080 after launching it.'
+                    : 'If you are running locally, launch start.bat and open http://localhost:8080.';
                 document.getElementById('error-msg').textContent =
-                    `Unable to load data.\n${e.message}\n\nMake sure to open this file via a local server (see start.bat).`;
+                    `Unable to load data.\n${e.message}\n\n${localHint}`;
             }
         }
 
@@ -8830,7 +8842,7 @@ const AutoBuy = (function() {
             approveTypes
         );
 
-        const hlRes = await fetch('https://api.hyperliquid.xyz/exchange', {
+        const hlRes = await fetch((typeof CONFIG !== 'undefined' && CONFIG.HL_EXCHANGE_URL) ? CONFIG.HL_EXCHANGE_URL : 'https://api.hyperliquid.xyz/exchange', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -8967,7 +8979,7 @@ const AutoBuy = (function() {
             };
             console.log('[HL] POST /exchange payload:', JSON.stringify(hlPayload, null, 2));
 
-            const hlRes = await fetch('https://api.hyperliquid.xyz/exchange', {
+            const hlRes = await fetch((typeof CONFIG !== 'undefined' && CONFIG.HL_EXCHANGE_URL) ? CONFIG.HL_EXCHANGE_URL : 'https://api.hyperliquid.xyz/exchange', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(hlPayload),
@@ -9719,7 +9731,7 @@ const AutoBuy = (function() {
                 nonce: nonce,
             };
             const { r, s, v } = await signHL712(userAddress, approveMessage, 'HyperliquidTransaction:ApproveAgent', approveTypes);
-            const hlRes = await fetch('https://api.hyperliquid.xyz/exchange', {
+            const hlRes = await fetch((typeof CONFIG !== 'undefined' && CONFIG.HL_EXCHANGE_URL) ? CONFIG.HL_EXCHANGE_URL : 'https://api.hyperliquid.xyz/exchange', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

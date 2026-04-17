@@ -37,10 +37,15 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const EMAIL_FROM     = process.env.EMAIL_FROM || 'Hypurrmium <noreply@hypurrmium.xyz>';
 const ADMIN_KEY      = process.env.ADMIN_KEY || '';
 const DISABLE_WORKER = /^(1|true|yes)$/i.test(process.env.DISABLE_WORKER || '');
+const ALLOW_NULL_ORIGIN = /^(1|true|yes)$/i.test(process.env.ALLOW_NULL_ORIGIN || '');
 const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || 'https://hypurrmium.xyz,https://www.hypurrmium.xyz,http://localhost:3000,http://localhost:8080')
   .split(',')
   .map(origin => origin.trim())
   .filter(Boolean);
+const HYPERLIQUID_INFO_URL = 'https://api.hyperliquid.xyz/info';
+const HYPERLIQUID_EXCHANGE_URL = 'https://api.hyperliquid.xyz/exchange';
+const DEFILLAMA_FEES_URL = 'https://api.llama.fi/summary/fees/hyperliquid?dataType=dailyRevenue';
+const DEFILLAMA_PROTOCOL_URL = 'https://api.llama.fi/protocol/hyperliquid';
 
 // ── Database (sql.js) ──
 
@@ -198,7 +203,9 @@ const app = express();
 app.use(express.json());
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || (origin === 'null' && ALLOW_NULL_ORIGIN)) {
+      return cb(null, true);
+    }
     cb(new Error('CORS not allowed'));
   },
 }));
@@ -248,6 +255,27 @@ function normalizePeMetric(metric) {
 
 function parseBooleanFlag(value) {
   return /^(1|true|yes|on)$/i.test(String(value || ''));
+}
+
+async function fetchUpstreamJson(url, options = {}) {
+  const upstreamRes = await fetch(url, options);
+  const rawText = await upstreamRes.text();
+
+  if (!upstreamRes.ok) {
+    const error = new Error(`Upstream request failed (${upstreamRes.status}) for ${url}`);
+    error.status = upstreamRes.status;
+    error.detail = rawText;
+    throw error;
+  }
+
+  try {
+    return JSON.parse(rawText);
+  } catch (_error) {
+    const error = new Error(`Upstream returned invalid JSON for ${url}`);
+    error.status = 502;
+    error.detail = rawText;
+    throw error;
+  }
 }
 
 function sendSiteFile(res, relativePath) {
@@ -596,6 +624,66 @@ app.get('/api/pe', async (req, res) => {
   } catch (err) {
     console.error('[GET /api/pe]', err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/defillama/fees', async (_req, res) => {
+  try {
+    const data = await fetchUpstreamJson(DEFILLAMA_FEES_URL);
+    res.json(data);
+  } catch (err) {
+    console.error('[GET /api/defillama/fees]', err);
+    res.status(err.status || 502).json({
+      error: 'Failed to fetch DefiLlama fees data',
+      detail: err.detail || err.message,
+    });
+  }
+});
+
+app.get('/api/defillama/protocol', async (_req, res) => {
+  try {
+    const data = await fetchUpstreamJson(DEFILLAMA_PROTOCOL_URL);
+    res.json(data);
+  } catch (err) {
+    console.error('[GET /api/defillama/protocol]', err);
+    res.status(err.status || 502).json({
+      error: 'Failed to fetch DefiLlama protocol data',
+      detail: err.detail || err.message,
+    });
+  }
+});
+
+app.post('/api/hl-info', async (req, res) => {
+  try {
+    const data = await fetchUpstreamJson(HYPERLIQUID_INFO_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body || {}),
+    });
+    res.json(data);
+  } catch (err) {
+    console.error('[POST /api/hl-info]', err);
+    res.status(err.status || 502).json({
+      error: 'Failed to fetch Hyperliquid info data',
+      detail: err.detail || err.message,
+    });
+  }
+});
+
+app.post('/api/hl-exchange', async (req, res) => {
+  try {
+    const data = await fetchUpstreamJson(HYPERLIQUID_EXCHANGE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body || {}),
+    });
+    res.json(data);
+  } catch (err) {
+    console.error('[POST /api/hl-exchange]', err);
+    res.status(err.status || 502).json({
+      error: 'Failed to fetch Hyperliquid exchange data',
+      detail: err.detail || err.message,
+    });
   }
 });
 

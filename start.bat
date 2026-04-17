@@ -16,8 +16,10 @@ echo.
 :: Start backend in background with worker disabled in the parent shell
 cd backend
 set "DISABLE_WORKER=true"
+set "ALLOW_NULL_ORIGIN=true"
 start "HYPE Premium Backend" /B cmd /c "node server.js"
 set "DISABLE_WORKER="
+set "ALLOW_NULL_ORIGIN="
 cd ..
 
 :: Start frontend
