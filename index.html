@@ -4468,8 +4468,9 @@
             : '/api';
     }
 
-    function resolveLocalProxyUrl(path, fallbackUrl) {
-        return isLocalRuntime() ? `${resolveBackendApiUrl()}${path}` : fallbackUrl;
+    function resolveBackendProxyUrl(path, fallbackUrl) {
+        const backendApiUrl = resolveBackendApiUrl();
+        return backendApiUrl ? `${backendApiUrl}${path}` : fallbackUrl;
     }
 
     const CONFIG = {
@@ -4484,10 +4485,10 @@
             fdv: { cheap: [18, 24], fair: [36, 42], expensive: [60, 66] },
         },
         CANDLE_START: 1731628800000, // Nov 15 2024 — covers TGE + early trading
-        DEFILLAMA_URL: resolveLocalProxyUrl('/defillama/fees', 'https://api.llama.fi/summary/fees/hyperliquid?dataType=dailyRevenue'),
-        DEFILLAMA_PROTOCOL_URL: resolveLocalProxyUrl('/defillama/protocol', 'https://api.llama.fi/protocol/hyperliquid'),
-        HL_API_URL: resolveLocalProxyUrl('/hl-info', 'https://api.hyperliquid.xyz/info'),
-        HL_EXCHANGE_URL: resolveLocalProxyUrl('/hl-exchange', 'https://api.hyperliquid.xyz/exchange'),
+        DEFILLAMA_URL: resolveBackendProxyUrl('/defillama/fees', 'https://api.llama.fi/summary/fees/hyperliquid?dataType=dailyRevenue'),
+        DEFILLAMA_PROTOCOL_URL: resolveBackendProxyUrl('/defillama/protocol', 'https://api.llama.fi/protocol/hyperliquid'),
+        HL_API_URL: resolveBackendProxyUrl('/hl-info', 'https://api.hyperliquid.xyz/info'),
+        HL_EXCHANGE_URL: resolveBackendProxyUrl('/hl-exchange', 'https://api.hyperliquid.xyz/exchange'),
         // Compteur d'inscriptions email (sans stocker les emails)
         // Initialiser le compteur (1 seule fois) : https://api.counterapi.dev/v1/hypurrmium/emails/up
         // Consulter le total : https://api.counterapi.dev/v1/hypurrmium/emails
@@ -4554,7 +4555,9 @@
                 document.getElementById('error').style.display = 'flex';
                 const localHint = location.protocol === 'file:'
                     ? 'Start the local backend with start.bat, or open http://localhost:8080 after launching it.'
-                    : 'If you are running locally, launch start.bat and open http://localhost:8080.';
+                    : isLocalRuntime()
+                        ? 'If you are running locally, launch start.bat and open http://localhost:8080.'
+                        : 'The deployed site could not load live market data. Check that /api/defillama/fees and /api/hl-info return JSON on this domain.';
                 document.getElementById('error-msg').textContent =
                     `Unable to load data.\n${e.message}\n\n${localHint}`;
             }

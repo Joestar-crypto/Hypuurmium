@@ -117,6 +117,10 @@ The file `functions/api/[[path]].js` makes these work on the main domain:
 - `https://hypurrmium.xyz/api/agent-address`
 - `https://hypurrmium.xyz/api/pe`
 - `https://hypurrmium.xyz/api/strategies/...`
+- `https://hypurrmium.xyz/api/defillama/fees`
+- `https://hypurrmium.xyz/api/defillama/protocol`
+- `https://hypurrmium.xyz/api/hl-info`
+- `https://hypurrmium.xyz/api/hl-exchange`
 
 Without changing the frontend.
 
@@ -126,6 +130,8 @@ After deployment:
 
 1. Open `https://hypurrmium.xyz/api/health`
 2. It must return JSON, not HTML
+3. Open `https://hypurrmium.xyz/api/defillama/fees`
+4. It must return JSON, not HTML
 3. Open the site and verify:
    - wallet balance loads
    - `Set Up Strategy` no longer shows `Backend not reachable`
