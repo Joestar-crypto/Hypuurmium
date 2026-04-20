@@ -84,6 +84,30 @@ function dbRun(sql, params = []) {
   saveDb();
 }
 
+const USDC_COMPARISON_EPSILON = 1e-6;
+
+function getNominalBudgetDelta(strategy) {
+  return Math.max(0, Number(strategy?.amount_usdc) || 0);
+}
+
+function hasNominalBudgetForNextOrder(strategy) {
+  const budgetUsed = Number(strategy?.budget_used) || 0;
+  const totalBudget = Number(strategy?.total_budget) || 0;
+  return budgetUsed + getNominalBudgetDelta(strategy) <= totalBudget + USDC_COMPARISON_EPSILON;
+}
+
+async function getCachedUserUsdcBalance(address, balanceCache = null) {
+  const normalizedAddress = String(address || '').toLowerCase();
+  if (!normalizedAddress) return 0;
+  if (balanceCache && balanceCache.has(normalizedAddress)) {
+    return balanceCache.get(normalizedAddress);
+  }
+
+  const usdc = await getUserBalance(normalizedAddress);
+  if (balanceCache) balanceCache.set(normalizedAddress, usdc);
+  return usdc;
+}
+
 // ── Resend Email ──
 
 async function sendEmail(to, { subject, html }, templateName, address) {
@@ -193,6 +217,20 @@ async function initDatabase() {
       console.log('[Migration] Removed UNIQUE constraint on strategies.address');
     }
   } catch(e) { console.warn('[Migration] UNIQUE removal skipped:', e.message); }
+
+  try {
+    db.run(`
+      UPDATE strategies
+      SET budget_used = ROUND(COALESCE(triggers_used, 0) * COALESCE(amount_usdc, 0), 8)
+      WHERE ABS(COALESCE(budget_used, 0) - (COALESCE(triggers_used, 0) * COALESCE(amount_usdc, 0))) > ?
+    `, [USDC_COMPARISON_EPSILON]);
+    const normalizedCount = typeof db.getRowsModified === 'function' ? db.getRowsModified() : 0;
+    if (normalizedCount > 0) {
+      console.log(`[Migration] Normalized budget_used for ${normalizedCount} strategies to nominal per-trigger spend`);
+    }
+  } catch(e) {
+    console.warn('[Migration] Budget normalization skipped:', e.message);
+  }
 
   saveDb();
 }
@@ -892,7 +930,7 @@ async function executeStrategyIfTriggered(s) {
     if (!strat || !strat.active || !strat.agent_authorized) return;
     if (strat.triggers_used >= strat.max_triggers) return;
     // Budget check only applies to buys (for sells the constraint is HYPE balance, not USDC budget)
-    if ((strat.side || 'buy') === 'buy' && strat.budget_used + strat.amount_usdc > strat.total_budget) return;
+    if ((strat.side || 'buy') === 'buy' && !hasNominalBudgetForNextOrder(strat)) return;
     if (new Date(strat.expires_at) <= new Date()) return;
     if (strat.last_triggered_at) {
       const elapsed = (Date.now() - new Date(strat.last_triggered_at).getTime()) / 1000;
@@ -925,6 +963,15 @@ async function executeStrategyIfTriggered(s) {
     if (!triggered) {
       console.log(`[Immediate] Strategy #${strat.id} not triggered: ${compareValue.toFixed(2)} vs ${strat.pe_trigger}x`);
       return;
+    }
+
+    const nominalBudgetDelta = getNominalBudgetDelta(strat);
+    if (side === 'buy') {
+      const availableUsdc = await getCachedUserUsdcBalance(strat.address);
+      if (availableUsdc + USDC_COMPARISON_EPSILON < nominalBudgetDelta) {
+        console.log(`[Immediate] Strategy #${strat.id} wallet exhausted: ${availableUsdc.toFixed(2)} USDC available, ${nominalBudgetDelta.toFixed(2)} required`);
+        return;
+      }
     }
 
     const sourceLabel = source === 'median' ? 'Median' : 'Spot';
@@ -968,7 +1015,7 @@ async function executeStrategyIfTriggered(s) {
     if (status === 'filled') {
       dbRun(`UPDATE strategies SET triggers_used = triggers_used + 1,
         budget_used = budget_used + ?
-        WHERE id = ?`, [result.amountUsdc || strat.amount_usdc, strat.id]);
+        WHERE id = ?`, [nominalBudgetDelta, strat.id]);
     }
 
     console.log(`[Immediate] Order ${status} for ${strat.address}: ${result.size} HYPE @ $${result.price}`);
@@ -982,7 +1029,7 @@ async function executeStrategyIfTriggered(s) {
         orderType: strat.order_type, status,
         triggersUsed: strat.triggers_used + 1,
         maxTriggers: strat.max_triggers,
-        budgetUsed: strat.budget_used + (result.amountUsdc || strat.amount_usdc),
+        budgetUsed: strat.budget_used + nominalBudgetDelta,
         totalBudget: strat.total_budget,
       };
       const tpl = side === 'buy' ? orderBuy(emailData) : orderSell(emailData);
@@ -1012,6 +1059,7 @@ async function checkStrategies() {
 
     const peSnapshots = {};
     const medianSnapshots = {};
+  const userUsdcCache = new Map();
 
     peSnapshots.mc = await getCurrentPE('mc');
     const currentPrice = peSnapshots.mc.price;
@@ -1086,7 +1134,16 @@ async function checkStrategies() {
 
         // Check budget
         // Budget check only applies to buys (for sells the constraint is HYPE balance, not USDC budget)
-        if (side === 'buy' && fresh.budget_used + fresh.amount_usdc > fresh.total_budget) continue;
+        if (side === 'buy' && !hasNominalBudgetForNextOrder(fresh)) continue;
+
+        const nominalBudgetDelta = getNominalBudgetDelta(fresh);
+        if (side === 'buy') {
+          const availableUsdc = await getCachedUserUsdcBalance(fresh.address, userUsdcCache);
+          if (availableUsdc + USDC_COMPARISON_EPSILON < nominalBudgetDelta) {
+            console.log(`[Worker] Skipping BUY for ${fresh.address} — wallet exhausted (${availableUsdc.toFixed(2)} USDC available, ${nominalBudgetDelta.toFixed(2)} required)`);
+            continue;
+          }
+        }
 
         // Check cooldown (using fresh DB data)
         if (fresh.last_triggered_at) {
@@ -1145,7 +1202,7 @@ async function checkStrategies() {
         if (status === 'filled') {
           dbRun(`UPDATE strategies SET triggers_used = triggers_used + 1,
             budget_used = budget_used + ?
-            WHERE id = ?`, [result.amountUsdc || fresh.amount_usdc, s.id]);
+            WHERE id = ?`, [nominalBudgetDelta, s.id]);
         }
 
         console.log(`[Worker] Order ${status} for ${fresh.address}: ${result.size} HYPE @ $${result.price}`);
@@ -1166,7 +1223,7 @@ async function checkStrategies() {
             status,
             triggersUsed: fresh.triggers_used + 1,
             maxTriggers: fresh.max_triggers,
-            budgetUsed: fresh.budget_used + (result.amountUsdc || fresh.amount_usdc),
+            budgetUsed: fresh.budget_used + nominalBudgetDelta,
             totalBudget: fresh.total_budget,
           };
           const tpl = side === 'buy' ? orderBuy(emailData) : orderSell(emailData);

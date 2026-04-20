@@ -9175,8 +9175,8 @@ const AutoBuy = (function() {
                 ${peBarHtml}
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;font-size:11px;">
                     <div style="background:var(--bg-1);padding:6px 8px;border-radius:4px;"><span style="color:var(--text-2)">Triggers</span><br><b>${s.triggers_used}/${s.max_triggers}</b></div>
-                    <div style="background:var(--bg-1);padding:6px 8px;border-radius:4px;"><span style="color:var(--text-2)">Budget</span><br><b>$${(s.budget_used||0).toFixed(0)}/$${s.total_budget}</b></div>
-                    <div style="background:var(--bg-1);padding:6px 8px;border-radius:4px;"><span style="color:var(--text-2)">Per trigger</span><br><b>$${s.amount_usdc}</b></div>
+                    <div style="background:var(--bg-1);padding:6px 8px;border-radius:4px;"><span style="color:var(--text-2)">Budget</span><br><b>$${(Number(s.budget_used) || 0).toFixed(2)}/$${(Number(s.total_budget) || 0).toFixed(2)}</b></div>
+                    <div style="background:var(--bg-1);padding:6px 8px;border-radius:4px;"><span style="color:var(--text-2)">Per trigger</span><br><b>$${(Number(s.amount_usdc) || 0).toFixed(2)}</b></div>
                     <div style="background:var(--bg-1);padding:6px 8px;border-radius:4px;"><span style="color:var(--text-2)">Expires</span><br><b>${new Date(s.expires_at).toLocaleDateString()}</b></div>
                 </div>
                 ${needsDeposit ? `
@@ -9367,6 +9367,35 @@ const AutoBuy = (function() {
         if (activeProfileTrigger === $('dash-wallet')) closeWalletProfileMenu();
     }
 
+    const STRATEGY_FUNDING_EPSILON = 0.000001;
+
+    function getStrategyFundingState(s) {
+        const side = (s && s.side) || 'buy';
+        const orderSize = Number(s && s.amount_usdc) || 0;
+        const budgetUsed = Number(s && s.budget_used) || 0;
+        const totalBudget = Number(s && s.total_budget) || 0;
+        const triggersUsed = Number(s && s.triggers_used) || 0;
+        const maxTriggers = Number(s && s.max_triggers) || 0;
+        const budgetLeft = Math.max(0, totalBudget - budgetUsed);
+        const remainingTriggers = Math.max(0, maxTriggers - triggersUsed);
+        const walletUsdc = Number(walletBalanceSnapshot.usdc);
+        const hasWalletUsdc = isFinite(walletUsdc);
+        const exhaustedByTriggerCount = maxTriggers > 0 && triggersUsed >= maxTriggers;
+        const exhaustedByBudget = side === 'buy' && budgetLeft + STRATEGY_FUNDING_EPSILON < orderSize;
+        const exhaustedByWallet = side === 'buy' && !exhaustedByBudget && hasWalletUsdc && walletUsdc + STRATEGY_FUNDING_EPSILON < orderSize;
+
+        return {
+            budgetLeft,
+            remainingTriggers,
+            walletUsdc,
+            hasWalletUsdc,
+            exhaustedByTriggerCount,
+            exhaustedByBudget,
+            exhaustedByWallet,
+            isExhausted: exhaustedByTriggerCount || exhaustedByBudget || exhaustedByWallet,
+        };
+    }
+
     async function renderDashboard() {
         if (!userAddress) return;
 
@@ -9417,9 +9446,10 @@ const AutoBuy = (function() {
                 const backendStratPE = backendPE ? (backendPE[stratMetric] ?? backendPE.mc ?? null) : null;
                 const peForTrigger = backendStratPE !== null ? backendStratPE : pe; // prefer backend, fallback to chart
                 const triggered = peForTrigger !== null ? (sd === 'buy' ? peForTrigger < s.pe_trigger : peForTrigger > s.pe_trigger) : false;
-                const budgetLeft = Math.max(0, s.total_budget - (s.budget_used || 0));
-                const remainingTriggers = Math.max(0, s.max_triggers - s.triggers_used);
-                const passedOrders = s.triggers_used || 0;
+                const fundingState = getStrategyFundingState(s);
+                const budgetLeft = fundingState.budgetLeft;
+                const remainingTriggers = fundingState.remainingTriggers;
+                const passedOrders = Number(s.triggers_used) || 0;
                 const expiryLabel = s.expires_at ? new Date(s.expires_at).toLocaleDateString() : 'No expiry';
 
                 let nextActionText = 'Watching market';
@@ -9441,8 +9471,16 @@ const AutoBuy = (function() {
                     nextActionBg = 'rgba(224,82,82,0.08)';
                     nextActionBorder = 'rgba(224,82,82,0.22)';
                     nextActionColor = 'var(--bear)';
-                } else if (isActive && sd === 'buy' && budgetLeft < s.amount_usdc) {
+                } else if (isActive && fundingState.exhaustedByBudget) {
                     nextActionText = 'Budget exhausted — increase budget or reduce order size';
+                    nextActionBg = 'rgba(224,82,82,0.08)';
+                    nextActionBorder = 'rgba(224,82,82,0.22)';
+                    nextActionColor = 'var(--bear)';
+                } else if (isActive && fundingState.exhaustedByWallet) {
+                    const walletText = fundingState.hasWalletUsdc
+                        ? `${formatWalletBalance(fundingState.walletUsdc, { prefix: '$', min: 2, max: 2 })} available, $${Number(s.amount_usdc).toFixed(2)} required`
+                        : 'deposit more USDC on Hyperliquid';
+                    nextActionText = `Wallet exhausted — ${walletText}`;
                     nextActionBg = 'rgba(224,82,82,0.08)';
                     nextActionBorder = 'rgba(224,82,82,0.22)';
                     nextActionColor = 'var(--bear)';
@@ -9494,7 +9532,7 @@ const AutoBuy = (function() {
                         <div style="color:var(--text-1);font-size:10px;font-family:'JetBrains Mono',monospace;">${s.order_type.toUpperCase()} / ${(s.market_type || 'spot').toUpperCase()}</div>
                     </div>
                     <div class="dash-summary-title side-${sd}">${sd === 'buy' ? 'Buy below' : 'Sell above'} ${s.pe_trigger}x</div>
-                    <div class="dash-summary-sub">$${s.amount_usdc} per order · ${s.max_triggers} max triggers</div>
+                    <div class="dash-summary-sub">$${Number(s.amount_usdc).toFixed(2)} per order · ${s.max_triggers} max triggers</div>
                     <div class="dash-order-pills">
                         <div class="dash-order-pill passed">
                             <span class="label">Orders passed</span>
@@ -9507,8 +9545,8 @@ const AutoBuy = (function() {
                     </div>
                     <div class="dash-simple-grid">
                         <div class="dash-simple-stat"><span class="label">Backend P/E</span><span class="value">${peForTrigger !== null ? peForTrigger.toFixed(2) + 'x' : '—'}</span></div>
-                        <div class="dash-simple-stat"><span class="label">Budget Left</span><span class="value">$${budgetLeft.toFixed(0)}</span></div>
-                        <div class="dash-simple-stat"><span class="label">Order Size</span><span class="value">$${s.amount_usdc}</span></div>
+                        <div class="dash-simple-stat"><span class="label">Budget Left</span><span class="value">$${budgetLeft.toFixed(2)}</span></div>
+                        <div class="dash-simple-stat"><span class="label">Order Size</span><span class="value">$${Number(s.amount_usdc).toFixed(2)}</span></div>
                         <div class="dash-simple-stat"><span class="label">Expires</span><span class="value">${expiryLabel}</span></div>
                     </div>
                     <div class="dash-simple-state" style="background:${nextActionBg};border-color:${nextActionBorder};color:${nextActionColor};">${nextActionText}</div>
@@ -9849,15 +9887,15 @@ const AutoBuy = (function() {
             const side = s.side || 'buy';
             const willTrigger = currentPE !== null && (side === 'buy' ? currentPE < s.pe_trigger : currentPE > s.pe_trigger);
             const sideColor = side === 'buy' ? 'var(--bull)' : 'var(--bear)';
-            const budgetLeft = Math.max(0, s.total_budget - (s.budget_used || 0));
+            const fundingState = getStrategyFundingState(s);
             const triggersUsed = Number(s.triggers_used) || 0;
             const maxTriggers = Number(s.max_triggers) || 0;
-            const exhausted = (triggersUsed >= maxTriggers && maxTriggers > 0) || budgetLeft < s.amount_usdc;
+            const exhausted = fundingState.isExhausted;
             const dotColor = exhausted ? 'var(--bear)' : s.agent_authorized ? sideColor : '#ffa500';
             const mkt = (s.market_type || 'spot').toUpperCase();
             const comparator = side === 'buy' ? '&lt;' : '&gt;';
             const progressPct = maxTriggers > 0 ? Math.min(100, Math.max(0, (triggersUsed / maxTriggers) * 100)) : 0;
-            const progressClass = triggersUsed >= maxTriggers && maxTriggers > 0 ? 'done' : (willTrigger ? 'hot' : side);
+            const progressClass = fundingState.exhaustedByTriggerCount ? 'done' : (willTrigger ? 'hot' : side);
 
             // Cooldown
             let cdText = '';
@@ -9874,7 +9912,7 @@ const AutoBuy = (function() {
             // Distance to trigger
             let distText = '';
             if (exhausted) {
-                distText = `<span style="color:var(--bear)">EXHAUSTED</span>`;
+                distText = `<span style="color:var(--bear)">${fundingState.exhaustedByWallet ? 'WALLET LOW' : 'EXHAUSTED'}</span>`;
             } else if (workerDisabled) {
                 distText = `<span style="color:#c77d00">${willTrigger ? 'LOCAL TRIGGER' : 'LOCAL MODE'}</span>`;
             } else if (currentPE !== null) {
@@ -9888,7 +9926,7 @@ const AutoBuy = (function() {
 
                         return `<span class="strat-pill ${side}"><span class="sp-dot" style="background:${dotColor}"></span>${side.toUpperCase()} ${comparator}${s.pe_trigger}x</span>`
               + `<span class="strat-detail">`
-              + `<span class="sd-sep">·</span> <span class="sd-val">$${(s.budget_used||0).toFixed(0)}/$${s.total_budget}</span>`
+              + `<span class="sd-sep">·</span> <span class="sd-val">$${(Number(s.budget_used) || 0).toFixed(2)}/$${(Number(s.total_budget) || 0).toFixed(2)}</span>`
           + `<span class="sd-sep">·</span> <span class="strat-progress-pill ${progressClass}"><span class="strat-progress-track"><span class="strat-progress-fill" style="width:${progressPct}%;"></span></span><span class="strat-progress-label">${triggersUsed}/${maxTriggers || 0}</span></span>`
               + `<span class="sd-sep">·</span> <span class="sd-val">${mkt}</span>`
               + (distText ? `<span class="sd-sep">·</span> ${distText}` : '')
