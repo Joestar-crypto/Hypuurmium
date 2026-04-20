@@ -31,12 +31,17 @@ const { alertBuy, alertSell, orderBuy, orderSell } = require('./email-templates'
 
 const PORT         = process.env.PORT || 3001;
 const HOST         = process.env.HOST || '0.0.0.0';
-const DB_PATH      = process.env.DB_PATH || path.join(__dirname, 'autobuy.db');
 const SITE_ROOT    = path.resolve(__dirname, '..');
+const DEFAULT_DB_PATH = path.join(__dirname, 'autobuy.db');
+const AUTO_VOLUME_DB_PATH = '/data/autobuy.db';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const EMAIL_FROM     = process.env.EMAIL_FROM || 'Hypurrmium <noreply@hypurrmium.xyz>';
 const ADMIN_KEY      = process.env.ADMIN_KEY || '';
 const DISABLE_WORKER = /^(1|true|yes)$/i.test(process.env.DISABLE_WORKER || '');
+const REQUIRE_PERSISTENT_DB = /^(1|true|yes)$/i.test(process.env.REQUIRE_PERSISTENT_DB || '');
+const ENABLE_DB_BACKUPS = !/^(0|false|no)$/i.test(process.env.ENABLE_DB_BACKUPS || 'true');
+const DB_BACKUP_INTERVAL_MINUTES = Math.max(1, parseInt(process.env.DB_BACKUP_INTERVAL_MINUTES || '60', 10) || 60);
+const DB_BACKUP_MAX_FILES = Math.max(1, parseInt(process.env.DB_BACKUP_MAX_FILES || '168', 10) || 168);
 const ALLOW_NULL_ORIGIN = /^(1|true|yes)$/i.test(process.env.ALLOW_NULL_ORIGIN || '');
 const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || 'https://hypurrmium.xyz,https://www.hypurrmium.xyz,http://localhost:3000,http://localhost:8080')
   .split(',')
@@ -46,13 +51,213 @@ const HYPERLIQUID_INFO_URL = 'https://api.hyperliquid.xyz/info';
 const HYPERLIQUID_EXCHANGE_URL = 'https://api.hyperliquid.xyz/exchange';
 const DEFILLAMA_FEES_URL = 'https://api.llama.fi/summary/fees/hyperliquid?dataType=dailyRevenue';
 const DEFILLAMA_PROTOCOL_URL = 'https://api.llama.fi/protocol/hyperliquid';
+const DB_PATH = resolveDbPath();
+const DB_STORAGE_STATUS = getDbStorageStatus(DB_PATH);
+const DB_BACKUP_DIR = resolveDbBackupDir(DB_PATH);
+const DB_BACKUP_STATUS = getDbBackupStatus(DB_BACKUP_DIR);
+
+function isHostedEnvironment() {
+  return Boolean(
+    process.env.NODE_ENV === 'production'
+    || process.env.RAILWAY_ENVIRONMENT
+    || process.env.RAILWAY_PUBLIC_DOMAIN
+    || process.env.RAILWAY_PROJECT_ID
+    || process.env.RENDER
+  );
+}
+
+function hasAutoVolumeMount() {
+  if (process.platform === 'win32') return false;
+  try {
+    return fs.existsSync('/data') && fs.statSync('/data').isDirectory();
+  } catch (_error) {
+    return false;
+  }
+}
+
+function resolveDbPath() {
+  const explicitDbPath = String(process.env.DB_PATH || '').trim();
+  if (explicitDbPath) return explicitDbPath;
+  if (hasAutoVolumeMount()) return AUTO_VOLUME_DB_PATH;
+  return DEFAULT_DB_PATH;
+}
+
+function getDbStorageStatus(dbPath) {
+  const explicitDbPath = String(process.env.DB_PATH || '').trim();
+  const hosted = isHostedEnvironment();
+  const dataVolumeMounted = hasAutoVolumeMount();
+  const resolvedDbPath = path.resolve(dbPath);
+  const resolvedDataRoot = path.resolve('/data');
+  const resolvedDefaultDbPath = path.resolve(DEFAULT_DB_PATH);
+  const resolvedSiteRoot = path.resolve(SITE_ROOT);
+  const usingAutoVolume = !explicitDbPath && dataVolumeMounted && resolvedDbPath === path.resolve(AUTO_VOLUME_DB_PATH);
+  const onMountedDataVolume = dataVolumeMounted && resolvedDbPath.startsWith(path.resolve('/data'));
+  const pointsToDataPath = resolvedDbPath.startsWith(resolvedDataRoot);
+  const insideAppDir = resolvedDbPath === resolvedDefaultDbPath || resolvedDbPath.startsWith(resolvedSiteRoot + path.sep);
+  const explicitExternalPath = Boolean(explicitDbPath) && !insideAppDir && !pointsToDataPath;
+  const persistent = usingAutoVolume || onMountedDataVolume || explicitExternalPath;
+  const mode = usingAutoVolume
+    ? 'auto-volume'
+    : explicitDbPath
+      ? (persistent ? 'explicit-path' : 'explicit-app-path')
+      : 'default-app-path';
+  let warning = null;
+  if (!persistent) {
+    warning = pointsToDataPath && !dataVolumeMounted
+      ? `DB_PATH points to ${dbPath}, but no /data volume is mounted. The service would use ephemeral storage. Mount the Railway volume at /data.`
+      : `Database is using app-local storage at ${dbPath}. A redeploy can erase strategies and orders. Mount a persistent volume and use DB_PATH=/data/autobuy.db.`;
+  }
+
+  return {
+    persistent,
+    hosted,
+    mode,
+    warning,
+    dataVolumeMounted,
+    recommendedPath: dataVolumeMounted ? AUTO_VOLUME_DB_PATH : null,
+  };
+}
+
+function resolveDbBackupDir(dbPath) {
+  const explicitBackupDir = String(process.env.DB_BACKUP_DIR || '').trim();
+  if (explicitBackupDir) return explicitBackupDir;
+  if (DB_STORAGE_STATUS.persistent) return path.join(path.dirname(dbPath), 'backups');
+  return null;
+}
+
+function getDbBackupStatus(backupDir) {
+  const explicitBackupDir = String(process.env.DB_BACKUP_DIR || '').trim();
+  const enabled = ENABLE_DB_BACKUPS && !!backupDir;
+  const warning = enabled
+    ? null
+    : 'Automatic DB backups are disabled. Configure DB_BACKUP_DIR on persistent storage or make DB_PATH persistent.';
+
+  return {
+    enabled,
+    dir: backupDir,
+    explicit: !!explicitBackupDir,
+    warning,
+  };
+}
 
 // ── Database (sql.js) ──
 
 let db; // initialized in main()
+let server = null;
+let shuttingDown = false;
+let lastDbBackupAtMs = 0;
+let lastDbBackupAt = null;
+let lastDbBackupReason = null;
+let lastDbBackupPath = null;
 
 function ensureDbDirectory() {
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+}
+
+function ensureDbBackupDirectory() {
+  if (!DB_BACKUP_STATUS.enabled || !DB_BACKUP_STATUS.dir) return;
+  fs.mkdirSync(DB_BACKUP_STATUS.dir, { recursive: true });
+}
+
+function listDbBackups() {
+  if (!DB_BACKUP_STATUS.dir || !fs.existsSync(DB_BACKUP_STATUS.dir)) return [];
+  return fs.readdirSync(DB_BACKUP_STATUS.dir)
+    .map((name) => {
+      const fullPath = path.join(DB_BACKUP_STATUS.dir, name);
+      const stat = fs.statSync(fullPath);
+      if (!stat.isFile()) return null;
+      return {
+        name,
+        path: fullPath,
+        size: stat.size,
+        modifiedAt: stat.mtime.toISOString(),
+        modifiedAtMs: stat.mtimeMs,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.modifiedAtMs - a.modifiedAtMs);
+}
+
+function pruneDbBackups() {
+  const backups = listDbBackups();
+  backups.slice(DB_BACKUP_MAX_FILES).forEach((backup) => {
+    try {
+      fs.unlinkSync(backup.path);
+    } catch (error) {
+      console.warn(`[Storage] Could not prune DB backup ${backup.path}: ${error.message}`);
+    }
+  });
+}
+
+function writeDbBackupFromFile(sourcePath, reason = 'save') {
+  if (!DB_BACKUP_STATUS.enabled || !DB_BACKUP_STATUS.dir) return false;
+  if (!fs.existsSync(sourcePath)) return false;
+
+  ensureDbBackupDirectory();
+  const isoNow = new Date().toISOString();
+  const stamp = isoNow.replace(/[:.]/g, '-');
+  const sourceExt = path.extname(sourcePath) || '.sqlite';
+  const sourceBase = path.basename(sourcePath, sourceExt);
+  const safeReason = String(reason || 'backup').replace(/[^a-z0-9_-]+/gi, '-').toLowerCase();
+  const backupName = `${sourceBase}-${safeReason}-${stamp}${sourceExt}`;
+  const backupPath = path.join(DB_BACKUP_STATUS.dir, backupName);
+
+  fs.copyFileSync(sourcePath, backupPath);
+  pruneDbBackups();
+
+  lastDbBackupAtMs = Date.now();
+  lastDbBackupAt = isoNow;
+  lastDbBackupReason = reason;
+  lastDbBackupPath = backupPath;
+
+  console.log(`[Storage] DB backup created: ${backupPath}`);
+  return true;
+}
+
+function maybeWriteDbBackup(reason = 'save') {
+  if (!DB_BACKUP_STATUS.enabled || !DB_BACKUP_STATUS.dir) return false;
+  const now = Date.now();
+  const intervalMs = DB_BACKUP_INTERVAL_MINUTES * 60 * 1000;
+  if (lastDbBackupAtMs && (now - lastDbBackupAtMs) < intervalMs) return false;
+  return writeDbBackupFromFile(DB_PATH, reason);
+}
+
+function flushDbToDisk(reason = 'shutdown') {
+  if (!db) return;
+  try {
+    saveDb();
+    console.log(`[Storage] DB flushed to disk (${reason})`);
+  } catch (error) {
+    console.error(`[Storage] Failed to flush DB during ${reason}:`, error.message);
+  }
+}
+
+function installSignalHandlers() {
+  const handleShutdown = (signal) => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+
+    console.log(`[Server] Received ${signal}, shutting down gracefully...`);
+    flushDbToDisk(signal);
+
+    if (!server) {
+      process.exit(0);
+      return;
+    }
+
+    const forceExitTimer = setTimeout(() => {
+      console.error('[Server] Graceful shutdown timed out, forcing exit');
+      process.exit(1);
+    }, 10000);
+
+    server.close(() => {
+      clearTimeout(forceExitTimer);
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+  process.on('SIGINT', () => handleShutdown('SIGINT'));
 }
 
 /** Save database to disk */
@@ -60,6 +265,7 @@ function saveDb() {
   ensureDbDirectory();
   const data = db.export();
   fs.writeFileSync(DB_PATH, Buffer.from(data));
+  maybeWriteDbBackup('save');
 }
 
 /** Run a query and return all rows as objects */
@@ -137,6 +343,17 @@ async function sendEmail(to, { subject, html }, templateName, address) {
 
 async function initDatabase() {
   const SQL = await initSqlJs();
+
+  if (fs.existsSync(DB_PATH)) {
+    writeDbBackupFromFile(DB_PATH, 'pre-migration');
+  }
+
+  if (path.resolve(DB_PATH) !== path.resolve(DEFAULT_DB_PATH) && !fs.existsSync(DB_PATH) && fs.existsSync(DEFAULT_DB_PATH)) {
+    fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+    fs.copyFileSync(DEFAULT_DB_PATH, DB_PATH);
+    console.log(`[Storage] Seeded ${DB_PATH} from existing ${DEFAULT_DB_PATH}`);
+  }
+
   ensureDbDirectory();
 
   if (fs.existsSync(DB_PATH)) {
@@ -758,6 +975,20 @@ app.get('/api/health', (_req, res) => {
     agentConfigured: isAgentConfigured(),
     builderConfigured: isBuilderConfigured(),
     emailConfigured: !!RESEND_API_KEY,
+    storage: {
+      dbPersistent: DB_STORAGE_STATUS.persistent,
+      dbMode: DB_STORAGE_STATUS.mode,
+      warning: DB_STORAGE_STATUS.warning,
+      dataVolumeMounted: DB_STORAGE_STATUS.dataVolumeMounted,
+      recommendedPath: DB_STORAGE_STATUS.recommendedPath,
+      backupsEnabled: DB_BACKUP_STATUS.enabled,
+      backupDir: DB_BACKUP_STATUS.dir,
+      backupWarning: DB_BACKUP_STATUS.warning,
+      backupIntervalMinutes: DB_BACKUP_INTERVAL_MINUTES,
+      backupMaxFiles: DB_BACKUP_MAX_FILES,
+      lastBackupAt: lastDbBackupAt,
+      lastBackupReason: lastDbBackupReason,
+    },
   });
 });
 
@@ -874,6 +1105,76 @@ app.get('/api/admin/recent-emails', requireAdmin, (req, res) => {
     res.json({ emails });
   } catch (err) {
     res.status(500).json({ error: 'Internal error' });
+  }
+});
+
+app.get('/api/admin/backups', requireAdmin, (_req, res) => {
+  try {
+    const backups = listDbBackups().map(({ path: backupPath, modifiedAtMs, ...backup }) => backup);
+    res.json({
+      enabled: DB_BACKUP_STATUS.enabled,
+      dir: DB_BACKUP_STATUS.dir,
+      lastBackupAt: lastDbBackupAt,
+      lastBackupReason: lastDbBackupReason,
+      lastBackupPath,
+      backups,
+    });
+  } catch (err) {
+    console.error('[Admin backups]', err);
+    res.status(500).json({ error: 'Failed to list backups' });
+  }
+});
+
+app.get('/api/admin/backups/:name/download', requireAdmin, (req, res) => {
+  try {
+    const backupName = path.basename(String(req.params.name || ''));
+    const backup = listDbBackups().find((item) => item.name === backupName);
+    if (!backup) {
+      return res.status(404).json({ error: 'Backup not found' });
+    }
+    res.download(backup.path, backup.name);
+  } catch (err) {
+    console.error('[Admin backup download]', err);
+    res.status(500).json({ error: 'Failed to download backup' });
+  }
+});
+
+app.get('/api/admin/export', requireAdmin, (_req, res) => {
+  try {
+    const exportedAt = new Date().toISOString();
+    const fileStamp = exportedAt.replace(/[:.]/g, '-');
+    const payload = {
+      exportedAt,
+      schemaVersion: 1,
+      storage: {
+        dbPath: DB_PATH,
+        persistent: DB_STORAGE_STATUS.persistent,
+        mode: DB_STORAGE_STATUS.mode,
+      },
+      strategies: dbAll('SELECT * FROM strategies ORDER BY id ASC'),
+      orders: dbAll('SELECT * FROM orders ORDER BY id ASC'),
+      emailLog: dbAll('SELECT * FROM email_log ORDER BY id ASC'),
+    };
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="hypurrmium-export-${fileStamp}.json"`);
+    res.send(JSON.stringify(payload, null, 2));
+  } catch (err) {
+    console.error('[Admin export]', err);
+    res.status(500).json({ error: 'Failed to export data' });
+  }
+});
+
+app.get('/api/admin/db-download', requireAdmin, (_req, res) => {
+  try {
+    if (!fs.existsSync(DB_PATH)) {
+      return res.status(404).json({ error: 'Database file not found' });
+    }
+    const fileStamp = new Date().toISOString().replace(/[:.]/g, '-');
+    res.download(DB_PATH, `hypurrmium-db-${fileStamp}.sqlite`);
+  } catch (err) {
+    console.error('[Admin db-download]', err);
+    res.status(500).json({ error: 'Failed to download database' });
   }
 });
 
@@ -1246,6 +1547,11 @@ async function checkStrategies() {
 // ── Start ──
 
 async function main() {
+  if (REQUIRE_PERSISTENT_DB && DB_STORAGE_STATUS.hosted && !DB_STORAGE_STATUS.persistent) {
+    throw new Error(`[Storage] Refusing to start with ephemeral DB_PATH (${DB_PATH}). Mount a persistent volume and set DB_PATH=/data/autobuy.db.`);
+  }
+
+  installSignalHandlers();
   await initDatabase();
 
   if (!DISABLE_WORKER) {
@@ -1255,13 +1561,30 @@ async function main() {
     });
   }
 
-  app.listen(PORT, HOST, () => {
+  server = app.listen(PORT, HOST, () => {
     console.log(`\n  ╔══════════════════════════════════════════╗`);
     console.log(`  ║  Hypurrmium Auto-Buy Backend             ║`);
     console.log(`  ║  Host: ${HOST.padEnd(35, ' ')}║`);
     console.log(`  ║  Port: ${String(PORT).padEnd(35, ' ')}║`);
     console.log(`  ║  P/E Worker: ${DISABLE_WORKER ? 'disabled (local mode)' : 'every 60s'}${DISABLE_WORKER ? '          ' : '                   '}║`);
     console.log(`  ╚══════════════════════════════════════════╝\n`);
+
+    console.log(`[Storage] DB path: ${DB_PATH} (${DB_STORAGE_STATUS.mode})`);
+    console.log(`[Storage] /data volume mounted: ${DB_STORAGE_STATUS.dataVolumeMounted ? 'yes' : 'no'}`);
+    if (DB_STORAGE_STATUS.warning) {
+      console.warn(`[Storage] WARNING: ${DB_STORAGE_STATUS.warning}`);
+      if (DB_STORAGE_STATUS.recommendedPath) {
+        console.warn(`[Storage] Recommended DB_PATH: ${DB_STORAGE_STATUS.recommendedPath}`);
+      }
+      if (!REQUIRE_PERSISTENT_DB) {
+        console.warn('[Storage] Set REQUIRE_PERSISTENT_DB=true in production to fail hard on ephemeral storage.');
+      }
+    }
+    if (DB_BACKUP_STATUS.enabled) {
+      console.log(`[Storage] DB backups: enabled -> ${DB_BACKUP_STATUS.dir} (every ${DB_BACKUP_INTERVAL_MINUTES} min, keep ${DB_BACKUP_MAX_FILES})`);
+    } else {
+      console.warn(`[Storage] DB backups disabled. ${DB_BACKUP_STATUS.warning}`);
+    }
 
     if (!DISABLE_WORKER) {
       // Initial check on startup
