@@ -115,6 +115,8 @@ Notes:
 
 Use the repo root as the Pages project.
 
+The repo now includes `_redirects` so `/hype`, `/lit`, `/pump`, `/sky`, and `/aave` all rewrite to the shared `index.html` shell.
+
 - Framework preset: `None`
 - Build command: leave empty
 - Build output directory: `.`
@@ -141,6 +143,9 @@ The file `functions/api/[[path]].js` makes these work on the main domain:
 - `https://hypurrmium.xyz/api/strategies/...`
 - `https://hypurrmium.xyz/api/defillama/fees`
 - `https://hypurrmium.xyz/api/defillama/protocol`
+- `https://hypurrmium.xyz/api/coingecko/coin?id=lighter`
+- `https://hypurrmium.xyz/api/coingecko/simple/price?ids=lighter&vs_currencies=usd&include_market_cap=true&include_24hr_change=true`
+- `https://hypurrmium.xyz/api/coingecko/market_chart?id=lighter&vs_currency=usd&days=365`
 - `https://hypurrmium.xyz/api/hl-info`
 - `https://hypurrmium.xyz/api/hl-exchange`
 
@@ -154,9 +159,12 @@ After deployment:
 2. It must return JSON, not HTML
 3. Open `https://hypurrmium.xyz/api/defillama/fees`
 4. It must return JSON, not HTML
-3. Open the site and verify:
+5. Open `https://hypurrmium.xyz/api/coingecko/simple/price?ids=lighter&vs_currencies=usd&include_market_cap=true&include_24hr_change=true`
+6. It must return JSON, not HTML
+7. Open `https://hypurrmium.xyz/hype` and `https://hypurrmium.xyz/lit` and verify:
    - wallet balance loads
    - `Set Up Strategy` no longer shows `Backend not reachable`
+  - the token switcher navigates between `/hype` and `/lit`
 
 ## Failure Modes
 

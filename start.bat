@@ -22,31 +22,8 @@ set "DISABLE_WORKER="
 set "ALLOW_NULL_ORIGIN="
 cd ..
 
-:: Start frontend
-where python >nul 2>nul
-if %ERRORLEVEL% equ 0 (
-    start http://localhost:8080
-    python -m http.server 8080
-    goto :end
-)
-
-where py >nul 2>nul
-if %ERRORLEVEL% equ 0 (
-    start http://localhost:8080
-    py -m http.server 8080
-    goto :end
-)
-
-where npx >nul 2>nul
-if %ERRORLEVEL% equ 0 (
-    start http://localhost:8080
-    npx serve -l 8080
-    goto :end
-)
-
-echo.
-echo  ERREUR: Ni Python ni Node.js n'ont ete trouves.
-echo.
-pause
+:: Start frontend with local route rewrites
+start http://localhost:8080
+node local-frontend-server.js
 
 :end

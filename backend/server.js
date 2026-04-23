@@ -43,14 +43,22 @@ const ENABLE_DB_BACKUPS = !/^(0|false|no)$/i.test(process.env.ENABLE_DB_BACKUPS 
 const DB_BACKUP_INTERVAL_MINUTES = Math.max(1, parseInt(process.env.DB_BACKUP_INTERVAL_MINUTES || '60', 10) || 60);
 const DB_BACKUP_MAX_FILES = Math.max(1, parseInt(process.env.DB_BACKUP_MAX_FILES || '168', 10) || 168);
 const ALLOW_NULL_ORIGIN = /^(1|true|yes)$/i.test(process.env.ALLOW_NULL_ORIGIN || '');
-const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || 'https://hypurrmium.xyz,https://www.hypurrmium.xyz,http://localhost:3000,http://localhost:8080')
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || 'https://hypurrmium.xyz,https://www.hypurrmium.xyz,http://localhost:3000,http://localhost:3001,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:8080')
   .split(',')
   .map(origin => origin.trim())
   .filter(Boolean);
+const DEFILLAMA_API_ROOT = 'https://api.llama.fi';
+const COINGECKO_API_ROOT = 'https://api.coingecko.com/api/v3';
+const COINS_LLAMA_API_ROOT = 'https://coins.llama.fi';
+const BINANCE_API_ROOT = 'https://api.binance.com/api/v3';
 const HYPERLIQUID_INFO_URL = 'https://api.hyperliquid.xyz/info';
 const HYPERLIQUID_EXCHANGE_URL = 'https://api.hyperliquid.xyz/exchange';
-const DEFILLAMA_FEES_URL = 'https://api.llama.fi/summary/fees/hyperliquid?dataType=dailyRevenue';
-const DEFILLAMA_PROTOCOL_URL = 'https://api.llama.fi/protocol/hyperliquid';
+const COINGECKO_COIN_TTL_MS = 6 * 60 * 60 * 1000;
+const DEFILLAMA_PROTOCOL_TTL_MS = 30 * 60 * 1000;
+const COINGECKO_SIMPLE_PRICE_TTL_MS = 90 * 1000;
+const COINGECKO_MARKET_CHART_TTL_MS = 30 * 60 * 1000;
+const BINANCE_KLINES_TTL_MS = 12 * 60 * 60 * 1000;
+const UPSTREAM_JSON_CACHE = new Map();
 const DB_PATH = resolveDbPath();
 const DB_STORAGE_STATUS = getDbStorageStatus(DB_PATH);
 const DB_BACKUP_DIR = resolveDbBackupDir(DB_PATH);
@@ -64,6 +72,12 @@ function isHostedEnvironment() {
     || process.env.RAILWAY_PROJECT_ID
     || process.env.RENDER
   );
+}
+
+function isTrustedLocalOrigin(origin) {
+  if (!origin || isHostedEnvironment()) return false;
+  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)
+    || /^vscode-(webview|file):/i.test(origin);
 }
 
 function hasAutoVolumeMount() {
@@ -458,7 +472,7 @@ const app = express();
 app.use(express.json());
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin || ALLOWED_ORIGINS.includes(origin) || (origin === 'null' && ALLOW_NULL_ORIGIN)) {
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || isTrustedLocalOrigin(origin) || (origin === 'null' && ALLOW_NULL_ORIGIN)) {
       return cb(null, true);
     }
     cb(new Error('CORS not allowed'));
@@ -510,6 +524,209 @@ function normalizePeMetric(metric) {
 
 function parseBooleanFlag(value) {
   return /^(1|true|yes|on)$/i.test(String(value || ''));
+}
+
+function normalizeUpstreamSegment(value, fallback = '') {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (!normalized) return fallback;
+  return /^[a-z0-9-]+$/.test(normalized) ? normalized : fallback;
+}
+
+function normalizeAlphaSegment(value, fallback = 'usd') {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (!normalized) return fallback;
+  return /^[a-z]+$/.test(normalized) ? normalized : fallback;
+}
+
+function normalizeDefiLlamaDataType(value) {
+  const normalized = String(value || '').trim();
+  return normalized || 'dailyRevenue';
+}
+
+function normalizeCoinGeckoDays(value, fallback = '365') {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (!normalized) return fallback;
+  if (normalized === 'max') return 'max';
+  const parsed = Number.parseInt(normalized, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return String(Math.min(parsed, 3650));
+}
+
+function normalizeBinanceSymbol(value, fallback = 'AAVEUSDT') {
+  const normalized = String(value || '').trim().toUpperCase();
+  if (!normalized) return fallback;
+  return /^[A-Z0-9]+$/.test(normalized) ? normalized : fallback;
+}
+
+function normalizeBinanceInterval(value, fallback = '1d') {
+  const normalized = String(value || '').trim();
+  if (!normalized) return fallback;
+  return /^[0-9]+[smhdwM]$/.test(normalized) ? normalized : fallback;
+}
+
+function normalizePositiveInteger(value, fallback = 0, max = Number.MAX_SAFE_INTEGER) {
+  const parsed = Number.parseInt(String(value ?? '').trim(), 10);
+  if (!Number.isFinite(parsed) || parsed < 0) return fallback;
+  return Math.min(parsed, max);
+}
+
+function buildDefiLlamaFeesUrl(query = {}) {
+  const slug = normalizeUpstreamSegment(query.slug, 'hyperliquid');
+  const dataType = normalizeDefiLlamaDataType(query.dataType);
+  const params = new URLSearchParams({ dataType });
+  return `${DEFILLAMA_API_ROOT}/summary/fees/${slug}?${params.toString()}`;
+}
+
+function buildDefiLlamaProtocolUrl(query = {}) {
+  const slug = normalizeUpstreamSegment(query.slug, 'hyperliquid');
+  return `${DEFILLAMA_API_ROOT}/protocol/${slug}`;
+}
+
+function buildCoinGeckoCoinUrl(query = {}) {
+  const id = normalizeUpstreamSegment(query.id, 'lighter');
+  return `${COINGECKO_API_ROOT}/coins/${id}`;
+}
+
+function buildCoinGeckoSimplePriceUrl(query = {}) {
+  const ids = normalizeUpstreamSegment(query.ids, 'lighter');
+  const vsCurrencies = normalizeAlphaSegment(query.vs_currencies, 'usd');
+  const params = new URLSearchParams({
+    ids,
+    vs_currencies: vsCurrencies,
+    include_market_cap: parseBooleanFlag(query.include_market_cap) ? 'true' : 'false',
+    include_24hr_change: parseBooleanFlag(query.include_24hr_change) ? 'true' : 'false',
+  });
+  return `${COINGECKO_API_ROOT}/simple/price?${params.toString()}`;
+}
+
+function buildCoinGeckoMarketChartUrl(query = {}) {
+  const id = normalizeUpstreamSegment(query.id, 'lighter');
+  const vsCurrency = normalizeAlphaSegment(query.vs_currency, 'usd');
+  const params = new URLSearchParams({
+    vs_currency: vsCurrency,
+    days: normalizeCoinGeckoDays(query.days, '365'),
+  });
+  const interval = normalizeAlphaSegment(query.interval, '');
+  if (interval) params.set('interval', interval);
+  return `${COINGECKO_API_ROOT}/coins/${id}/market_chart?${params.toString()}`;
+}
+
+function buildBinanceKlinesUrl(query = {}) {
+  const symbol = normalizeBinanceSymbol(query.symbol, 'AAVEUSDT');
+  const interval = normalizeBinanceInterval(query.interval, '1d');
+  const limit = normalizePositiveInteger(query.limit, 1000, 1000);
+  const startTime = normalizePositiveInteger(query.startTime, 0);
+  const endTime = normalizePositiveInteger(query.endTime, 0);
+  const params = new URLSearchParams({
+    symbol,
+    interval,
+    limit: String(limit),
+  });
+  if (startTime > 0) params.set('startTime', String(startTime));
+  if (endTime > 0) params.set('endTime', String(endTime));
+  return `${BINANCE_API_ROOT}/klines?${params.toString()}`;
+}
+
+function getCachedJson(cacheKey, ttlMs) {
+  if (!cacheKey || !ttlMs) return null;
+  const cached = UPSTREAM_JSON_CACHE.get(cacheKey);
+  if (!cached) return null;
+  if (cached.expiresAt <= Date.now()) return cached;
+  return cached;
+}
+
+function setCachedJson(cacheKey, data, ttlMs) {
+  if (!cacheKey || !ttlMs) return;
+  UPSTREAM_JSON_CACHE.set(cacheKey, {
+    data,
+    expiresAt: Date.now() + ttlMs,
+  });
+}
+
+function summarizeDefiLlamaProtocol(data) {
+  if (!data || typeof data !== 'object') return {};
+
+  return {
+    id: data.id ?? null,
+    name: data.name ?? null,
+    symbol: data.symbol ?? null,
+    gecko_id: data.gecko_id ?? null,
+    mcap: data.mcap ?? null,
+    fdv: data.fdv ?? null,
+  };
+}
+
+async function fetchCachedUpstreamJson(url, { cacheKey = url, ttlMs = 0, staleOnError = false, fallback = null } = {}) {
+  const cached = getCachedJson(cacheKey, ttlMs);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.data;
+  }
+
+  try {
+    const data = await fetchUpstreamJson(url);
+    setCachedJson(cacheKey, data, ttlMs);
+    return data;
+  } catch (error) {
+    if (typeof fallback === 'function') {
+      try {
+        const fallbackData = await fallback(error, cached?.data || null);
+        if (fallbackData) {
+          setCachedJson(cacheKey, fallbackData, ttlMs);
+          return fallbackData;
+        }
+      } catch (fallbackError) {
+        console.warn('[fetchCachedUpstreamJson] Fallback failed', fallbackError);
+      }
+    }
+
+    if (staleOnError && cached?.data) {
+      return cached.data;
+    }
+    throw error;
+  }
+}
+
+async function fetchCoinsLlamaCurrentPriceFallback(query = {}) {
+  const id = normalizeUpstreamSegment(query.ids || query.id, 'lighter');
+  const data = await fetchUpstreamJson(`${COINS_LLAMA_API_ROOT}/prices/current/coingecko:${id}`);
+  const entry = data?.coins?.[`coingecko:${id}`];
+  const price = Number(entry?.price);
+  if (!Number.isFinite(price) || price <= 0) return null;
+  return {
+    [id]: {
+      usd: price,
+      usd_market_cap: null,
+      usd_24hr_change: null,
+    },
+  };
+}
+
+async function fetchCoinsLlamaChartFallback(query = {}) {
+  const id = normalizeUpstreamSegment(query.id, 'lighter');
+  const span = normalizeCoinGeckoDays(query.days, '365');
+  const params = new URLSearchParams({
+    span: span === 'max' ? '365' : span,
+    period: '1d',
+  });
+  const data = await fetchUpstreamJson(`${COINS_LLAMA_API_ROOT}/chart/coingecko:${id}?${params.toString()}`);
+  const points = data?.coins?.[`coingecko:${id}`]?.prices;
+  if (!Array.isArray(points) || !points.length) return null;
+
+  const prices = points
+    .map((point) => {
+      const timestamp = Number(point?.timestamp);
+      const price = Number(point?.price);
+      if (!Number.isFinite(timestamp) || !Number.isFinite(price) || price <= 0) return null;
+      return [timestamp * 1000, price];
+    })
+    .filter(Boolean);
+
+  if (!prices.length) return null;
+  return {
+    prices,
+    market_caps: [],
+    total_volumes: [],
+  };
 }
 
 async function fetchUpstreamJson(url, options = {}) {
@@ -882,9 +1099,9 @@ app.get('/api/pe', async (req, res) => {
   }
 });
 
-app.get('/api/defillama/fees', async (_req, res) => {
+app.get('/api/defillama/fees', async (req, res) => {
   try {
-    const data = await fetchUpstreamJson(DEFILLAMA_FEES_URL);
+    const data = await fetchUpstreamJson(buildDefiLlamaFeesUrl(req.query || {}));
     res.json(data);
   } catch (err) {
     console.error('[GET /api/defillama/fees]', err);
@@ -895,14 +1112,94 @@ app.get('/api/defillama/fees', async (_req, res) => {
   }
 });
 
-app.get('/api/defillama/protocol', async (_req, res) => {
+app.get('/api/defillama/protocol', async (req, res) => {
   try {
-    const data = await fetchUpstreamJson(DEFILLAMA_PROTOCOL_URL);
-    res.json(data);
+    const slug = normalizeUpstreamSegment(req.query?.slug, 'hyperliquid');
+    const data = await fetchCachedUpstreamJson(buildDefiLlamaProtocolUrl(req.query || {}), {
+      cacheKey: `defillama:protocol:${slug}`,
+      ttlMs: DEFILLAMA_PROTOCOL_TTL_MS,
+      staleOnError: true,
+    });
+    res.json(summarizeDefiLlamaProtocol(data));
   } catch (err) {
     console.error('[GET /api/defillama/protocol]', err);
     res.status(err.status || 502).json({
       error: 'Failed to fetch DefiLlama protocol data',
+      detail: err.detail || err.message,
+    });
+  }
+});
+
+app.get('/api/coingecko/coin', async (req, res) => {
+  try {
+    const data = await fetchCachedUpstreamJson(buildCoinGeckoCoinUrl(req.query || {}), {
+      cacheKey: `coingecko:coin:${normalizeUpstreamSegment(req.query?.id, 'lighter')}`,
+      ttlMs: COINGECKO_COIN_TTL_MS,
+      staleOnError: true,
+    });
+    res.json(data);
+  } catch (err) {
+    console.error('[GET /api/coingecko/coin]', err);
+    res.status(err.status || 502).json({
+      error: 'Failed to fetch CoinGecko coin data',
+      detail: err.detail || err.message,
+    });
+  }
+});
+
+app.get('/api/coingecko/simple/price', async (req, res) => {
+  try {
+    const data = await fetchCachedUpstreamJson(buildCoinGeckoSimplePriceUrl(req.query || {}), {
+      cacheKey: `coingecko:simple:${normalizeUpstreamSegment(req.query?.ids, 'lighter')}:${normalizeAlphaSegment(req.query?.vs_currencies, 'usd')}`,
+      ttlMs: COINGECKO_SIMPLE_PRICE_TTL_MS,
+      staleOnError: true,
+      fallback: () => fetchCoinsLlamaCurrentPriceFallback(req.query || {}),
+    });
+    res.json(data);
+  } catch (err) {
+    console.error('[GET /api/coingecko/simple/price]', err);
+    res.status(err.status || 502).json({
+      error: 'Failed to fetch CoinGecko simple price data',
+      detail: err.detail || err.message,
+    });
+  }
+});
+
+app.get('/api/coingecko/market_chart', async (req, res) => {
+  try {
+    const data = await fetchCachedUpstreamJson(buildCoinGeckoMarketChartUrl(req.query || {}), {
+      cacheKey: `coingecko:market_chart:${normalizeUpstreamSegment(req.query?.id, 'lighter')}:${normalizeCoinGeckoDays(req.query?.days, '365')}:${normalizeAlphaSegment(req.query?.vs_currency, 'usd')}`,
+      ttlMs: COINGECKO_MARKET_CHART_TTL_MS,
+      staleOnError: true,
+      fallback: () => fetchCoinsLlamaChartFallback(req.query || {}),
+    });
+    res.json(data);
+  } catch (err) {
+    console.error('[GET /api/coingecko/market_chart]', err);
+    res.status(err.status || 502).json({
+      error: 'Failed to fetch CoinGecko market chart data',
+      detail: err.detail || err.message,
+    });
+  }
+});
+
+app.get('/api/binance/klines', async (req, res) => {
+  try {
+    const symbol = normalizeBinanceSymbol(req.query?.symbol, 'AAVEUSDT');
+    const interval = normalizeBinanceInterval(req.query?.interval, '1d');
+    const startTime = normalizePositiveInteger(req.query?.startTime, 0);
+    const endTime = normalizePositiveInteger(req.query?.endTime, 0);
+    const limit = normalizePositiveInteger(req.query?.limit, 1000, 1000);
+    const data = await fetchCachedUpstreamJson(buildBinanceKlinesUrl(req.query || {}), {
+      cacheKey: `binance:klines:${symbol}:${interval}:${startTime}:${endTime}:${limit}`,
+      ttlMs: BINANCE_KLINES_TTL_MS,
+      staleOnError: true,
+    });
+    res.json(data);
+  } catch (err) {
+    console.error('[GET /api/binance/klines]', err);
+    res.status(err.status || 502).json({
+      error: 'Failed to fetch Binance kline data',
       detail: err.detail || err.message,
     });
   }
@@ -1180,7 +1477,7 @@ app.get('/api/admin/db-download', requireAdmin, (_req, res) => {
 
 // ── Frontend Pages & Assets ──
 
-app.get(['/', '/index.html'], (_req, res) => {
+app.get(['/', '/index.html', '/hype', '/hype/', '/lit', '/lit/', '/pump', '/pump/', '/sky', '/sky/', '/aave', '/aave/'], (_req, res) => {
   sendSiteFile(res, 'index.html');
 });
 
