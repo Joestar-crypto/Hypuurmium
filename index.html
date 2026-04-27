@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hypurrmium — HYPE P/E Ratio Chart &amp; Auto-DCA for Hyperliquid</title>
+    <title>Hypurrmium | HYPE P/E Ratio Chart &amp; Auto-DCA for Hyperliquid</title>
     <link rel="icon" href="Hypurrmium.png" type="image/png">
     <link rel="canonical" href="https://hypurrmium.xyz/" id="canonical-link">
 
@@ -78,11 +78,25 @@
         (function() {
             const tokenFromQuery = String(new URLSearchParams(location.search || '').get('token') || '').trim().toLowerCase();
             const normalizedPath = location.pathname.replace(/\/+$/, '').toLowerCase() || '/';
-            const knownTokens = new Set(['hype', 'lit', 'pump', 'sky', 'aave']);
+            const knownTokens = new Set(['hype', 'lit', 'pump', 'sky', 'aave', 'edge', 'cars', 'aster', 'link', 'uni', 'cake', 'lido']);
             const pathToken = normalizedPath === '/lit'
                 ? 'lit'
+                : normalizedPath === '/link'
+                    ? 'link'
+                : normalizedPath === '/uni'
+                    ? 'uni'
+                : normalizedPath === '/cake'
+                    ? 'cake'
+                : normalizedPath === '/lido'
+                    ? 'lido'
                 : normalizedPath === '/aave'
                     ? 'aave'
+                : normalizedPath === '/aster'
+                    ? 'aster'
+                : normalizedPath === '/cars'
+                    ? 'cars'
+                : normalizedPath === '/edge'
+                    ? 'edge'
                 : normalizedPath === '/sky'
                     ? 'sky'
                 : normalizedPath === '/pump'
@@ -92,11 +106,18 @@
                         : '';
             const routeToken = knownTokens.has(tokenFromQuery) ? tokenFromQuery : (pathToken || 'hype');
             const routeTitles = {
-                hype: 'Hypurrmium — HYPE P/E Ratio',
-                lit: 'Hypurrmium — LIT P/E Ratio',
-                pump: 'Hypurrmium — PUMP P/E Ratio',
-                sky: 'Hypurrmium — SKY P/E Ratio',
-                aave: 'Hypurrmium — AAVE P/E Ratio',
+                hype: 'Hypurrmium | HYPE P/E Ratio',
+                lit: 'Hypurrmium | LIT P/E Ratio',
+                pump: 'Hypurrmium | PUMP P/E Ratio',
+                sky: 'Hypurrmium | SKY P/E Ratio',
+                aave: 'Hypurrmium | AAVE P/E Ratio',
+                edge: 'Hypurrmium | EDGE P/E Ratio',
+                cars: 'Hypurrmium | CARDS P/E Ratio',
+                aster: 'Hypurrmium | ASTER P/E Ratio',
+                link: 'Hypurrmium | LINK P/E Ratio',
+                uni: 'Hypurrmium | UNI P/E Ratio',
+                cake: 'Hypurrmium | CAKE P/E Ratio',
+                lido: 'Hypurrmium | LDO P/E Ratio',
             };
             window.HYPURRMIUM_ROUTE_TOKEN = routeToken;
             document.title = routeTitles[routeToken] || routeTitles.hype;
@@ -4574,6 +4595,55 @@
                                 <span class="chart-token-name">Aave</span>
                             </span>
                         </button>
+                        <button class="chart-token-option" type="button" data-token="edge" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://assets.coingecko.com/coins/images/102172616/standard/edgex.png?1774332310" alt="EDGE icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">EDGE</span>
+                                <span class="chart-token-name">edgeX</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="cars" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://assets.coingecko.com/coins/images/68728/standard/cards-logo.jpeg?1756534539" alt="CARDS icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">CARDS</span>
+                                <span class="chart-token-name">Collector Crypt</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="aster" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://assets.coingecko.com/coins/images/69040/standard/_ASTER.png?1757326782" alt="ASTER icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">ASTER</span>
+                                <span class="chart-token-name">Aster</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="link" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/877/small/Chainlink_Logo_500.png?1760023405" alt="LINK icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">LINK</span>
+                                <span class="chart-token-name">Chainlink</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="uni" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/12504/small/uniswap-logo.png?1720676669" alt="UNI icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">UNI</span>
+                                <span class="chart-token-name">Uniswap</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="cake" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/12632/small/pancakeswap-cake-logo_%281%29.png?1696512440" alt="CAKE icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">CAKE</span>
+                                <span class="chart-token-name">PancakeSwap</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="lido" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/13573/small/Lido_DAO.png?1696513326" alt="LDO icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">LDO</span>
+                                <span class="chart-token-name">Lido</span>
+                            </span>
+                        </button>
                     </div>
                 </div>
                 <span class="chart-label" id="chart-mode-label">HYPE / Revenue · P/E</span>
@@ -4588,6 +4658,8 @@
                         <button class="period-btn" data-range="90">3M</button>
                         <button class="period-btn" data-range="180">6M</button>
                         <button class="period-btn" data-range="365">1Y</button>
+                        <button class="period-btn" data-range="730">2Y</button>
+                        <button class="period-btn" data-range="1095">3Y</button>
                         <button class="period-btn active" data-range="0">ALL</button>
                     </div>
                     <div class="period-btns buyback-scale-btns" id="buyback-scale-btns">
@@ -4889,6 +4961,9 @@
     function formatPeZoneValue(value) {
         const numeric = Number(value);
         if (!Number.isFinite(numeric)) return '—';
+        if (Math.abs(numeric) < 1) {
+            return numeric.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*[1-9])0+$/, '$1');
+        }
         const rounded = Math.round(numeric * 10) / 10;
         return Number.isInteger(rounded) ? String(Math.round(rounded)) : rounded.toFixed(1);
     }
@@ -4957,6 +5032,7 @@
             symbol: 'HYPE',
             displayName: 'Hyperliquid',
             protocolName: 'Hyperliquid',
+            menuMarketCapRank: 1,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/50882/small/hyperliquid.jpg?1729431300',
             routePath: '/hype',
             priceLabel: 'HYPE Price',
@@ -4992,7 +5068,7 @@
             },
             footerDataHtml: 'Data: <a href="https://defillama.com/protocol/hyperliquid" target="_blank">DefiLlama</a> + <a href="https://app.hyperliquid.xyz" target="_blank">Hyperliquid API</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
             meta: {
-                title: 'Hypurrmium — HYPE P/E Ratio',
+                title: 'Hypurrmium | HYPE P/E Ratio',
                 description: 'Track the live P/E ratio of Hyperliquid\'s HYPE token based on real buyback revenue. Set automated DCA strategies to buy or sell when valuation hits your target. Free tool.',
                 keywords: 'Hyperliquid, HYPE, P/E ratio, price earnings ratio, HYPE valuation, Hyperliquid chart, HYPE auto DCA, HYPE buyback, Hyperliquid revenue, HYPE price, crypto DCA',
                 ogTitle: 'Hypurrmium — Live HYPE P/E Ratio & Auto-DCA for Hyperliquid',
@@ -5004,6 +5080,7 @@
             symbol: 'LIT',
             displayName: 'Lighter',
             protocolName: 'Lighter',
+            menuMarketCapRank: 11,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/71121/small/lighter.png?1765888098',
             routePath: '/lit',
             priceLabel: 'LIT Price',
@@ -5024,7 +5101,7 @@
             marketChartInterval: 'daily',
             intradayMarketChartDays: 30,
             intradayMarketChartInterval: 'hourly',
-            dynamicZones: { mc: true, fdv: false },
+            dynamicZones: false,
             zoneQuantiles: {
                 cheap: [0.05, 0.24],
                 fair: [0.40, 0.70],
@@ -5045,7 +5122,7 @@
             },
             footerDataHtml: 'Data: <a href="https://defillama.com/protocol/lighter" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/lighter" target="_blank">CoinGecko</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
             meta: {
-                title: 'Hypurrmium — LIT P/E Ratio',
+                title: 'Hypurrmium | LIT P/E Ratio',
                 description: 'Track the live P/E ratio of Lighter\'s LIT token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
                 keywords: 'Lighter, LIT, P/E ratio, price earnings ratio, LIT valuation, Lighter revenue, Lighter fees, crypto valuation chart',
                 ogTitle: 'Hypurrmium — Live LIT P/E Ratio',
@@ -5057,6 +5134,7 @@
             symbol: 'PUMP',
             displayName: 'Pump.fun',
             protocolName: 'Pump.fun',
+            menuMarketCapRank: 7,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/67164/small/pump.jpg?1751949376',
             routePath: '/pump',
             priceLabel: 'PUMP Price',
@@ -5093,7 +5171,7 @@
             },
             footerDataHtml: 'Data: <a href="https://defillama.com/protocol/pump" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/pump-fun" target="_blank">CoinGecko</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
             meta: {
-                title: 'Hypurrmium — PUMP P/E Ratio',
+                title: 'Hypurrmium | PUMP P/E Ratio',
                 description: 'Track the live P/E ratio of Pump.fun\'s PUMP token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
                 keywords: 'Pump.fun, PUMP, P/E ratio, price earnings ratio, PUMP valuation, Pump.fun revenue, Pump fees, crypto valuation chart',
                 ogTitle: 'Hypurrmium — Live PUMP P/E Ratio',
@@ -5105,6 +5183,7 @@
             symbol: 'SKY',
             displayName: 'Sky',
             protocolName: 'Sky',
+            menuMarketCapRank: 4,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/39925/small/sky.jpg?1724827980',
             routePath: '/sky',
             priceLabel: 'SKY Price',
@@ -5132,15 +5211,15 @@
                 label: 'Maker',
                 startDate: '2020-10-01',
             },
-            dynamicZones: { mc: true, fdv: true },
+            dynamicZones: false,
             zoneQuantiles: {
                 cheap: [0.08, 0.26],
                 fair: [0.40, 0.62],
-                expensive: [0.84, 0.96],
+                expensive: [0.92, 0.99],
             },
             zones: {
-                mc: { cheap: [4.5, 5], fair: [6, 7.5], expensive: [9, 10] },
-                fdv: { cheap: [4.5, 5], fair: [6, 7.5], expensive: [9, 10] },
+                mc: { cheap: [4.5, 5], fair: [6, 7.5], expensive: [11, 13] },
+                fdv: { cheap: [4.5, 5], fair: [6, 7.5], expensive: [11, 13] },
             },
             tokenRights: {
                 badge: 'SKY Rights',
@@ -5153,7 +5232,7 @@
             },
             footerDataHtml: 'Data: <a href="https://defillama.com/protocol/sky" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/sky" target="_blank">CoinGecko</a> · <a href="https://sky.money/" target="_blank">Sky</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
             meta: {
-                title: 'Hypurrmium — SKY P/E Ratio',
+                title: 'Hypurrmium | SKY P/E Ratio',
                 description: 'Track the live P/E ratio of Sky\'s SKY token with DefiLlama revenue and CoinGecko market cap data. The protocol history includes the legacy MakerDAO era.',
                 keywords: 'Sky, SKY, MakerDAO, Maker, P/E ratio, SKY valuation, Sky protocol revenue, MakerDAO revenue, crypto valuation chart',
                 ogTitle: 'Hypurrmium — Live SKY P/E Ratio',
@@ -5165,6 +5244,7 @@
             symbol: 'AAVE',
             displayName: 'Aave',
             protocolName: 'Aave',
+            menuMarketCapRank: 6,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/12645/small/aave-token-round.png?1720472354',
             routePath: '/aave',
             priceLabel: 'AAVE Price',
@@ -5212,11 +5292,399 @@
             },
             footerDataHtml: 'Data: <a href="https://defillama.com/protocol/aave" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/aave" target="_blank">CoinGecko</a> + <a href="https://aave.com" target="_blank">Aave</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
             meta: {
-                title: 'Hypurrmium — AAVE P/E Ratio',
+                title: 'Hypurrmium | AAVE P/E Ratio',
                 description: 'Track the live P/E ratio of Aave\'s AAVE token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
                 keywords: 'Aave, AAVE, P/E ratio, price earnings ratio, AAVE valuation, Aave revenue, lending protocol valuation, crypto valuation chart',
                 ogTitle: 'Hypurrmium — Live AAVE P/E Ratio',
                 ogDescription: 'Is AAVE cheap or expensive right now? Track the live P/E ratio of Aave using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        edge: {
+            key: 'edge',
+            symbol: 'EDGE',
+            displayName: 'edgeX',
+            protocolName: 'edgeX',
+            menuMarketCapRank: 9,
+            logoUrl: 'https://assets.coingecko.com/coins/images/102172616/standard/edgex.png?1774332310',
+            routePath: '/edge',
+            priceLabel: 'EDGE Price',
+            overlayLabel: '+EDGEUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'edge',
+            minRollingDays: 0,
+            defillamaFeesCandidates: ['edgex'],
+            defillamaProtocolSlug: 'edgex',
+            coingeckoId: 'edgex',
+            supplyFallback: 350_000_000,
+            fdvSupplyFallback: 1_000_000_000,
+            chartStart: null,
+            tgeDate: '2025-01-01',
+            intradayPreferredUntilDays: 540,
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: false },
+            zoneQuantiles: {
+                cheap: [0.08, 0.22],
+                fair: [0.34, 0.56],
+                expensive: [0.74, 0.92],
+            },
+            zones: {
+                mc: { cheap: [2, 3], fair: [4, 5], expensive: [6.5, 8] },
+                fdv: { cheap: [6, 8], fair: [10, 13], expensive: [16, 19] },
+            },
+            tokenRights: {
+                badge: 'EDGE Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'edgeX fees and revenue benchmark' },
+                    { label: 'Token claim', value: 'Governance + exchange fee participation narrative' },
+                    { label: 'Supply effect', value: 'No public burn series disclosed' },
+                    { label: 'Revenue scope', value: 'Perp trading fees and exchange revenue on edgeX' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/edgex" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/edgex" target="_blank">CoinGecko</a> + <a href="https://pro.edgex.exchange/" target="_blank">edgeX</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | EDGE P/E Ratio',
+                description: 'Track the live P/E ratio of edgeX\'s EDGE token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'edgeX, EDGE, P/E ratio, price earnings ratio, EDGE valuation, edgeX revenue, perp exchange valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium — Live EDGE P/E Ratio',
+                ogDescription: 'Is EDGE cheap or expensive right now? Track the live P/E ratio of edgeX using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        cars: {
+            key: 'cars',
+            symbol: 'CARDS',
+            displayName: 'Collector Crypt',
+            protocolName: 'Collector Crypt',
+            menuMarketCapRank: 12,
+            logoUrl: 'https://assets.coingecko.com/coins/images/68728/standard/cards-logo.jpeg?1756534539',
+            routePath: '/cars',
+            priceLabel: 'CARDS Price',
+            overlayLabel: '+CARDSUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'cars',
+            minRollingDays: 0,
+            defillamaFeesCandidates: ['collector-crypt'],
+            defillamaProtocolSlug: 'collector-crypt',
+            coingeckoId: 'collector-crypt',
+            supplyFallback: 260_000_000,
+            fdvSupplyFallback: 2_000_000_000,
+            chartStart: null,
+            tgeDate: '2025-08-01',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: false },
+            zoneQuantiles: {
+                cheap: [0.08, 0.24],
+                fair: [0.38, 0.62],
+                expensive: [0.82, 0.96],
+            },
+            zones: {
+                mc: { cheap: [0.2, 0.6], fair: [0.85, 1.25], expensive: [1.5, 1.9] },
+                fdv: { cheap: [3, 4.5], fair: [5.5, 7], expensive: [8, 9.5] },
+            },
+            tokenRights: {
+                badge: 'CARDS Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Collector Crypt revenue benchmark' },
+                    { label: 'Token claim', value: 'Exposure to platform activity, not modeled as direct fee-share' },
+                    { label: 'Supply effect', value: 'No public burn series disclosed' },
+                    { label: 'Revenue scope', value: 'Gacha sales plus marketplace fees and royalties' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/collector-crypt" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/collector-crypt" target="_blank">CoinGecko</a> + <a href="https://collectorcrypt.com/" target="_blank">Collector Crypt</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | CARDS P/E Ratio',
+                description: 'Track the live P/E ratio of Collector Crypt\'s CARDS token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'Collector Crypt, CARDS, P/E ratio, price earnings ratio, CARDS valuation, Collector Crypt revenue, solana gaming token valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium — Live CARDS P/E Ratio',
+                ogDescription: 'Is CARDS cheap or expensive right now? Track the live P/E ratio of Collector Crypt using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        aster: {
+            key: 'aster',
+            symbol: 'ASTER',
+            displayName: 'Aster',
+            protocolName: 'Aster',
+            menuMarketCapRank: 5,
+            logoUrl: 'https://assets.coingecko.com/coins/images/69040/standard/_ASTER.png?1757326782',
+            routePath: '/aster',
+            priceLabel: 'ASTER Price',
+            overlayLabel: '+ASTERUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'aster',
+            minRollingDays: 0,
+            defillamaFeesCandidates: ['aster'],
+            defillamaFeesDataType: 'dailyFees',
+            defillamaProtocolSlug: 'aster',
+            coingeckoId: 'aster-2',
+            supplyFallback: 2_500_000_000,
+            fdvSupplyFallback: 8_000_000_000,
+            chartStart: null,
+            tgeDate: '2025-10-01',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: false },
+            zoneQuantiles: {
+                cheap: [0.08, 0.22],
+                fair: [0.34, 0.56],
+                expensive: [0.76, 0.94],
+            },
+            zones: {
+                mc: { cheap: [14, 17], fair: [20, 24], expensive: [30, 36] },
+                fdv: { cheap: [40, 46], fair: [54, 64], expensive: [76, 88] },
+            },
+            tokenRights: {
+                badge: 'ASTER Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Aster protocol fees benchmark' },
+                    { label: 'Token claim', value: 'Governance exposure to exchange activity' },
+                    { label: 'Supply effect', value: 'No public burn series disclosed' },
+                    { label: 'Revenue scope', value: 'Protocol fee history from the Aster venue' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/aster" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/aster-2" target="_blank">CoinGecko</a> + <a href="https://www.asterdex.com/" target="_blank">Aster</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | ASTER P/E Ratio',
+                description: 'Track the live P/E ratio of Aster\'s ASTER token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'Aster, ASTER, P/E ratio, price earnings ratio, ASTER valuation, Aster revenue, perp dex valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium — Live ASTER P/E Ratio',
+                ogDescription: 'Is ASTER cheap or expensive right now? Track the live P/E ratio of Aster using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        link: {
+            key: 'link',
+            symbol: 'LINK',
+            displayName: 'Chainlink',
+            protocolName: 'Chainlink',
+            menuMarketCapRank: 2,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/877/small/Chainlink_Logo_500.png?1760023405',
+            routePath: '/link',
+            priceLabel: 'LINK Price',
+            overlayLabel: '+LINKUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'link',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['chainlink'],
+            defillamaProtocolSlug: 'chainlink',
+            coingeckoId: 'chainlink',
+            supplyFallback: 727_099_970,
+            fdvSupplyFallback: 1_000_000_000,
+            chartStart: null,
+            tgeDate: '2019-06-29',
+            historyStartDate: '2025-08-01',
+            trimTrailingZeroRevenueDays: 2,
+            revenueZeroGapFillMaxDays: 6,
+            revenueSmoothingDays: 5,
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            priceBackfillSource: {
+                provider: 'binance',
+                symbol: 'LINKUSDT',
+                startDate: '2025-08-01',
+            },
+            dynamicZones: false,
+            zones: {
+                mc: { cheap: [110, 125], fair: [160, 220], expensive: [300, 450] },
+                fdv: { cheap: [150, 170], fair: [220, 300], expensive: [410, 600] },
+            },
+            tokenRights: {
+                badge: 'LINK Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Chainlink protocol revenue benchmark' },
+                    { label: 'Token claim', value: 'Governance and network utility exposure' },
+                    { label: 'Supply effect', value: 'No public burn series disclosed' },
+                    { label: 'Revenue scope', value: 'Oracle and data services protocol fees' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/chainlink" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/chainlink" target="_blank">CoinGecko</a> + <a href="https://chain.link/" target="_blank">Chainlink</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | LINK P/E Ratio',
+                description: 'Track the live P/E ratio of Chainlink\'s LINK token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'Chainlink, LINK, P/E ratio, price earnings ratio, LINK valuation, Chainlink revenue, oracle network valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium — Live LINK P/E Ratio',
+                ogDescription: 'Is LINK cheap or expensive right now? Track the live P/E ratio of Chainlink using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        uni: {
+            key: 'uni',
+            symbol: 'UNI',
+            displayName: 'Uniswap',
+            protocolName: 'Uniswap',
+            menuMarketCapRank: 3,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/12504/small/uniswap-logo.png?1720676669',
+            routePath: '/uni',
+            priceLabel: 'UNI Price',
+            overlayLabel: '+UNIUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'uni',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['uniswap'],
+            defillamaProtocolSlug: 'uniswap',
+            coingeckoId: 'uniswap',
+            supplyFallback: 633_561_604,
+            fdvSupplyFallback: 1_000_000_000,
+            chartStart: null,
+            tgeDate: '2020-09-17',
+            historyStartDate: '2025-12-01',
+            trimTrailingZeroRevenueDays: 2,
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            priceBackfillSource: {
+                provider: 'binance',
+                symbol: 'UNIUSDT',
+                startDate: '2025-12-01',
+            },
+            dynamicZones: false,
+            zones: {
+                mc: { cheap: [42, 48], fair: [52, 64], expensive: [95, 170] },
+                fdv: { cheap: [66, 76], fair: [82, 102], expensive: [150, 270] },
+            },
+            tokenRights: {
+                badge: 'UNI Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Uniswap protocol revenue benchmark' },
+                    { label: 'Token claim', value: 'Governance over fee switch and protocol settings' },
+                    { label: 'Supply effect', value: 'No public burn series disclosed' },
+                    { label: 'Revenue scope', value: 'DEX swap fees and protocol revenue layers' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/uniswap" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/uniswap" target="_blank">CoinGecko</a> + <a href="https://uniswap.org/" target="_blank">Uniswap</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | UNI P/E Ratio',
+                description: 'Track the live P/E ratio of Uniswap\'s UNI token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'Uniswap, UNI, P/E ratio, price earnings ratio, UNI valuation, Uniswap revenue, dex valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium — Live UNI P/E Ratio',
+                ogDescription: 'Is UNI cheap or expensive right now? Track the live P/E ratio of Uniswap using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        cake: {
+            key: 'cake',
+            symbol: 'CAKE',
+            displayName: 'PancakeSwap',
+            protocolName: 'PancakeSwap',
+            menuMarketCapRank: 8,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/12632/small/pancakeswap-cake-logo_%281%29.png?1696512440',
+            routePath: '/cake',
+            priceLabel: 'CAKE Price',
+            overlayLabel: '+CAKEUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'cake',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['pancakeswap'],
+            defillamaProtocolSlug: 'pancakeswap',
+            coingeckoId: 'pancakeswap-token',
+            supplyFallback: 327_631_629,
+            fdvSupplyFallback: 400_000_000,
+            chartStart: null,
+            tgeDate: '2020-09-29',
+            historyStartDate: '2021-05-01',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            priceBackfillSource: {
+                provider: 'binance',
+                symbol: 'CAKEUSDT',
+                startDate: '2021-05-01',
+            },
+            dynamicZones: false,
+            zones: {
+                mc: { cheap: [3.5, 7.5], fair: [8.5, 12.5], expensive: [34.5, 38.5] },
+                fdv: { cheap: [5, 9], fair: [11, 15], expensive: [34.5, 38.5] },
+            },
+            tokenRights: {
+                badge: 'CAKE Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'PancakeSwap protocol revenue benchmark' },
+                    { label: 'Token claim', value: 'Governance and ecosystem utility exposure' },
+                    { label: 'Supply effect', value: 'No public burn series modeled here' },
+                    { label: 'Revenue scope', value: 'DEX, perpetuals and launchpad fee stack' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/pancakeswap" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/pancakeswap-token" target="_blank">CoinGecko</a> + <a href="https://pancakeswap.finance/" target="_blank">PancakeSwap</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | CAKE P/E Ratio',
+                description: 'Track the live P/E ratio of PancakeSwap\'s CAKE token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'PancakeSwap, CAKE, P/E ratio, price earnings ratio, CAKE valuation, PancakeSwap revenue, dex valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium — Live CAKE P/E Ratio',
+                ogDescription: 'Is CAKE cheap or expensive right now? Track the live P/E ratio of PancakeSwap using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        lido: {
+            key: 'lido',
+            symbol: 'LDO',
+            displayName: 'Lido',
+            protocolName: 'Lido',
+            menuMarketCapRank: 10,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/13573/small/Lido_DAO.png?1696513326',
+            routePath: '/lido',
+            priceLabel: 'LDO Price',
+            overlayLabel: '+LDOUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'lido',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['lido'],
+            defillamaProtocolSlug: 'lido',
+            coingeckoId: 'lido-dao',
+            supplyFallback: 849_190_158,
+            fdvSupplyFallback: 1_000_000_000,
+            chartStart: null,
+            tgeDate: '2020-12-17',
+            historyStartDate: '2021-07-01',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            priceBackfillSource: {
+                provider: 'binance',
+                symbol: 'LDOUSDT',
+                startDate: '2021-07-01',
+            },
+            dynamicZones: false,
+            zones: {
+                mc: { cheap: [5, 6.5], fair: [8.5, 11], expensive: [13, 15.5] },
+                fdv: { cheap: [6, 8], fair: [10, 13], expensive: [15.5, 18.5] },
+            },
+            tokenRights: {
+                badge: 'LDO Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Lido protocol revenue benchmark' },
+                    { label: 'Token claim', value: 'Governance over staking protocol parameters' },
+                    { label: 'Supply effect', value: 'No public burn series disclosed' },
+                    { label: 'Revenue scope', value: 'Liquid staking protocol fees' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/lido" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/lido-dao" target="_blank">CoinGecko</a> + <a href="https://lido.fi/" target="_blank">Lido</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | LDO P/E Ratio',
+                description: 'Track the live P/E ratio of Lido\'s LDO token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'Lido, LDO, P/E ratio, price earnings ratio, LDO valuation, Lido revenue, liquid staking valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium — Live LDO P/E Ratio',
+                ogDescription: 'Is LDO cheap or expensive right now? Track the live P/E ratio of Lido using DefiLlama revenue and CoinGecko market cap data.',
             },
         },
     };
@@ -5290,7 +5758,7 @@
         BACKEND_API_URL: resolveBackendApiUrl(),
         ZONES: cloneZoneConfig(ACTIVE_TOKEN.zones),
         CANDLE_START: ACTIVE_TOKEN.chartStart,
-        DEFILLAMA_URL: buildDefiLlamaFeesUrl(ACTIVE_TOKEN.defillamaFeesCandidates[0]),
+        DEFILLAMA_URL: buildDefiLlamaFeesUrl(ACTIVE_TOKEN.defillamaFeesCandidates[0], ACTIVE_TOKEN.defillamaFeesDataType || 'dailyRevenue'),
         DEFILLAMA_PROTOCOL_URL: buildDefiLlamaProtocolUrl(ACTIVE_TOKEN.defillamaProtocolSlug),
         COINGECKO_COIN_URL: ACTIVE_TOKEN.coingeckoId ? buildCoinGeckoCoinUrl(ACTIVE_TOKEN.coingeckoId) : '',
         COINGECKO_SIMPLE_PRICE_URL: ACTIVE_TOKEN.coingeckoId ? buildCoinGeckoSimplePriceUrl(ACTIVE_TOKEN.coingeckoId) : '',
@@ -5323,7 +5791,7 @@
         CONFIG.ALERT_COUNTED_STORAGE_KEY = getTokenStorageKey(token.storageScope, 'alert-counted');
         CONFIG.ZONES = cloneZoneConfig(token.zones);
         CONFIG.CANDLE_START = token.chartStart;
-        CONFIG.DEFILLAMA_URL = buildDefiLlamaFeesUrl(token.defillamaFeesCandidates[0]);
+        CONFIG.DEFILLAMA_URL = buildDefiLlamaFeesUrl(token.defillamaFeesCandidates[0], token.defillamaFeesDataType || 'dailyRevenue');
         CONFIG.DEFILLAMA_PROTOCOL_URL = buildDefiLlamaProtocolUrl(token.defillamaProtocolSlug);
         CONFIG.COINGECKO_COIN_URL = token.coingeckoId ? buildCoinGeckoCoinUrl(token.coingeckoId) : '';
         CONFIG.COINGECKO_SIMPLE_PRICE_URL = token.coingeckoId ? buildCoinGeckoSimplePriceUrl(token.coingeckoId) : '';
@@ -5345,7 +5813,8 @@
             this.chartWidthDays = 0;
             this.revenueOverlayEnabled = true;
             this.peOverlayEnabled = false;
-            this.zoneConfig = cloneZoneConfig(CONFIG.ZONES);
+            this.zoneConfig = this.normalizeZoneConfigMap(cloneZoneConfig(CONFIG.ZONES));
+            this.applyStaticZoneConfigOverride();
             this.activeFeesSlug = this.token.defillamaFeesCandidates[0];
             this.chart = null;
             this.candleSeries = null;
@@ -5368,7 +5837,10 @@
             this._liveSyncInterval = null;
             this._historyBackfillMeta = null;
             this._tokenDataCache = new Map();
+            this._tokenPrefetchPromises = new Map();
             this._viewportState = new Map();
+            this._intradayFetchPromise = null;
+            this._intradayFetchKey = '';
             this._resolution = '1d'; // legacy default; display resolution is derived from chartWidthDays
             this.applyTokenUi();
             this.init();
@@ -5498,6 +5970,16 @@
             const symbol = document.getElementById('chart-token-symbol');
             const name = document.getElementById('chart-token-name');
 
+            if (menu) {
+                Array.from(menu.querySelectorAll('.chart-token-option'))
+                    .sort((left, right) => {
+                        const leftRank = Number(TOKEN_CONFIGS[left.dataset.token]?.menuMarketCapRank || Number.MAX_SAFE_INTEGER);
+                        const rightRank = Number(TOKEN_CONFIGS[right.dataset.token]?.menuMarketCapRank || Number.MAX_SAFE_INTEGER);
+                        return leftRank - rightRank;
+                    })
+                    .forEach((button) => menu.appendChild(button));
+            }
+
             if (icon) {
                 icon.src = this.token.logoUrl;
                 icon.alt = `${this.token.symbol} icon`;
@@ -5517,6 +5999,13 @@
                 button.setAttribute('aria-selected', isActive ? 'true' : 'false');
                 if (button.dataset.bound === '1') return;
                 button.dataset.bound = '1';
+                const scheduleOptionPrefetch = () => {
+                    const token = TOKEN_CONFIGS[button.dataset.token];
+                    if (!token || token.key === this.token.key) return;
+                    this.prefetchTokenData(token).catch(() => {});
+                };
+                button.addEventListener('pointerenter', scheduleOptionPrefetch, { passive: true });
+                button.addEventListener('focus', scheduleOptionPrefetch);
                 button.addEventListener('click', (event) => {
                     event.preventDefault();
                     closeMenu();
@@ -5559,9 +6048,12 @@
         }
 
         refreshPresentation() {
+            this.normalizeChartWidthSelection();
+            this.resetRightPriceScale();
             const activeMode = this.chartMode;
             if (activeMode === 'pe') {
                 this.updateData();
+                this.scheduleChartLayoutSync();
                 return;
             }
 
@@ -5570,6 +6062,18 @@
             this.chartMode = activeMode;
             this.renderChartMode();
             this.updateModeControls();
+            this.scheduleChartLayoutSync();
+        }
+
+        resetRightPriceScale() {
+            if (!this.chart) return;
+            try {
+                this.chart.applyOptions({
+                    rightPriceScale: {
+                        autoScale: true,
+                    },
+                });
+            } catch (error) {}
         }
 
         clearRenderedAlerts() {
@@ -5662,7 +6166,8 @@
             try {
                 applyRuntimeTokenConfig(targetToken);
                 this.token = targetToken;
-                this.zoneConfig = cloneZoneConfig(CONFIG.ZONES);
+                this.zoneConfig = this.normalizeZoneConfigMap(cloneZoneConfig(CONFIG.ZONES));
+                this.applyStaticZoneConfigOverride();
                 this.includeBurnInPe = this.token.supportsBurnHistory ? this.readBurnToggleState() : false;
                 this.historyMode = targetHistoryMode;
                 this.chartMode = 'pe';
@@ -5678,6 +6183,7 @@
                 this.updateChartWidthControls();
                 this.updateBurnLegendToggle();
                 this.clearRenderedAlerts();
+                this.resetRightPriceScale();
 
                 if (cachedRawData) {
                     this.refreshPresentation();
@@ -5691,6 +6197,7 @@
                 history.pushState({ token: this.token.key }, '', buildTokenHistoryUrl(this.token));
                 this.hydrateAlertsForCurrentToken();
                 this.hideLoadingOverlay();
+                this.scheduleTokenPrefetch();
             } catch (error) {
                 applyRuntimeTokenConfig(previousState.token);
                 this.token = previousState.token;
@@ -5716,7 +6223,26 @@
         }
 
         getZoneConfig(key = (this.useFDV ? 'fdv' : 'mc')) {
-            return (this.zoneConfig && this.zoneConfig[key]) || CONFIG.ZONES[key];
+            const candidate = (this.zoneConfig && this.zoneConfig[key]) || CONFIG.ZONES[key];
+            if (this.token?.key === 'cars') return candidate;
+            return this.normalizeEqualZoneWidths(candidate) || candidate;
+        }
+
+        applyStaticZoneConfigOverride() {
+            if (this.token?.key === 'cars') {
+                this.zoneConfig = cloneZoneConfig(CONFIG.ZONES);
+            }
+        }
+
+        normalizeZoneConfigMap(zonesByMetric) {
+            const nextZones = cloneZoneConfig(zonesByMetric || {});
+            ['mc', 'fdv'].forEach((metricKey) => {
+                if (this.token?.key === 'cars') return;
+                const candidate = nextZones?.[metricKey];
+                const normalized = this.normalizeEqualZoneWidths(candidate);
+                if (normalized) nextZones[metricKey] = normalized;
+            });
+            return nextZones;
         }
 
         isDynamicZoneEnabled(metricKey) {
@@ -5726,7 +6252,9 @@
 
         setDerivedZones(metricKey, values) {
             if (!this.isDynamicZoneEnabled(metricKey)) return;
-            const fallback = (CONFIG.ZONES && CONFIG.ZONES[metricKey]) || this.zoneConfig[metricKey];
+            const fallback = this.getZoneConfig(metricKey)
+                || (this.zoneConfig && this.zoneConfig[metricKey])
+                || (CONFIG.ZONES && CONFIG.ZONES[metricKey]);
             const recentValues = Array.isArray(values) ? values.slice(-730) : values;
             this.zoneConfig[metricKey] = this.deriveZonesFromSeries(recentValues, fallback);
         }
@@ -5734,7 +6262,24 @@
         roundZoneStep(value) {
             const numeric = Number(value);
             if (!Number.isFinite(numeric)) return NaN;
-            return Math.max(0.5, Math.round(numeric * 2) / 2);
+            const step = this.getZoneStep(numeric);
+            return Math.round(numeric / step) * step;
+        }
+
+        getZoneStep(value) {
+            const abs = Math.abs(Number(value) || 0);
+            if (abs < 2) return 0.05;
+            if (abs < 10) return 0.1;
+            if (abs < 50) return 0.25;
+            return 0.5;
+        }
+
+        getZoneGapPadding(...values) {
+            const finiteValues = values
+                .map((value) => Number(value))
+                .filter((value) => Number.isFinite(value));
+            if (!finiteValues.length) return 0.05;
+            return this.getZoneStep(Math.max(...finiteValues));
         }
 
         normalizeZoneSeries(values) {
@@ -5917,11 +6462,12 @@
 
             const halfWidth = numericWidth / 2;
             const rawLow = numericCenter - halfWidth;
+            const step = this.getZoneStep(Math.max(Math.abs(numericCenter), Math.abs(rawLow), Math.abs(numericWidth)));
             let low;
             if (alignment === 'down') {
-                low = Math.floor(rawLow * 2) / 2;
+                low = Math.floor(rawLow / step) * step;
             } else if (alignment === 'up') {
-                low = Math.ceil(rawLow * 2) / 2;
+                low = Math.ceil(rawLow / step) * step;
             } else {
                 low = this.roundZoneStep(rawLow);
             }
@@ -5947,8 +6493,9 @@
             if (!candidateWidths.length) return null;
 
             const desiredWidth = Math.max(...candidateWidths);
-            const maxAllowedWidth = this.roundZoneStep((expensiveCenter - cheapCenter) / 2 - 0.5);
-            if (!Number.isFinite(maxAllowedWidth) || maxAllowedWidth < 0.5) return null;
+            const gapPadding = this.getZoneGapPadding(cheapCenter, expensiveCenter);
+            const maxAllowedWidth = this.roundZoneStep((expensiveCenter - cheapCenter) / 2 - gapPadding);
+            if (!Number.isFinite(maxAllowedWidth) || maxAllowedWidth < gapPadding) return null;
 
             return Math.min(desiredWidth, maxAllowedWidth);
         }
@@ -5974,21 +6521,22 @@
             if (!this.isValidDerivedZoneSet(zones)) return null;
 
             const cheapCenter = (zones.cheap[0] + zones.cheap[1]) / 2;
-            const fairCenter = (zones.fair[0] + zones.fair[1]) / 2;
             const expensiveCenter = (zones.expensive[0] + zones.expensive[1]) / 2;
+            const midpointCenter = (cheapCenter + expensiveCenter) / 2;
             const desiredWidth = Math.max(
                 this.getZoneWidth(zones.cheap) || 0,
                 this.getZoneWidth(zones.fair) || 0,
                 this.getZoneWidth(zones.expensive) || 0,
             );
-            const maxAllowedWidth = this.roundZoneStep(Math.min(fairCenter - cheapCenter, expensiveCenter - fairCenter) - 0.5);
+            const gapPadding = this.getZoneGapPadding(cheapCenter, midpointCenter, expensiveCenter);
+            const maxAllowedWidth = this.roundZoneStep(Math.min(midpointCenter - cheapCenter, expensiveCenter - midpointCenter) - gapPadding);
 
-            if (!Number.isFinite(desiredWidth) || desiredWidth <= 0 || !Number.isFinite(maxAllowedWidth) || maxAllowedWidth < 0.5) {
+            if (!Number.isFinite(desiredWidth) || desiredWidth <= 0 || !Number.isFinite(maxAllowedWidth) || maxAllowedWidth < gapPadding) {
                 return null;
             }
 
             const sharedWidth = Math.min(desiredWidth, maxAllowedWidth);
-            return this.buildEqualWidthZoneSet(cheapCenter, fairCenter, expensiveCenter, sharedWidth);
+            return this.buildEqualWidthZoneSet(cheapCenter, midpointCenter, expensiveCenter, sharedWidth);
         }
 
         buildFairMidZone(cheap, expensive) {
@@ -6046,6 +6594,7 @@
                 this.updateHistoryControls();
                 this.buildChart();
                 this.updateData();
+                this.scheduleChartLayoutSync();
                 this.setupControls();
                 this.setupMetricCards();
                 this.setupForecastView();
@@ -6054,6 +6603,7 @@
                 await this.syncCurrentPEFromBackend();
                 this.startLiveSync();
                 this.hideLoadingOverlay();
+                this.scheduleTokenPrefetch();
             } catch (e) {
                 console.error('Init error:', e);
                 document.getElementById('loading').style.display = 'none';
@@ -6092,6 +6642,99 @@
             return nextRawData;
         }
 
+        getTokenFetchConfig(token = this.token) {
+            return {
+                supplyFallback: token?.supplyFallback ?? CONFIG.SUPPLY,
+                fdvSupplyFallback: token?.fdvSupplyFallback ?? CONFIG.FDV_SUPPLY,
+                candleStart: token?.chartStart ?? CONFIG.CANDLE_START,
+                defillamaProtocolUrl: token?.defillamaProtocolSlug ? buildDefiLlamaProtocolUrl(token.defillamaProtocolSlug) : '',
+                coingeckoCoinUrl: token?.coingeckoId ? buildCoinGeckoCoinUrl(token.coingeckoId) : '',
+                coingeckoSimplePriceUrl: token?.coingeckoId ? buildCoinGeckoSimplePriceUrl(token.coingeckoId) : '',
+                coingeckoMarketChartUrl: token?.coingeckoId ? buildCoinGeckoMarketChartUrl(token.coingeckoId, token.marketChartDays, token.marketChartInterval || '') : '',
+                tokenId: token?.hyperliquidTokenId || null,
+                burnAddress: token?.burnAddress || null,
+            };
+        }
+
+        getTokenPrefetchCandidates(limit = 1) {
+            const preferredOrder = ['uni', 'link', 'aave'];
+            return Object.values(TOKEN_CONFIGS)
+                .filter((token) => token && token.key !== this.token.key)
+                .sort((left, right) => {
+                    const leftPreferred = preferredOrder.indexOf(left.key);
+                    const rightPreferred = preferredOrder.indexOf(right.key);
+                    if (leftPreferred !== -1 || rightPreferred !== -1) {
+                        if (leftPreferred === -1) return 1;
+                        if (rightPreferred === -1) return -1;
+                        return leftPreferred - rightPreferred;
+                    }
+                    return Number(left.menuMarketCapRank || Number.MAX_SAFE_INTEGER) - Number(right.menuMarketCapRank || Number.MAX_SAFE_INTEGER);
+                })
+                .filter((token) => {
+                    const historyMode = this.readHistoryModeState(token);
+                    const cacheKey = this.getTokenDataCacheKey(token, historyMode);
+                    return !this._tokenDataCache.has(cacheKey) && !this._tokenPrefetchPromises.has(cacheKey);
+                })
+                .slice(0, limit);
+        }
+
+        scheduleTokenPrefetch() {
+            const runPrefetch = () => {
+                this.getTokenPrefetchCandidates().forEach((token) => {
+                    this.prefetchTokenData(token).catch(() => {});
+                });
+            };
+
+            if (typeof window.requestIdleCallback === 'function') {
+                window.requestIdleCallback(runPrefetch, { timeout: 1200 });
+                return;
+            }
+
+            window.setTimeout(runPrefetch, 250);
+        }
+
+        async prefetchTokenData(token, historyMode = this.readHistoryModeState(token)) {
+            if (!token) return null;
+
+            const resolvedHistoryMode = token.key === 'sky'
+                ? (historyMode === 'legacy' ? 'legacy' : 'native')
+                : 'default';
+            const cacheKey = this.getTokenDataCacheKey(token, resolvedHistoryMode);
+
+            if (this._tokenDataCache.has(cacheKey)) {
+                return this.readTokenDataCache(token, resolvedHistoryMode);
+            }
+
+            if (this._tokenPrefetchPromises.has(cacheKey)) {
+                return this._tokenPrefetchPromises.get(cacheKey);
+            }
+
+            const prefetchContext = Object.create(this);
+            prefetchContext.token = token;
+            prefetchContext.historyMode = resolvedHistoryMode;
+            prefetchContext.rawData = null;
+            prefetchContext.activeFeesSlug = token.defillamaFeesCandidates?.[0] || null;
+            prefetchContext._historyBackfillMeta = null;
+
+            const prefetchPromise = prefetchContext.fetchAllData(this.getTokenFetchConfig(token))
+                .then((rawData) => {
+                    if (!rawData) return null;
+                    this.writeTokenDataCache(rawData, token, resolvedHistoryMode);
+                    console.info(`[${token.symbol}] Prefetched token data`);
+                    return rawData;
+                })
+                .catch((error) => {
+                    console.warn(`[${token?.symbol || 'token'}] Prefetch failed`, error);
+                    return null;
+                })
+                .finally(() => {
+                    this._tokenPrefetchPromises.delete(cacheKey);
+                });
+
+            this._tokenPrefetchPromises.set(cacheKey, prefetchPromise);
+            return prefetchPromise;
+        }
+
         async fetchJsonStrict(url, label) {
             const response = await fetch(url);
             if (!response.ok) throw new Error(`${label}: ${response.status}`);
@@ -6105,6 +6748,60 @@
                 console.warn(`[${this.token.symbol}] ${label} unavailable`, error);
                 return null;
             }
+        }
+
+        getIntradayMarketChartUrl(token = this.token) {
+            if (!token?.coingeckoId || !token?.supportsIntradayCandles) return '';
+            return buildCoinGeckoMarketChartUrl(
+                token.coingeckoId,
+                token.intradayMarketChartDays || 30,
+                token.intradayMarketChartInterval || 'hourly',
+            );
+        }
+
+        hasIntradayCandles(data = this.rawData) {
+            return !!(data?.candles4hByDate && Object.keys(data.candles4hByDate).length);
+        }
+
+        async ensureIntradayCandlesLoaded({ refreshView = true } = {}) {
+            if (!this.token?.supportsIntradayCandles || !this.token?.coingeckoId) return this.rawData?.candles4hByDate || {};
+            if (this.hasIntradayCandles()) return this.rawData.candles4hByDate;
+
+            const intradayUrl = this.getIntradayMarketChartUrl(this.token);
+            if (!intradayUrl) return {};
+
+            const requestKey = `${this.token.key}:${this.historyMode}`;
+            if (this._intradayFetchPromise && this._intradayFetchKey === requestKey) {
+                return this._intradayFetchPromise;
+            }
+
+            const activeToken = this.token;
+            const activeHistoryMode = this.historyMode;
+            this._intradayFetchKey = requestKey;
+            this._intradayFetchPromise = this.fetchJsonOrNull(intradayUrl, 'CoinGecko intraday market chart')
+                .then((intradayMarketChartRes) => {
+                    const candles4hByDate = this.buildIntradayCandlesByDateFromSeries(intradayMarketChartRes?.prices || [], 3600);
+                    if (!this.rawData || this.token?.key !== activeToken?.key) return candles4hByDate;
+                    if (activeToken.key === 'sky' && this.historyMode !== activeHistoryMode) return candles4hByDate;
+
+                    this.rawData.candles4hByDate = candles4hByDate;
+                    this.writeTokenDataCache(this.rawData, activeToken, activeHistoryMode);
+
+                    if (refreshView && this.getDisplayCandleResolution() !== '1d') {
+                        if (this.chartMode === 'pe') this.updateData();
+                        else if (this.chartMode === 'price') this.renderChartMode();
+                    }
+
+                    return candles4hByDate;
+                })
+                .finally(() => {
+                    if (this._intradayFetchKey === requestKey) {
+                        this._intradayFetchPromise = null;
+                        this._intradayFetchKey = '';
+                    }
+                });
+
+            return this._intradayFetchPromise;
         }
 
         getHistoryModeStorageKey(token = this.token) {
@@ -6330,7 +7027,9 @@
         }
 
         getFirstRevenueDate(feesByDate = this.rawData?.feesByDate || {}) {
-            return Object.keys(feesByDate || {}).sort()[0] || null;
+            return Object.keys(feesByDate || {})
+                .sort()
+                .find((date) => Number(feesByDate?.[date]) > 0) || null;
         }
 
         getBaseHistoryStartDate(feesByDate = this.rawData?.feesByDate || {}) {
@@ -6471,6 +7170,99 @@
             return feesByDate;
         }
 
+        getSortedDateKeys(seriesByDate) {
+            return Object.keys(seriesByDate || {}).sort();
+        }
+
+        getDayDistance(startDate, endDate) {
+            const startMs = Date.parse(`${startDate}T00:00:00Z`);
+            const endMs = Date.parse(`${endDate}T00:00:00Z`);
+            if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return Infinity;
+            return Math.round((endMs - startMs) / 86400000);
+        }
+
+        trimTrailingZeroRevenuePoints(feesByDate, maxTrimDays = Number(this.token?.trimTrailingZeroRevenueDays ?? 0)) {
+            if (!feesByDate || maxTrimDays <= 0) return { ...(feesByDate || {}) };
+
+            const trimmed = { ...feesByDate };
+            let dates = this.getSortedDateKeys(trimmed);
+            let trimmedCount = 0;
+
+            while (dates.length > 1 && trimmedCount < maxTrimDays) {
+                const lastDate = dates[dates.length - 1];
+                const lastValue = Number(trimmed[lastDate]);
+                const recentPositive = dates.slice(Math.max(0, dates.length - 8), -1)
+                    .some((date) => Number(trimmed[date]) > 0);
+                if (lastValue !== 0 || !recentPositive) break;
+                delete trimmed[lastDate];
+                trimmedCount += 1;
+                dates = this.getSortedDateKeys(trimmed);
+            }
+
+            return trimmed;
+        }
+
+        fillShortZeroRevenueGaps(feesByDate, maxGapDays = Number(this.token?.revenueZeroGapFillMaxDays ?? 0)) {
+            if (!feesByDate || maxGapDays <= 0) return { ...(feesByDate || {}) };
+
+            const filled = { ...feesByDate };
+            const dates = this.getSortedDateKeys(filled);
+
+            for (let index = 0; index < dates.length; index += 1) {
+                const date = dates[index];
+                const value = Number(filled[date]);
+                if (value > 0) continue;
+
+                const runStart = index;
+                while (index + 1 < dates.length && Number(filled[dates[index + 1]]) <= 0) {
+                    index += 1;
+                }
+
+                const runEnd = index;
+                const prevDate = runStart > 0 ? dates[runStart - 1] : null;
+                const nextDate = runEnd + 1 < dates.length ? dates[runEnd + 1] : null;
+                if (!prevDate || !nextDate) continue;
+
+                const prevValue = Number(filled[prevDate]);
+                const nextValue = Number(filled[nextDate]);
+                const spanDays = this.getDayDistance(prevDate, nextDate);
+                const gapDays = runEnd - runStart + 1;
+                const contiguous = spanDays === (gapDays + 1);
+                if (!contiguous || gapDays > maxGapDays || prevValue <= 0 || nextValue <= 0) continue;
+
+                for (let offset = 0; offset < gapDays; offset += 1) {
+                    const ratio = (offset + 1) / (gapDays + 1);
+                    filled[dates[runStart + offset]] = prevValue + ((nextValue - prevValue) * ratio);
+                }
+            }
+
+            return filled;
+        }
+
+        smoothRevenueSeries(feesByDate, windowDays = Number(this.token?.revenueSmoothingDays ?? 0)) {
+            if (!feesByDate || windowDays <= 1) return { ...(feesByDate || {}) };
+
+            const dates = this.getSortedDateKeys(feesByDate);
+            const smoothed = {};
+
+            for (let index = 0; index < dates.length; index += 1) {
+                const start = Math.max(0, index - windowDays + 1);
+                const windowValues = dates.slice(start, index + 1)
+                    .map((date) => Number(feesByDate[date]))
+                    .filter((value) => Number.isFinite(value) && value >= 0);
+                if (!windowValues.length) continue;
+                smoothed[dates[index]] = windowValues.reduce((sum, value) => sum + value, 0) / windowValues.length;
+            }
+
+            return smoothed;
+        }
+
+        prepareFeesByDate(feesByDate) {
+            const trimmed = this.trimTrailingZeroRevenuePoints(feesByDate);
+            const gapFilled = this.fillShortZeroRevenueGaps(trimmed);
+            return this.smoothRevenueSeries(gapFilled);
+        }
+
         mergeSeriesBySwitchDate(primarySeriesByDate, fallbackSeriesByDate, switchDate = null) {
             const merged = {};
             const allDates = Array.from(new Set([
@@ -6504,7 +7296,7 @@
             if (this.historyMode === 'legacy' && Object.keys(makerFeesByDate).length) {
                 return {
                     activeSlug: 'sky+makerdao',
-                    feesByDate: this.mergeSeriesBySwitchDate(skyFeesByDate, makerFeesByDate, migrationDate),
+                    feesByDate: this.prepareFeesByDate(this.mergeSeriesBySwitchDate(skyFeesByDate, makerFeesByDate, migrationDate)),
                 };
             }
 
@@ -6516,14 +7308,14 @@
             if (Object.keys(nativeFeesByDate).length) {
                 return {
                     activeSlug: 'sky',
-                    feesByDate: nativeFeesByDate,
+                    feesByDate: this.prepareFeesByDate(nativeFeesByDate),
                 };
             }
 
             const fallbackPayload = await this.fetchBestFeesPayload();
             return {
                 activeSlug: fallbackPayload.slug,
-                feesByDate: this.buildFeesByDateFromChart(fallbackPayload.data?.totalDataChart || []),
+                feesByDate: this.prepareFeesByDate(this.buildFeesByDateFromChart(fallbackPayload.data?.totalDataChart || [])),
             };
         }
 
@@ -6623,7 +7415,7 @@
             const primaryStartDate = this.getFirstDateKey(primaryCandlesByDate);
             const baseStartDate = this.getBaseHistoryStartDate(feesByDate);
 
-            if (this.token.key === 'aave') {
+            if (this.token.key !== 'sky') {
                 const minDate = baseStartDate || source.startDate;
                 if (primaryStartDate && primaryStartDate <= minDate) {
                     return { candlesByDate: primaryCandlesByDate, meta: null };
@@ -6632,6 +7424,7 @@
                 const fallbackCandlesByDate = await this.fetchBinanceDailyCandles(source.symbol, source.startDate);
                 const mergedCandlesByDate = this.mergeBackfillCandles(primaryCandlesByDate, fallbackCandlesByDate, {
                     minDate,
+                    maxDateExclusive: primaryStartDate,
                 });
                 return {
                     candlesByDate: mergedCandlesByDate,
@@ -6672,9 +7465,10 @@
         }
 
         async fetchBestFeesPayload() {
+            const feeDataType = this.token.defillamaFeesDataType || 'dailyRevenue';
             const candidates = await Promise.all((this.token.defillamaFeesCandidates || []).map(async (slug) => {
                 try {
-                    const data = await this.fetchJsonStrict(buildDefiLlamaFeesUrl(slug), `DefiLlama fees (${slug})`);
+                    const data = await this.fetchJsonStrict(buildDefiLlamaFeesUrl(slug, feeDataType), `DefiLlama fees (${slug})`);
                     const chart = Array.isArray(data?.totalDataChart) ? data.totalDataChart : [];
                     const lastPoint = chart.length ? chart[chart.length - 1] : null;
                     console.log(`[${this.token.symbol}] DefiLlama fees probe`, {
@@ -6702,13 +7496,13 @@
             return validCandidates[0];
         }
 
-        async fetchAllData() {
+        async fetchAllData(fetchConfig = this.getTokenFetchConfig(this.token)) {
             return this.token.key === 'hype'
-                ? this.fetchHyperliquidTokenData()
-                : this.fetchCoinGeckoTokenData();
+                ? this.fetchHyperliquidTokenData(fetchConfig)
+                : this.fetchCoinGeckoTokenData(fetchConfig);
         }
 
-        async fetchHyperliquidTokenData() {
+        async fetchHyperliquidTokenData(fetchConfig = this.getTokenFetchConfig(this.token)) {
             const feesPayload = await this.fetchBestFeesPayload();
             this.activeFeesSlug = feesPayload.slug;
 
@@ -6718,7 +7512,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         type: 'candleSnapshot',
-                        req: { coin: this.token.hyperliquidCoin, interval: '1d', startTime: CONFIG.CANDLE_START }
+                        req: { coin: this.token.hyperliquidCoin, interval: '1d', startTime: fetchConfig.candleStart }
                     })
                 }).then(r => {
                     if (!r.ok) throw new Error(`Hyperliquid API: ${r.status}`);
@@ -6729,15 +7523,15 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         type: 'candleSnapshot',
-                        req: { coin: this.token.hyperliquidCoin, interval: '1h', startTime: CONFIG.CANDLE_START }
+                        req: { coin: this.token.hyperliquidCoin, interval: '1h', startTime: fetchConfig.candleStart }
                     })
                 }).then(r => r.json()).catch(() => []),
                 fetch(CONFIG.HL_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'tokenDetails', tokenId: CONFIG.TOKEN_ID })
+                    body: JSON.stringify({ type: 'tokenDetails', tokenId: fetchConfig.tokenId })
                 }).then(r => r.json()).catch(() => null),
-                this.fetchJsonOrNull(CONFIG.DEFILLAMA_PROTOCOL_URL, 'DefiLlama protocol')
+                this.fetchJsonOrNull(fetchConfig.defillamaProtocolUrl, 'DefiLlama protocol')
             ]);
 
             console.log(`[${this.token.symbol}] DefiLlama protocol probe`, {
@@ -6750,7 +7544,7 @@
             let burnedHype = 0;
             if (tokenDetails && tokenDetails.nonCirculatingUserBalances) {
                 for (const [addr, bal] of tokenDetails.nonCirculatingUserBalances) {
-                    if (addr.toLowerCase() === String(CONFIG.BURN_ADDR || '').toLowerCase()
+                    if (addr.toLowerCase() === String(fetchConfig.burnAddress || '').toLowerCase()
                         || addr === '0x0000000000000000000000000000000000000000'
                         || addr === '0x000000000000000000000000000000000000dead') {
                         burnedHype += parseFloat(bal);
@@ -6799,8 +7593,8 @@
                 }
             }
 
-            const circulatingSupply = parseFloat(tokenDetails?.circulatingSupply) || CONFIG.SUPPLY;
-            const totalSupply = parseFloat(tokenDetails?.totalSupply) || CONFIG.FDV_SUPPLY;
+            const circulatingSupply = parseFloat(tokenDetails?.circulatingSupply) || fetchConfig.supplyFallback;
+            const totalSupply = parseFloat(tokenDetails?.totalSupply) || fetchConfig.fdvSupplyFallback;
             const allDates = Object.keys(candlesByDate).sort();
             const lastDate = allDates[allDates.length - 1];
             const lastPrice = lastDate ? Number(candlesByDate[lastDate]?.c) || null : null;
@@ -6820,26 +7614,17 @@
             };
         }
 
-        async fetchCoinGeckoTokenData() {
+        async fetchCoinGeckoTokenData(fetchConfig = this.getTokenFetchConfig(this.token)) {
             const feesSourcePromise = this.token.key === 'sky'
                 ? this.fetchSkyFeesHistory()
                 : this.fetchBestFeesPayload();
 
-            const intradayChartUrl = this.token.coingeckoId && this.token.supportsIntradayCandles
-                ? buildCoinGeckoMarketChartUrl(
-                    this.token.coingeckoId,
-                    this.token.intradayMarketChartDays || 30,
-                    this.token.intradayMarketChartInterval || 'hourly',
-                )
-                : '';
-
-            const [feesSource, protocolRes, coinRes, simplePriceRes, marketChartRes, intradayMarketChartRes] = await Promise.all([
+            const [feesSource, protocolRes, coinRes, simplePriceRes, marketChartRes] = await Promise.all([
                 feesSourcePromise,
-                this.fetchJsonOrNull(CONFIG.DEFILLAMA_PROTOCOL_URL, 'DefiLlama protocol'),
-                this.fetchJsonOrNull(CONFIG.COINGECKO_COIN_URL, 'CoinGecko coin'),
-                this.fetchJsonOrNull(CONFIG.COINGECKO_SIMPLE_PRICE_URL, 'CoinGecko simple price'),
-                this.fetchJsonStrict(CONFIG.COINGECKO_MARKET_CHART_URL, 'CoinGecko market chart'),
-                intradayChartUrl ? this.fetchJsonOrNull(intradayChartUrl, 'CoinGecko intraday market chart') : Promise.resolve(null),
+                this.fetchJsonOrNull(fetchConfig.defillamaProtocolUrl, 'DefiLlama protocol'),
+                this.fetchJsonOrNull(fetchConfig.coingeckoCoinUrl, 'CoinGecko coin'),
+                this.fetchJsonOrNull(fetchConfig.coingeckoSimplePriceUrl, 'CoinGecko simple price'),
+                this.fetchJsonStrict(fetchConfig.coingeckoMarketChartUrl, 'CoinGecko market chart'),
             ]);
 
             const simpleEntry = simplePriceRes && this.token.coingeckoId
@@ -6862,7 +7647,7 @@
 
             const feesByDate = this.token.key === 'sky'
                 ? (feesSource?.feesByDate || {})
-                : this.buildFeesByDateFromChart(feesSource?.data?.totalDataChart || []);
+                : this.prepareFeesByDate(this.buildFeesByDateFromChart(feesSource?.data?.totalDataChart || []));
             this.activeFeesSlug = this.token.key === 'sky'
                 ? (feesSource?.activeSlug || 'sky')
                 : feesSource.slug;
@@ -6876,7 +7661,7 @@
             candlesByDate = extendedHistory.candlesByDate;
             this._historyBackfillMeta = extendedHistory.meta || null;
 
-            const candles4hByDate = this.buildIntradayCandlesByDateFromSeries(intradayMarketChartRes?.prices || [], 3600);
+            const candles4hByDate = this.hasIntradayCandles(this.rawData) ? this.rawData.candles4hByDate : {};
 
             const marketCapsByDate = this.buildDailyNumericSeries(marketChartRes?.market_caps || []);
             const circulatingSupplyByDate = {};
@@ -6894,7 +7679,7 @@
                 || null;
             const estimatedCirculatingSupply = Number(coinRes?.market_data?.circulating_supply)
                 || (estimatedCurrentPrice && estimatedCurrentMarketCap ? estimatedCurrentMarketCap / estimatedCurrentPrice : null)
-                || CONFIG.SUPPLY;
+                || fetchConfig.supplyFallback;
 
             if (!Object.keys(marketCapsByDate).length && estimatedCirculatingSupply > 0) {
                 Object.keys(candlesByDate).forEach((date) => {
@@ -6925,7 +7710,7 @@
                 || null;
             const totalSupply = Number(coinRes?.market_data?.total_supply)
                 || Number(coinRes?.market_data?.max_supply)
-                || CONFIG.FDV_SUPPLY;
+                || fetchConfig.fdvSupplyFallback;
             const currentFDV = Number(coinRes?.market_data?.fully_diluted_valuation?.usd)
                 || (currentPrice && totalSupply ? currentPrice * totalSupply : null)
                 || Number(protocolRes?.fdv)
@@ -6933,7 +7718,7 @@
             const circulatingSupply = Number(coinRes?.market_data?.circulating_supply)
                 || (currentPrice && currentMarketCap ? currentMarketCap / currentPrice : null)
                 || Number(circulatingSupplyByDate[lastDate])
-                || CONFIG.SUPPLY;
+                || fetchConfig.supplyFallback;
 
             if (currentPrice && lastDate && candlesByDate[lastDate]) {
                 const candle = candlesByDate[lastDate];
@@ -6980,11 +7765,25 @@
                         liveMarketCap = livePrice * syncRawData.circulatingSupply;
                     }
                 } else {
-                    const priceData = await this.fetchJsonOrNull(CONFIG.COINGECKO_SIMPLE_PRICE_URL, 'CoinGecko simple price');
+                    const [priceData, coinData] = await Promise.all([
+                        this.fetchJsonOrNull(CONFIG.COINGECKO_SIMPLE_PRICE_URL, 'CoinGecko simple price'),
+                        this.fetchJsonOrNull(CONFIG.COINGECKO_COIN_URL, 'CoinGecko coin'),
+                    ]);
                     const entry = priceData && syncToken.coingeckoId ? priceData[syncToken.coingeckoId] : null;
-                    livePrice = entry ? Number(entry.usd) : null;
-                    if (entry && Number.isFinite(Number(entry.usd_market_cap))) {
-                        liveMarketCap = Number(entry.usd_market_cap);
+                    livePrice = Number(entry?.usd)
+                        || Number(coinData?.market_data?.current_price?.usd)
+                        || Number(syncRawData.livePrice)
+                        || null;
+                    liveMarketCap = Number(entry?.usd_market_cap)
+                        || Number(coinData?.market_data?.market_cap?.usd)
+                        || liveMarketCap;
+                    if ((!liveMarketCap || !Number.isFinite(liveMarketCap)) && livePrice > 0) {
+                        const lastSupplyDate = Object.keys(syncRawData.circulatingSupplyByDate || {}).sort().slice(-1)[0];
+                        const activeSupply = Number(syncRawData.circulatingSupply)
+                            || Number(syncRawData.circulatingSupplyByDate?.[lastSupplyDate])
+                            || Number(CONFIG.SUPPLY)
+                            || 0;
+                        if (activeSupply > 0) liveMarketCap = livePrice * activeSupply;
                     }
                 }
 
@@ -7176,8 +7975,26 @@
             const widthBtns = document.getElementById('chart-width-btns');
             if (!widthBtns) return;
             widthBtns.querySelectorAll('.period-btn').forEach((button) => {
-                button.classList.toggle('active', Number(button.dataset.range || '0') === this.chartWidthDays);
+                const rangeDays = Number(button.dataset.range || '0');
+                const isLongHistoryRange = rangeDays === 730 || rangeDays === 1095;
+                const shouldShow = !isLongHistoryRange || this.getAvailableHistoryDayCount() >= rangeDays;
+                button.style.display = shouldShow ? '' : 'none';
+                button.classList.toggle('active', shouldShow && rangeDays === this.chartWidthDays);
             });
+        }
+
+        getAvailableHistoryDayCount(feesByDate = this.rawData?.feesByDate || {}) {
+            const allDates = Object.keys(feesByDate || {}).sort();
+            return this.filterDatesByHistoryStart(allDates, feesByDate).length;
+        }
+
+        normalizeChartWidthSelection() {
+            const availableDays = this.getAvailableHistoryDayCount();
+            if (!this.chartWidthDays || this.chartWidthDays <= 0) return;
+            if (availableDays >= this.chartWidthDays) return;
+            this.chartWidthDays = 0;
+            this.writeChartWidthState(0, this.token);
+            this.updateChartWidthControls();
         }
 
         getEdgeAlignedLogicalRange() {
@@ -7245,6 +8062,11 @@
             const fullRange = this.getEdgeAlignedLogicalRange();
             if (!fullRange) return;
 
+            if (!this.chartWidthDays || this.chartWidthDays <= 0) {
+                this.applyLogicalRange(fullRange);
+                return;
+            }
+
             const savedViewport = this.readViewportState(this.token, this.chartMode, this.chartWidthDays, this.historyMode);
             this.applyLogicalRange(this.normalizeLogicalRange(savedViewport, fullRange));
         }
@@ -7258,6 +8080,11 @@
                 this.updateData();
             } else {
                 this.renderChartMode();
+            }
+            if (this.getDisplayCandleResolution() !== '1d') {
+                this.ensureIntradayCandlesLoaded().catch((error) => {
+                    console.warn(`[${this.token.symbol}] Intraday history fetch failed`, error);
+                });
             }
         }
 
@@ -7289,6 +8116,10 @@
                 timeframeTarget = 72;
             } else if (this.chartWidthDays <= 365) {
                 timeframeTarget = 90;
+            } else if (this.chartWidthDays <= 730) {
+                timeframeTarget = 104;
+            } else if (this.chartWidthDays <= 1095) {
+                timeframeTarget = 108;
             } else {
                 timeframeTarget = 110;
             }
@@ -7298,6 +8129,13 @@
 
         getDisplayCandleResolution() {
             if (!this.token.supportsIntradayCandles) return '1d';
+            const availableHistoryDays = this.getAvailableHistoryDayCount();
+            const preferIntradayUntilDays = Number(this.token.intradayPreferredUntilDays || 0);
+            if (preferIntradayUntilDays > 0 && availableHistoryDays > 0 && availableHistoryDays <= preferIntradayUntilDays) {
+                if (!this.chartWidthDays || this.chartWidthDays === 0) return '4h';
+                if (this.chartWidthDays <= 7) return '1h';
+                return '4h';
+            }
             if (!this.chartWidthDays || this.chartWidthDays === 0) return '1d';
             if (this.chartWidthDays <= 7) return '1h';
             if (this.chartWidthDays <= 180) return '4h';
@@ -7701,6 +8539,8 @@
             const dailyVolumeData = [];
             const dailyPeCloses = [];
             const annualRevPerTokenByDate = {};
+            const annualRevenueByDate = {};
+            const valuationByDate = {};
             const minRollingDays = Math.max(0, Math.min(Number(this.token.minRollingDays ?? 14), effectiveDays - 1));
 
             for (let i = 0; i < allDates.length; i++) {
@@ -7709,6 +8549,7 @@
 
                 const date = allDates[i];
                 const dailySupply = effectiveSupply[i];
+                const annualizedRevenue = (Number(feesByDate[date]) || 0) * 365;
                 const annualRevPerToken = (rollingAvg[i] * 365) / dailySupply;
 
                 if (annualRevPerToken <= 0) continue;
@@ -7720,6 +8561,8 @@
                 const peC = candle.c / annualRevPerToken;
 
                 annualRevPerTokenByDate[date] = annualRevPerToken;
+                annualRevenueByDate[date] = annualizedRevenue;
+                valuationByDate[date] = candle.c * dailySupply;
                 dailyPeCandles.push({ time: date, open: peO, high: peH, low: peL, close: peC });
                 dailyPeCloses.push(peC);
 
@@ -7857,6 +8700,8 @@
             this._peCandles = displayPeCandles;
             this._allDates = allDates;
             this._rollingAvg = rollingAvg;
+            this._annualRevenueByDate = annualRevenueByDate;
+            this._valuationByDate = valuationByDate;
             this._volumeData = displayVolumeData;
             this._effectiveSupply = effectiveSupply;
             this._historicalBurnModel = historicalBurnModel;
@@ -7891,6 +8736,12 @@
             }
 
             this.applyChartWidthRange();
+
+            if (resolution !== '1d') {
+                this.ensureIntradayCandlesLoaded().catch((error) => {
+                    console.warn(`[${this.token.symbol}] Intraday history fetch failed`, error);
+                });
+            }
 
             // Update metrics after rendering so the headline P/E matches the exact chart value on screen.
             this.updateMetrics(dailyPeCandles, displayPeCandles, allDates, feesByDate, candlesByDate, rollingAvg, medianPE, effectiveSupply);
@@ -8283,6 +9134,30 @@
             if (!this.bandDefs || !this.candleSeries) return;
             const isPEMode = this.chartMode === 'pe' || !this.chartMode;
             const isPriceMode = this.chartMode === 'price';
+            const container = document.getElementById('chart-container');
+            const containerHeight = container?.clientHeight || 0;
+
+            const applyBandPosition = (div, topY, bottomY) => {
+                if (!div || topY === null || bottomY === null || !Number.isFinite(topY) || !Number.isFinite(bottomY) || containerHeight <= 0) {
+                    if (div) div.style.display = 'none';
+                    return;
+                }
+
+                const rawTop = Math.min(topY, bottomY);
+                const rawBottom = Math.max(topY, bottomY);
+                const clampedTop = Math.max(0, Math.min(containerHeight, rawTop));
+                const clampedBottom = Math.max(0, Math.min(containerHeight, rawBottom));
+                const height = clampedBottom - clampedTop;
+
+                if (height <= 1) {
+                    div.style.display = 'none';
+                    return;
+                }
+
+                div.style.top = clampedTop + 'px';
+                div.style.height = height + 'px';
+                div.style.display = 'block';
+            };
 
             // PE bands — only shown in PE mode
             for (const b of this.bandDefs) {
@@ -8290,13 +9165,7 @@
                 if (!isPEMode) { if (div) div.style.display = 'none'; continue; }
                 const topY = this.candleSeries.priceToCoordinate(b.top);
                 const bottomY = this.candleSeries.priceToCoordinate(b.bottom);
-                if (div && topY !== null && bottomY !== null && topY >= 0 && bottomY >= 0) {
-                    div.style.top = Math.min(topY, bottomY) + 'px';
-                    div.style.height = Math.max(Math.abs(bottomY - topY), 2) + 'px';
-                    div.style.display = 'block';
-                } else if (div) {
-                    div.style.display = 'none';
-                }
+                applyBandPosition(div, topY, bottomY);
             }
 
             // Price bands — only shown in price mode
@@ -8307,13 +9176,7 @@
                     if (!isPriceMode || !series || b.top === 0) { if (div) div.style.display = 'none'; continue; }
                     const topY = series.priceToCoordinate(b.top);
                     const bottomY = series.priceToCoordinate(b.bottom);
-                    if (div && topY !== null && bottomY !== null) {
-                        div.style.top = Math.min(topY, bottomY) + 'px';
-                        div.style.height = Math.max(Math.abs(bottomY - topY), 2) + 'px';
-                        div.style.display = 'block';
-                    } else if (div) {
-                        div.style.display = 'none';
-                    }
+                    applyBandPosition(div, topY, bottomY);
                 }
             }
 
@@ -8448,6 +9311,9 @@
                 const dateKey = this.getSeriesDateKey(hoverCandle || param.time);
                 const candle = dateKey ? this.rawData?.candlesByDate?.[dateKey] : null;
                 const fee = dateKey ? this.rawData?.feesByDate?.[dateKey] : null;
+                const annualizedRevenue = dateKey ? this._annualRevenueByDate?.[dateKey] : null;
+                const valuation = dateKey ? this._valuationByDate?.[dateKey] : null;
+                const valuationLabel = this.useFDV ? 'FDV' : 'Market Cap';
                 const hover = this.getCandleHoverMetrics(param.time, this._peCandles);
                 if (!hover) {
                     tooltip.style.display = 'none';
@@ -8474,6 +9340,8 @@
                 tooltip.innerHTML = `
                     ${dateKey ? `<div class="tt-row"><span class="tt-label">Date</span><span class="tt-val">${this.formatChartTime(hoverCandle || dateKey)}</span></div>` : ''}
                     ${fee ? `<div class="tt-row"><span class="tt-label">Revenue</span><span class="tt-val">$${(fee / 1e6).toFixed(2)}M</span></div>` : ''}
+                    ${Number.isFinite(annualizedRevenue) ? `<div class="tt-row"><span class="tt-label">Annualized Revenue</span><span class="tt-val">${this.formatCompactUsd(annualizedRevenue)}</span></div>` : ''}
+                    ${Number.isFinite(valuation) ? `<div class="tt-row"><span class="tt-label">${valuationLabel}</span><span class="tt-val">${this.formatCompactUsd(valuation)}</span></div>` : ''}
                     ${candle ? `<div class="tt-row"><span class="tt-label">Price</span><span class="tt-val">${this.formatUsdPrice(candle.c)}</span></div>` : ''}
                     <div class="tt-row"><span class="tt-label">P/E Ratio</span><span class="tt-val">${pe.close.toFixed(1)}x</span></div>
                 `;
@@ -8505,6 +9373,11 @@
             const lastCandle = candlesByDate[lastDate];
             const prevDate = allDates[allDates.length - 2];
             const prevCandle = candlesByDate[prevDate];
+            const priceDates = Object.keys(candlesByDate || {}).sort();
+            const latestPriceDate = priceDates[priceDates.length - 1] || lastDate;
+            const previousPriceDate = priceDates[priceDates.length - 2] || prevDate;
+            const latestPriceCandle = candlesByDate[latestPriceDate] || lastCandle;
+            const previousPriceCandle = candlesByDate[previousPriceDate] || prevCandle;
             const lastFee = feesByDate[lastDate];
             const lastAvg = rollingAvg[rollingAvg.length - 1];
             const baseSupply = this.useFDV
@@ -8515,14 +9388,15 @@
             const activeSupply = this.useFDV
                 ? this.getEffectiveSupply(baseSupply, burnedHype)
                 : baseSupply;
-            const annualRev = lastAvg * 365;
+            const annualRevForPe = lastAvg * 365;
+            const displayAnnualRev = (Number(lastFee) || 0) * 365;
             const valuation = this.useFDV
                 ? (Number(this.rawData.currentFDV) || (lastCandle.c * activeSupply))
                 : (Number(this.rawData.currentMarketCap) || (lastCandle.c * activeSupply));
             const feeValues = allDates.map(d => feesByDate[d]);
-            const buybackRevenuePct = annualRev > 0 ? 100 : 0;
+            const buybackRevenuePct = annualRevForPe > 0 ? 100 : 0;
 
-            const currentPe = Number(displayedLast?.close) || (annualRev > 0 ? (valuation / annualRev) : last.close);
+            const currentPe = Number(displayedLast?.close) || (annualRevForPe > 0 ? (valuation / annualRevForPe) : last.close);
             const peChange = currentPe - prev.close;
             const peChangePct = prev.close ? (peChange / prev.close * 100) : 0;
 
@@ -8533,9 +9407,9 @@
             peChangeEl.className = `sub ${peChange >= 0 ? 'bear-text' : 'bull-text'}`;
 
             // Price
-            document.getElementById('price-value').textContent = this.formatUsdPrice(lastCandle.c);
-            const priceChange = prevCandle ? lastCandle.c - prevCandle.c : 0;
-            const priceChangePct = prevCandle ? (priceChange / prevCandle.c * 100) : 0;
+            document.getElementById('price-value').textContent = this.formatUsdPrice(latestPriceCandle.c);
+            const priceChange = previousPriceCandle ? latestPriceCandle.c - previousPriceCandle.c : 0;
+            const priceChangePct = previousPriceCandle ? (priceChange / previousPriceCandle.c * 100) : 0;
             const priceChangeEl = document.getElementById('fair-value');
             priceChangeEl.textContent = `${priceChange >= 0 ? '▲' : '▼'} ${this.formatUsdPrice(Math.abs(priceChange))} (${priceChange >= 0 ? '+' : ''}${priceChangePct.toFixed(1)}%)`;
             priceChangeEl.className = `sub ${priceChange >= 0 ? 'bull-text' : 'bear-text'}`;
@@ -8545,7 +9419,7 @@
             document.getElementById('avg-buyback').textContent = `Avg: $${(lastAvg / 1e6).toFixed(2)}M`;
 
             // Annual revenue
-            document.getElementById('annual-rev').textContent = `$${(annualRev / 1e6).toFixed(0)}M`;
+            document.getElementById('annual-rev').textContent = `$${(displayAnnualRev / 1e6).toFixed(0)}M`;
             const valuationLabel = this.useFDV
                 ? (this.includeBurnInPe ? 'Adj. FDV' : 'FDV')
                 : (this.includeBurnInPe ? 'Adj. MCap' : 'MCap');
@@ -8578,7 +9452,7 @@
             const z = this.getZoneConfig(key);
 
             const forecastSnapshot = this.buildForecastSnapshot({
-                annualRev,
+                annualRev: annualRevForPe,
                 activeSupply,
                 currentPrice: lastCandle.c,
                 feeValues,
@@ -9618,6 +10492,7 @@
                     priceFormat: { type: 'custom', formatter: p => p.toFixed(1) + 'x' },
                 });
                 this.smaSeries.applyOptions({ visible: true });
+                this.resetRightPriceScale();
                 this.chart.applyOptions({ rightPriceScale: { scaleMargins: { top: 0.08, bottom: 0.24 } } });
                 this.updateData();
                 return;
@@ -9768,6 +10643,12 @@
                 );
                 this.updateBandPositions();
 
+                if (resolution !== '1d') {
+                    this.ensureIntradayCandlesLoaded().catch((error) => {
+                        console.warn(`[${this.token.symbol}] Intraday history fetch failed`, error);
+                    });
+                }
+
             } else {
                 if (this._priceCandleSeries) {
                     this._priceCandleSeries.applyOptions({ visible: false });
@@ -9833,12 +10714,11 @@
                         const total = bucket.reduce((sum, value) => sum + value, 0);
                         return { time: timeVal, value: total };
                     } else {
-                        const start = Math.max(0, i - ROLLING + 1);
-                        const slice = allDates.slice(start, i + 1).map(d => feesByDate[d]);
-                        const avg = slice.reduce((a, b) => a + b, 0) / slice.length;
-                        return { time: timeVal, value: avg * 365 };
+                        const minRollingDays = Math.max(0, Math.min(Number(this.token.minRollingDays ?? 14), ROLLING - 1));
+                        if (i < minRollingDays) return null;
+                        return { time: timeVal, value: (Number(feesByDate[date]) || 0) * 365 };
                     }
-                });
+                }).filter(Boolean);
                 this._metricLine.setData(lineData);
                 this._metricLineData = lineData;
                 this.setCurrentTimeBoundsFromSeries(lineData);
@@ -9866,6 +10746,7 @@
                     width: container.clientWidth,
                     height: container.clientHeight,
                 });
+                this.applyChartWidthRange();
                 this.updateBandPositions();
             });
             ro.observe(container);
@@ -9877,7 +10758,43 @@
                     width: container.clientWidth,
                     height: container.clientHeight,
                 });
+                this.applyChartWidthRange();
                 this.updateBandPositions();
+            });
+        }
+
+        scheduleChartLayoutSync() {
+            if (!this.chart) return;
+
+            if (this._chartLayoutSyncFrame) {
+                cancelAnimationFrame(this._chartLayoutSyncFrame);
+                this._chartLayoutSyncFrame = null;
+            }
+            if (this._chartLayoutSyncTimer) {
+                clearTimeout(this._chartLayoutSyncTimer);
+                this._chartLayoutSyncTimer = null;
+            }
+
+            const container = document.getElementById('chart-container');
+            const syncLayout = () => {
+                if (!this.chart || !container) return;
+                this.chart.applyOptions({
+                    width: container.clientWidth,
+                    height: container.clientHeight,
+                });
+                this.applyChartWidthRange();
+                this.updateBandPositions();
+            };
+
+            this._chartLayoutSyncFrame = requestAnimationFrame(() => {
+                this._chartLayoutSyncFrame = requestAnimationFrame(() => {
+                    this._chartLayoutSyncFrame = null;
+                    syncLayout();
+                    this._chartLayoutSyncTimer = setTimeout(() => {
+                        this._chartLayoutSyncTimer = null;
+                        syncLayout();
+                    }, 180);
+                });
             });
         }
 
@@ -10322,10 +11239,11 @@
                 if (triggered) {
                     a.triggered = true;
                     const dir = a.direction === 'above' ? 'rose above' : 'dropped below';
-                    const msg = `HYPE P/E ${dir} ${a.level}x (now ${last.close.toFixed(1)}x)`;
+                    const metricLabel = currentMode === 'fdv' ? 'FDV P/E' : 'MC P/E';
+                    const msg = `${this.token.symbol} ${metricLabel} ${dir} ${a.level}x (now ${last.close.toFixed(1)}x)`;
 
                     if ('Notification' in window && Notification.permission === 'granted') {
-                        new Notification('HYPE Alert Triggered', {
+                        new Notification(`${this.token.symbol} Alert Triggered`, {
                             body: msg,
                             icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23f0b90b" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
                         });
@@ -10334,7 +11252,7 @@
                     document.getElementById('alert-toggle').style.animation = 'pulse-alert 1s infinite';
 
                     if (this.alertEmail) {
-                        this._sendAlertEmail(a.level, last.close, a.direction);
+                        this._sendAlertEmail(a.level, last.close, a.direction, currentMode);
                     }
                     this._saveAlerts();
                 }
@@ -10342,22 +11260,38 @@
             this.renderAlertList();
         }
 
-        _sendAlertEmail(alertLevel, currentPE, direction) {
+        async _sendAlertEmail(alertLevel, currentPE, direction, metric = (this.useFDV ? 'fdv' : 'mc')) {
             if (!this.alertEmail) {
                 console.warn('[Alert] No email set — skipping send');
                 return;
             }
             const isSell = direction === 'above';
-            // Buy alert  → template_vg7l40l
-            // Sell alert → template_SELL_ID  (replace with your EmailJS sell template ID)
-            const templateId = isSell ? 'template_twr8f1h' : 'template_vg7l40l';
-            console.log('[Alert] Sending', isSell ? 'SELL' : 'BUY', 'email to', this.alertEmail, '| P/E:', currentPE, '| Alert:', alertLevel);
-            emailjs.send('service_p73062q', templateId, {
-                to_email: this.alertEmail,
-                alert_level: alertLevel.toFixed(1),
-                current_pe: currentPE.toFixed(1),
-            }).then((res) => {
-                console.log('[Alert] Email sent OK', res);
+            const priceDates = Object.keys(this.rawData?.candlesByDate || {}).sort();
+            const latestPriceDate = priceDates[priceDates.length - 1];
+            const latestPrice = Number(this.rawData?.livePrice)
+                || Number(this.rawData?.candlesByDate?.[latestPriceDate]?.c)
+                || 0;
+            console.log('[Alert] Sending', isSell ? 'SELL' : 'BUY', 'email to', this.alertEmail, '| token:', this.token.symbol, '| metric:', metric, '| current:', currentPE, '| alert:', alertLevel);
+            fetch(resolveBackendProxyUrl('/alerts/email', '/api/alerts/email'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to: this.alertEmail,
+                    address: 'chart-alert',
+                    metric,
+                    triggerValue: alertLevel,
+                    currentValue: currentPE,
+                    price: latestPrice,
+                    source: 'Spot',
+                    direction,
+                    tokenSymbol: this.token.symbol,
+                    tokenName: this.token.displayName || this.token.protocolName || this.token.symbol,
+                    tokenPath: this.token.routePath,
+                    date: new Date().toISOString(),
+                }),
+            }).then(async (response) => {
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.error || 'Email request failed');
                 // Show brief toast
                 const t = document.createElement('div');
                 t.textContent = `Alert email sent to ${this.alertEmail}`;
@@ -10367,7 +11301,7 @@
             }).catch((err) => {
                 console.error('[Alert] Email failed:', err);
                 const t = document.createElement('div');
-                t.textContent = `❌ Email failed: ${JSON.stringify(err)}`;
+                t.textContent = `Email failed: ${err?.message || err}`;
                 t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#f6465d;color:#fff;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;z-index:9999;';
                 document.body.appendChild(t);
                 setTimeout(() => t.remove(), 6000);

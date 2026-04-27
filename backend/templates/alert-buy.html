@@ -24,7 +24,7 @@
       <h1 style="margin:0 0 4px;font-size:20px;color:#4db87a;">Buy Opportunity Detected</h1>
       <p style="margin:0 0 16px;font-size:14px;color:#8aaa96;">
         Your <strong style="color:#ede9dc;">{{METRIC_LABEL}}</strong> alert has been reached for
-        <strong style="color:#ede9dc;">HYPE</strong>.
+        <strong style="color:#ede9dc;">{{TOKEN_SYMBOL}}</strong> <span style="color:#8aaa96;">({{TOKEN_NAME}})</span>.
       </p>
 
       <!-- Data table -->
@@ -50,7 +50,7 @@
           <td style="padding:6px 0 6px 12px;color:#4db87a;font-size:13px;font-weight:600;text-align:right;">{{CURRENT_VALUE}}</td>
         </tr>
         <tr>
-          <td style="padding:6px 0;color:#8aaa96;font-size:13px;white-space:nowrap;">HYPE Price</td>
+          <td style="padding:6px 0;color:#8aaa96;font-size:13px;white-space:nowrap;">{{TOKEN_SYMBOL}} Price</td>
           <td style="padding:6px 0 6px 12px;color:#ede9dc;font-size:13px;font-weight:600;text-align:right;">{{PRICE}}</td>
         </tr>
       </table>
@@ -64,7 +64,7 @@
       </p>
 
       <div style="text-align:center;margin:24px 0 0;">
-        <a href="https://hypurrmium.xyz" style="display:inline-block;padding:10px 28px;background:#4db87a;color:#fff;font-size:14px;font-weight:600;text-decoration:none;border-radius:6px;">View Dashboard</a>
+        <a href="{{DASHBOARD_URL}}" style="display:inline-block;padding:10px 28px;background:#4db87a;color:#fff;font-size:14px;font-weight:600;text-decoration:none;border-radius:6px;">View {{TOKEN_SYMBOL}} Dashboard</a>
       </div>
 
     </td></tr>

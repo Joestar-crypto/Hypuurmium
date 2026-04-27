@@ -1067,6 +1067,7 @@ app.get('/api/email-preview/:template', requireAdmin, (req, res) => {
     address: '0x1234567890abcdef1234567890abcdef12345678',
     metric: 'mc', triggerValue: 12, currentValue: 9.8,
     price: 28.45, source: 'Spot', date: new Date().toISOString(),
+    tokenSymbol: 'HYPE', tokenName: 'Hyperliquid', tokenPath: '/hype',
     sizeHype: 35.12, amountUsdc: 1000, orderType: 'market',
     status: 'filled', triggersUsed: 2, maxTriggers: 5,
     budgetUsed: 2000, totalBudget: 5000,
@@ -1082,6 +1083,49 @@ app.get('/api/email-preview/:template', requireAdmin, (req, res) => {
   const { html } = fn();
   res.setHeader('Content-Type', 'text/html');
   res.send(html);
+});
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+}
+
+app.post('/api/alerts/email', async (req, res) => {
+  const {
+    to,
+    address,
+    metric,
+    triggerValue,
+    currentValue,
+    price,
+    source,
+    direction,
+    tokenSymbol,
+    tokenName,
+    tokenPath,
+    date,
+  } = req.body || {};
+
+  if (!RESEND_API_KEY) return res.status(503).json({ error: 'Email delivery is not configured' });
+  if (!isValidEmail(to)) return res.status(400).json({ error: 'Invalid recipient email' });
+
+  const normalizedDirection = direction === 'above' ? 'above' : 'below';
+  const normalizedMetric = metric === 'price' ? 'price' : normalizePeMetric(metric);
+  const emailData = {
+    address: String(address || 'chart-alert'),
+    metric: normalizedMetric,
+    triggerValue: Number(triggerValue),
+    currentValue: Number(currentValue),
+    price: Number(price),
+    source: String(source || 'Spot'),
+    date: date || new Date().toISOString(),
+    tokenSymbol: String(tokenSymbol || '').trim() || 'TOKEN',
+    tokenName: String(tokenName || '').trim() || String(tokenSymbol || '').trim() || 'Token',
+    tokenPath: String(tokenPath || '/').trim() || '/',
+  };
+
+  const template = normalizedDirection === 'above' ? alertSell(emailData) : alertBuy(emailData);
+  await sendEmail(to, template, normalizedDirection === 'above' ? 'alert-sell' : 'alert-buy', emailData.address);
+  res.json({ ok: true });
 });
 
 /**
@@ -1477,7 +1521,7 @@ app.get('/api/admin/db-download', requireAdmin, (_req, res) => {
 
 // ── Frontend Pages & Assets ──
 
-app.get(['/', '/index.html', '/hype', '/hype/', '/lit', '/lit/', '/pump', '/pump/', '/sky', '/sky/', '/aave', '/aave/'], (_req, res) => {
+app.get(['/', '/index.html', '/hype', '/hype/', '/lit', '/lit/', '/pump', '/pump/', '/sky', '/sky/', '/aave', '/aave/', '/edge', '/edge/', '/cars', '/cars/', '/aster', '/aster/', '/link', '/link/', '/uni', '/uni/', '/cake', '/cake/', '/lido', '/lido/'], (_req, res) => {
   sendSiteFile(res, 'index.html');
 });
 

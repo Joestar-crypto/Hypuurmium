@@ -29,12 +29,18 @@ const tpl = {
 function metricLabel(metric) {
   if (metric === 'price') return 'Price';
   if (metric === 'fdv') return 'FDV P/E';
+  if (metric === 'mc') return 'MC P/E';
   return 'P/E';
 }
 
 function formatValue(metric, value) {
-  if (metric === 'price') return '$' + Number(value).toFixed(2);
-  return Number(value).toFixed(2) + 'x';
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return '—';
+  if (metric === 'price') {
+    const precision = numeric >= 100 ? 2 : numeric >= 1 ? 3 : numeric >= 0.01 ? 4 : 6;
+    return '$' + numeric.toFixed(precision);
+  }
+  return numeric.toFixed(numeric >= 10 ? 1 : 2) + 'x';
 }
 
 function formatDate(isoString) {
@@ -50,6 +56,16 @@ function shortAddr(addr) {
   return addr.slice(0, 6) + '...' + addr.slice(-4);
 }
 
+function resolveTokenDisplayName(tokenSymbol, tokenName) {
+  return tokenName || tokenSymbol || 'Token';
+}
+
+function resolveDashboardUrl(tokenPath) {
+  const rawPath = String(tokenPath || '/');
+  const normalizedPath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
+  return `https://hypurrmium.xyz${normalizedPath}`;
+}
+
 /** Replace all {{KEY}} placeholders in an HTML string */
 function fill(html, vars) {
   return html.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] !== undefined ? vars[key] : '');
@@ -59,8 +75,9 @@ function fill(html, vars) {
 // 1. ALERT — BUY OPPORTUNITY
 // ──────────────────────────────────────────
 
-function alertBuy({ address, metric, triggerValue, currentValue, price, source, date }) {
+function alertBuy({ address, metric, triggerValue, currentValue, price, source, date, tokenSymbol, tokenName, tokenPath }) {
   const mLabel = metricLabel(metric);
+  const displayName = resolveTokenDisplayName(tokenSymbol, tokenName);
   const vars = {
     METRIC_LABEL:  mLabel,
     WALLET:        shortAddr(address),
@@ -68,10 +85,13 @@ function alertBuy({ address, metric, triggerValue, currentValue, price, source, 
     SOURCE:        source,
     TRIGGER_VALUE: formatValue(metric, triggerValue),
     CURRENT_VALUE: formatValue(metric, currentValue),
-    PRICE:         '$' + Number(price).toFixed(2),
+    PRICE:         formatValue('price', price),
+    TOKEN_SYMBOL:  tokenSymbol || displayName,
+    TOKEN_NAME:    displayName,
+    DASHBOARD_URL: resolveDashboardUrl(tokenPath),
   };
   return {
-    subject: `HYPE Buy Alert — ${mLabel} reached ${formatValue(metric, currentValue)}`,
+    subject: `${tokenSymbol || displayName} Buy Alert — ${mLabel} reached ${formatValue(metric, currentValue)}`,
     html: fill(tpl.alertBuy, vars),
   };
 }
@@ -80,8 +100,9 @@ function alertBuy({ address, metric, triggerValue, currentValue, price, source, 
 // 2. ALERT — SELL OPPORTUNITY
 // ──────────────────────────────────────────
 
-function alertSell({ address, metric, triggerValue, currentValue, price, source, date }) {
+function alertSell({ address, metric, triggerValue, currentValue, price, source, date, tokenSymbol, tokenName, tokenPath }) {
   const mLabel = metricLabel(metric);
+  const displayName = resolveTokenDisplayName(tokenSymbol, tokenName);
   const vars = {
     METRIC_LABEL:  mLabel,
     WALLET:        shortAddr(address),
@@ -89,10 +110,13 @@ function alertSell({ address, metric, triggerValue, currentValue, price, source,
     SOURCE:        source,
     TRIGGER_VALUE: formatValue(metric, triggerValue),
     CURRENT_VALUE: formatValue(metric, currentValue),
-    PRICE:         '$' + Number(price).toFixed(2),
+    PRICE:         formatValue('price', price),
+    TOKEN_SYMBOL:  tokenSymbol || displayName,
+    TOKEN_NAME:    displayName,
+    DASHBOARD_URL: resolveDashboardUrl(tokenPath),
   };
   return {
-    subject: `HYPE Sell Alert — ${mLabel} reached ${formatValue(metric, currentValue)}`,
+    subject: `${tokenSymbol || displayName} Sell Alert — ${mLabel} reached ${formatValue(metric, currentValue)}`,
     html: fill(tpl.alertSell, vars),
   };
 }
