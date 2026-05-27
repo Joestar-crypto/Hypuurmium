@@ -17,7 +17,7 @@ const WORKER_JSON_CACHE = new Map();
 function normalizeUpstreamSegment(value, fallback = '') {
   const normalized = String(value || '').trim().toLowerCase();
   if (!normalized) return fallback;
-  return /^[a-z0-9-]+$/.test(normalized) ? normalized : fallback;
+  return /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/.test(normalized) ? normalized : fallback;
 }
 
 function normalizeAlphaSegment(value, fallback = 'usd') {

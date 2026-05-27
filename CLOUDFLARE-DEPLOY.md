@@ -115,7 +115,7 @@ Notes:
 
 Use the repo root as the Pages project.
 
-The repo now includes `_redirects` so `/hype`, `/lit`, `/pump`, `/sky`, and `/aave` all rewrite to the shared `index.html` shell.
+The repo now includes `_redirects` so token routes like `/hype`, `/lit`, `/pump`, `/sky`, `/aave`, `/rhea`, `/railgun`, `/ethfi`, `/metadao`, and `/mega` all rewrite to the shared `index.html` shell.
 
 - Framework preset: `None`
 - Build command: leave empty

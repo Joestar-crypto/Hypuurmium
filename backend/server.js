@@ -529,7 +529,7 @@ function parseBooleanFlag(value) {
 function normalizeUpstreamSegment(value, fallback = '') {
   const normalized = String(value || '').trim().toLowerCase();
   if (!normalized) return fallback;
-  return /^[a-z0-9-]+$/.test(normalized) ? normalized : fallback;
+  return /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/.test(normalized) ? normalized : fallback;
 }
 
 function normalizeAlphaSegment(value, fallback = 'usd') {
@@ -1521,7 +1521,7 @@ app.get('/api/admin/db-download', requireAdmin, (_req, res) => {
 
 // ── Frontend Pages & Assets ──
 
-app.get(['/', '/index.html', '/hype', '/hype/', '/lit', '/lit/', '/pump', '/pump/', '/sky', '/sky/', '/aave', '/aave/', '/edge', '/edge/', '/cars', '/cars/', '/aster', '/aster/', '/link', '/link/', '/uni', '/uni/', '/cake', '/cake/', '/lido', '/lido/'], (_req, res) => {
+app.get(['/', '/index.html', '/hype', '/hype/', '/lit', '/lit/', '/pump', '/pump/', '/sky', '/sky/', '/aave', '/aave/', '/edge', '/edge/', '/cars', '/cars/', '/aster', '/aster/', '/link', '/link/', '/uni', '/uni/', '/cake', '/cake/', '/lido', '/lido/', '/rhea', '/rhea/', '/railgun', '/railgun/', '/ethfi', '/ethfi/', '/metadao', '/metadao/', '/mega', '/mega/'], (_req, res) => {
   sendSiteFile(res, 'index.html');
 });
 

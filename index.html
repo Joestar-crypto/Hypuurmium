@@ -78,32 +78,9 @@
         (function() {
             const tokenFromQuery = String(new URLSearchParams(location.search || '').get('token') || '').trim().toLowerCase();
             const normalizedPath = location.pathname.replace(/\/+$/, '').toLowerCase() || '/';
-            const knownTokens = new Set(['hype', 'lit', 'pump', 'sky', 'aave', 'edge', 'cars', 'aster', 'link', 'uni', 'cake', 'lido']);
-            const pathToken = normalizedPath === '/lit'
-                ? 'lit'
-                : normalizedPath === '/link'
-                    ? 'link'
-                : normalizedPath === '/uni'
-                    ? 'uni'
-                : normalizedPath === '/cake'
-                    ? 'cake'
-                : normalizedPath === '/lido'
-                    ? 'lido'
-                : normalizedPath === '/aave'
-                    ? 'aave'
-                : normalizedPath === '/aster'
-                    ? 'aster'
-                : normalizedPath === '/cars'
-                    ? 'cars'
-                : normalizedPath === '/edge'
-                    ? 'edge'
-                : normalizedPath === '/sky'
-                    ? 'sky'
-                : normalizedPath === '/pump'
-                    ? 'pump'
-                    : normalizedPath === '/hype'
-                        ? 'hype'
-                        : '';
+            const knownTokens = new Set(['hype', 'lit', 'pump', 'sky', 'aave', 'edge', 'cars', 'aster', 'link', 'uni', 'cake', 'lido', 'rhea', 'railgun', 'ethfi', 'metadao', 'mega']);
+            const pathCandidate = normalizedPath === '/' ? '' : normalizedPath.replace(/^\//, '');
+            const pathToken = knownTokens.has(pathCandidate) ? pathCandidate : '';
             const routeToken = knownTokens.has(tokenFromQuery) ? tokenFromQuery : (pathToken || 'hype');
             const routeTitles = {
                 hype: 'Hypurrmium | HYPE P/E Ratio',
@@ -118,6 +95,11 @@
                 uni: 'Hypurrmium | UNI P/E Ratio',
                 cake: 'Hypurrmium | CAKE P/E Ratio',
                 lido: 'Hypurrmium | LDO P/E Ratio',
+                rhea: 'Hypurrmium | RHEA P/E Ratio',
+                railgun: 'Hypurrmium | RAIL P/E Ratio',
+                ethfi: 'Hypurrmium | ETHFI P/E Ratio',
+                metadao: 'Hypurrmium | META P/E Ratio',
+                mega: 'Hypurrmium | MEGA P/E Ratio',
             };
             window.HYPURRMIUM_ROUTE_TOKEN = routeToken;
             document.title = routeTitles[routeToken] || routeTitles.hype;
@@ -4669,6 +4651,41 @@
                                 <span class="chart-token-name">Lido</span>
                             </span>
                         </button>
+                        <button class="chart-token-option" type="button" data-token="rhea" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/67682/small/RHEA_Logo.png?1753517263" alt="RHEA icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">RHEA</span>
+                                <span class="chart-token-name">Rhea Finance</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="railgun" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/16840/small/railgun.jpeg?1696516407" alt="RAIL icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">RAIL</span>
+                                <span class="chart-token-name">Railgun</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="ethfi" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/35958/small/etherfi.jpeg?1710254562" alt="ETHFI icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">ETHFI</span>
+                                <span class="chart-token-name">ether.fi</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="metadao" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/68320/small/META.png?1755335883" alt="META icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">META</span>
+                                <span class="chart-token-name">MetaDAO</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="mega" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://icons.llamao.fi/icons/chains/rsz_megaeth.jpg" alt="MEGA icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">MEGA</span>
+                                <span class="chart-token-name">MegaETH</span>
+                            </span>
+                        </button>
                     </div>
                 </div>
                 <span class="chart-label" id="chart-mode-label">HYPE / Revenue · P/E</span>
@@ -5077,7 +5094,7 @@
             chartStart: 1732838400000,
             tgeDate: '2024-11-29',
             marketChartDays: 365,
-            dynamicZones: false,
+            dynamicZones: { mc: true, fdv: true },
             zones: {
                 mc: { cheap: [6, 8], fair: [12, 14], expensive: [20, 22] },
                 fdv: { cheap: [18, 24], fair: [36, 42], expensive: [60, 66] },
@@ -5126,7 +5143,7 @@
             marketChartInterval: 'daily',
             intradayMarketChartDays: 30,
             intradayMarketChartInterval: 'hourly',
-            dynamicZones: false,
+            dynamicZones: { mc: true, fdv: true },
             zoneQuantiles: {
                 cheap: [0.05, 0.24],
                 fair: [0.40, 0.70],
@@ -5180,7 +5197,7 @@
             marketChartInterval: 'daily',
             intradayMarketChartDays: 30,
             intradayMarketChartInterval: 'hourly',
-            dynamicZones: { mc: true, fdv: false },
+            dynamicZones: { mc: true, fdv: true },
             zones: {
                 mc: { cheap: [2, 3], fair: [4, 5.5], expensive: [6.5, 8.5] },
                 fdv: { cheap: [3.5, 4.5], fair: [5.5, 7], expensive: [8.5, 10.5] },
@@ -5208,7 +5225,7 @@
             symbol: 'SKY',
             displayName: 'Sky',
             protocolName: 'Sky',
-            menuMarketCapRank: 4,
+            menuMarketCapRank: 5,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/39925/small/sky.jpg?1724827980',
             routePath: '/sky',
             priceLabel: 'SKY Price',
@@ -5236,7 +5253,7 @@
                 label: 'Maker',
                 startDate: '2020-10-01',
             },
-            dynamicZones: false,
+            dynamicZones: { mc: true, fdv: true },
             zoneQuantiles: {
                 cheap: [0.08, 0.26],
                 fair: [0.40, 0.62],
@@ -5296,7 +5313,7 @@
                 symbol: 'AAVEUSDT',
                 startDate: '2020-10-03',
             },
-            dynamicZones: { mc: true, fdv: false },
+            dynamicZones: { mc: true, fdv: true },
             zoneQuantiles: {
                 cheap: [0.06, 0.18],
                 fair: [0.26, 0.44],
@@ -5329,7 +5346,7 @@
             symbol: 'EDGE',
             displayName: 'edgeX',
             protocolName: 'edgeX',
-            menuMarketCapRank: 9,
+            menuMarketCapRank: 8,
             logoUrl: 'https://assets.coingecko.com/coins/images/102172616/standard/edgex.png?1774332310',
             routePath: '/edge',
             priceLabel: 'EDGE Price',
@@ -5351,7 +5368,7 @@
             marketChartInterval: 'daily',
             intradayMarketChartDays: 30,
             intradayMarketChartInterval: 'hourly',
-            dynamicZones: { mc: true, fdv: false },
+            dynamicZones: { mc: true, fdv: true },
             zoneQuantiles: {
                 cheap: [0.08, 0.22],
                 fair: [0.34, 0.56],
@@ -5384,7 +5401,7 @@
             symbol: 'CARDS',
             displayName: 'Collector Crypt',
             protocolName: 'Collector Crypt',
-            menuMarketCapRank: 12,
+            menuMarketCapRank: 16,
             logoUrl: 'https://assets.coingecko.com/coins/images/68728/standard/cards-logo.jpeg?1756534539',
             routePath: '/cars',
             priceLabel: 'CARDS Price',
@@ -5405,7 +5422,7 @@
             marketChartInterval: 'daily',
             intradayMarketChartDays: 30,
             intradayMarketChartInterval: 'hourly',
-            dynamicZones: { mc: true, fdv: false },
+            dynamicZones: { mc: true, fdv: true },
             zoneQuantiles: {
                 cheap: [0.08, 0.24],
                 fair: [0.38, 0.62],
@@ -5438,7 +5455,7 @@
             symbol: 'ASTER',
             displayName: 'Aster',
             protocolName: 'Aster',
-            menuMarketCapRank: 5,
+            menuMarketCapRank: 4,
             logoUrl: 'https://assets.coingecko.com/coins/images/69040/standard/_ASTER.png?1757326782',
             routePath: '/aster',
             priceLabel: 'ASTER Price',
@@ -5460,7 +5477,7 @@
             marketChartInterval: 'daily',
             intradayMarketChartDays: 30,
             intradayMarketChartInterval: 'hourly',
-            dynamicZones: { mc: true, fdv: false },
+            dynamicZones: { mc: true, fdv: true },
             zoneQuantiles: {
                 cheap: [0.08, 0.22],
                 fair: [0.34, 0.56],
@@ -5523,7 +5540,7 @@
                 symbol: 'LINKUSDT',
                 startDate: '2025-08-01',
             },
-            dynamicZones: false,
+            dynamicZones: { mc: true, fdv: true },
             zones: {
                 mc: { cheap: [110, 125], fair: [160, 220], expensive: [300, 450] },
                 fdv: { cheap: [150, 170], fair: [220, 300], expensive: [410, 600] },
@@ -5579,7 +5596,7 @@
                 symbol: 'UNIUSDT',
                 startDate: '2025-12-01',
             },
-            dynamicZones: false,
+            dynamicZones: { mc: true, fdv: true },
             zones: {
                 mc: { cheap: [42, 48], fair: [52, 64], expensive: [95, 170] },
                 fdv: { cheap: [66, 76], fair: [82, 102], expensive: [150, 270] },
@@ -5607,7 +5624,7 @@
             symbol: 'CAKE',
             displayName: 'PancakeSwap',
             protocolName: 'PancakeSwap',
-            menuMarketCapRank: 8,
+            menuMarketCapRank: 9,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/12632/small/pancakeswap-cake-logo_%281%29.png?1696512440',
             routePath: '/cake',
             priceLabel: 'CAKE Price',
@@ -5634,7 +5651,7 @@
                 symbol: 'CAKEUSDT',
                 startDate: '2021-05-01',
             },
-            dynamicZones: false,
+            dynamicZones: { mc: true, fdv: true },
             zones: {
                 mc: { cheap: [3.5, 7.5], fair: [8.5, 12.5], expensive: [34.5, 38.5] },
                 fdv: { cheap: [5, 9], fair: [11, 15], expensive: [34.5, 38.5] },
@@ -5662,7 +5679,7 @@
             symbol: 'LDO',
             displayName: 'Lido',
             protocolName: 'Lido',
-            menuMarketCapRank: 10,
+            menuMarketCapRank: 12,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/13573/small/Lido_DAO.png?1696513326',
             routePath: '/lido',
             priceLabel: 'LDO Price',
@@ -5689,7 +5706,7 @@
                 symbol: 'LDOUSDT',
                 startDate: '2021-07-01',
             },
-            dynamicZones: false,
+            dynamicZones: { mc: true, fdv: true },
             zones: {
                 mc: { cheap: [5, 6.5], fair: [8.5, 11], expensive: [13, 15.5] },
                 fdv: { cheap: [6, 8], fair: [10, 13], expensive: [15.5, 18.5] },
@@ -5710,6 +5727,285 @@
                 keywords: 'Lido, LDO, P/E ratio, price earnings ratio, LDO valuation, Lido revenue, liquid staking valuation, crypto valuation chart',
                 ogTitle: 'Hypurrmium — Live LDO P/E Ratio',
                 ogDescription: 'Is LDO cheap or expensive right now? Track the live P/E ratio of Lido using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        rhea: {
+            key: 'rhea',
+            symbol: 'RHEA',
+            displayName: 'Rhea Finance',
+            protocolName: 'Rhea Finance',
+            menuMarketCapRank: 17,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/67682/small/RHEA_Logo.png?1753517263',
+            routePath: '/rhea',
+            priceLabel: 'RHEA Price',
+            overlayLabel: '+RHEAUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'rhea',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['rhea-finance'],
+            defillamaProtocolSlug: 'rhea-finance',
+            coingeckoId: 'rhea-2',
+            supplyFallback: 200_000_000,
+            fdvSupplyFallback: 1_000_000_000,
+            chartStart: null,
+            tgeDate: '2025-07-30',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zoneQuantiles: {
+                cheap: [0.08, 0.24],
+                fair: [0.38, 0.62],
+                expensive: [0.78, 0.94],
+            },
+            zones: {
+                mc: { cheap: [3, 5], fair: [6, 9], expensive: [12, 18] },
+                fdv: { cheap: [18, 24], fair: [28, 36], expensive: [44, 60] },
+            },
+            tokenRights: {
+                badge: 'RHEA Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Rhea Finance protocol revenue benchmark' },
+                    { label: 'Buybacks', value: 'No public RHEA buyback program found' },
+                    { label: 'Revenue share', value: 'Rhea Dex revenue = 20% of swap fees' },
+                    { label: 'Revenue scope', value: 'DEX fees, lending interest and LST protocol revenue' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/rhea-finance" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/rhea-2" target="_blank">CoinGecko</a> + <a href="https://www.rhea.finance/" target="_blank">Rhea Finance</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | RHEA P/E Ratio',
+                description: 'Track the live P/E ratio of Rhea Finance\'s RHEA token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'Rhea Finance, RHEA, P/E ratio, price earnings ratio, RHEA valuation, Rhea revenue, NEAR DeFi valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live RHEA P/E Ratio',
+                ogDescription: 'Is RHEA cheap or expensive right now? Track the live P/E ratio of Rhea Finance using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        railgun: {
+            key: 'railgun',
+            symbol: 'RAIL',
+            displayName: 'Railgun',
+            protocolName: 'Railgun',
+            menuMarketCapRank: 13,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/16840/small/railgun.jpeg?1696516407',
+            routePath: '/railgun',
+            priceLabel: 'RAIL Price',
+            overlayLabel: '+RAILUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'railgun',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['railgun'],
+            defillamaProtocolSlug: 'railgun',
+            coingeckoId: 'railgun',
+            supplyFallback: 57_500_000,
+            fdvSupplyFallback: 57_500_000,
+            chartStart: null,
+            tgeDate: '2022-01-28',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zoneQuantiles: {
+                cheap: [0.08, 0.22],
+                fair: [0.34, 0.58],
+                expensive: [0.76, 0.94],
+            },
+            zones: {
+                mc: { cheap: [25, 35], fair: [45, 60], expensive: [80, 110] },
+                fdv: { cheap: [25, 35], fair: [45, 60], expensive: [80, 110] },
+            },
+            tokenRights: {
+                badge: 'RAIL Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Railgun fees and holder revenue benchmark' },
+                    { label: 'Buybacks', value: 'No buybacks; staking claim flow instead' },
+                    { label: 'Holder flow', value: '2% of treasury every 2 weeks (~52%/yr)' },
+                    { label: 'Revenue scope', value: 'Privacy service fees collected by Railgun' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/railgun" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/railgun" target="_blank">CoinGecko</a> + <a href="https://railgun.org/" target="_blank">Railgun</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | RAIL P/E Ratio',
+                description: 'Track the live P/E ratio of Railgun\'s RAIL token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'Railgun, RAIL, P/E ratio, price earnings ratio, RAIL valuation, Railgun revenue, privacy protocol valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live RAIL P/E Ratio',
+                ogDescription: 'Is RAIL cheap or expensive right now? Track the live P/E ratio of Railgun using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        ethfi: {
+            key: 'ethfi',
+            symbol: 'ETHFI',
+            displayName: 'ether.fi',
+            protocolName: 'ether.fi',
+            menuMarketCapRank: 10,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/35958/small/etherfi.jpeg?1710254562',
+            routePath: '/ethfi',
+            priceLabel: 'ETHFI Price',
+            overlayLabel: '+ETHFIUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'ethfi',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['ether.fi'],
+            defillamaProtocolSlug: 'ether.fi',
+            coingeckoId: 'ether-fi',
+            supplyFallback: 880_665_741,
+            fdvSupplyFallback: 1_000_000_000,
+            chartStart: null,
+            tgeDate: '2024-03-18',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zoneQuantiles: {
+                cheap: [0.08, 0.24],
+                fair: [0.38, 0.62],
+                expensive: [0.78, 0.94],
+            },
+            zones: {
+                mc: { cheap: [4, 6], fair: [8, 11], expensive: [14, 20] },
+                fdv: { cheap: [5, 7], fair: [9, 12], expensive: [16, 22] },
+            },
+            tokenRights: {
+                badge: 'ETHFI Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'ether.fi revenue plus ETHFI buyback benchmark' },
+                    { label: 'Buybacks', value: 'Yes - actual ETHFI token buybacks' },
+                    { label: 'Buyback %', value: 'Variable; no fixed % in DefiLlama adapter' },
+                    { label: 'Revenue scope', value: 'Staking/restaking, vault and Cash protocol revenue' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/ether.fi" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/ether-fi" target="_blank">CoinGecko</a> + <a href="https://www.ether.fi/" target="_blank">ether.fi</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | ETHFI P/E Ratio',
+                description: 'Track the live P/E ratio of ether.fi\'s ETHFI token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'ether.fi, ETHFI, P/E ratio, price earnings ratio, ETHFI valuation, ether.fi revenue, restaking valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live ETHFI P/E Ratio',
+                ogDescription: 'Is ETHFI cheap or expensive right now? Track the live P/E ratio of ether.fi using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        metadao: {
+            key: 'metadao',
+            symbol: 'META',
+            displayName: 'MetaDAO',
+            protocolName: 'MetaDAO',
+            menuMarketCapRank: 15,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/68320/small/META.png?1755335883',
+            routePath: '/metadao',
+            priceLabel: 'META Price',
+            overlayLabel: '+METAUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'metadao',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['metadao'],
+            defillamaProtocolSlug: 'metadao',
+            coingeckoId: 'meta-2-2',
+            supplyFallback: 22_684_698,
+            fdvSupplyFallback: 22_684_698,
+            chartStart: null,
+            tgeDate: '2025-08-16',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zoneQuantiles: {
+                cheap: [0.08, 0.22],
+                fair: [0.34, 0.58],
+                expensive: [0.76, 0.94],
+            },
+            zones: {
+                mc: { cheap: [6, 9], fair: [12, 16], expensive: [20, 28] },
+                fdv: { cheap: [6, 9], fair: [12, 16], expensive: [20, 28] },
+            },
+            tokenRights: {
+                badge: 'META Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'MetaDAO fees and revenue benchmark' },
+                    { label: 'Buybacks', value: 'No public META buyback program found' },
+                    { label: 'Revenue share', value: '100% protocol revenue in DefiLlama adapter' },
+                    { label: 'Revenue scope', value: '0.5% Futarchy AMM fees + DAO-owned Meteora LP fees' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/metadao" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/meta-2-2" target="_blank">CoinGecko</a> + <a href="https://metadao.fi/" target="_blank">MetaDAO</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | META P/E Ratio',
+                description: 'Track the live P/E ratio of MetaDAO\'s META token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'MetaDAO, META, P/E ratio, price earnings ratio, META valuation, MetaDAO revenue, futarchy valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live META P/E Ratio',
+                ogDescription: 'Is META cheap or expensive right now? Track the live P/E ratio of MetaDAO using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        mega: {
+            key: 'mega',
+            symbol: 'MEGA',
+            displayName: 'MegaETH',
+            protocolName: 'MegaETH',
+            menuMarketCapRank: 14,
+            logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_megaeth.jpg',
+            routePath: '/mega',
+            priceLabel: 'MEGA Price',
+            overlayLabel: '+MEGAUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'mega',
+            minRollingDays: 0,
+            dynamicZoneMinPoints: 4,
+            revenueSource: 'megafees',
+            defillamaFeesCandidates: ['megafees'],
+            defillamaProtocolSlug: '',
+            coingeckoId: 'megaeth',
+            megaFeesEconomicsUrl: 'https://megafees.com/data/economics-dashboard-data.json',
+            megaFeesUsdmCoinGeckoId: 'megausd',
+            megaFeesUsdmMarketChartDays: 180,
+            megaFeesUsdmApy: 0.90 * 0.99 * 0.0347,
+            megaFeesNetworkFeesSlug: 'megaeth',
+            megaFeesNetworkFeesDataType: 'dailyFees',
+            supplyFallback: 1_128_869_357,
+            fdvSupplyFallback: 10_000_000_000,
+            chartStart: null,
+            tgeDate: '2026-05-01',
+            revenueStartDate: '2026-02-09',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zoneQuantiles: {
+                cheap: [0.08, 0.22],
+                fair: [0.34, 0.58],
+                expensive: [0.76, 0.94],
+            },
+            zones: {
+                mc: { cheap: [7, 9], fair: [11, 14], expensive: [18, 24] },
+                fdv: { cheap: [65, 85], fair: [105, 135], expensive: [170, 230] },
+            },
+            tokenRights: {
+                badge: 'MEGA Rights',
+                rows: [
+                    { label: 'MegaFees', value: 'USDm yield revenue included in P/E' },
+                    { label: 'Buybacks', value: 'MegaFees references cumulative buybacks; no fixed % disclosed' },
+                    { label: 'Committed share', value: '~63.1% of circulating MEGA committed on Terminal' },
+                    { label: 'Revenue scope', value: 'USDm reserve yield + MegaETH network fees' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://megafees.com/" target="_blank">MegaFees</a> + <a href="https://megafees.com/data/economics-dashboard-data.json" target="_blank">MegaFees API</a> + <a href="https://www.coingecko.com/en/coins/megaeth" target="_blank">CoinGecko</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | MEGA P/E Ratio',
+                description: 'Track the live P/E ratio of MegaETH\'s MEGA token using MegaFees USDm revenue data and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'MegaETH, MEGA, P/E ratio, price earnings ratio, MEGA valuation, MegaETH revenue, USDm revenue, MegaFees, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live MEGA P/E Ratio',
+                ogDescription: 'Is MEGA cheap or expensive right now? Track the live P/E ratio of MegaETH using MegaFees USDm revenue and CoinGecko market cap data.',
             },
         },
     };
@@ -5783,8 +6079,8 @@
         BACKEND_API_URL: resolveBackendApiUrl(),
         ZONES: cloneZoneConfig(ACTIVE_TOKEN.zones),
         CANDLE_START: ACTIVE_TOKEN.chartStart,
-        DEFILLAMA_URL: buildDefiLlamaFeesUrl(ACTIVE_TOKEN.defillamaFeesCandidates[0], ACTIVE_TOKEN.defillamaFeesDataType || 'dailyRevenue'),
-        DEFILLAMA_PROTOCOL_URL: buildDefiLlamaProtocolUrl(ACTIVE_TOKEN.defillamaProtocolSlug),
+        DEFILLAMA_URL: ACTIVE_TOKEN.defillamaFeesCandidates?.[0] ? buildDefiLlamaFeesUrl(ACTIVE_TOKEN.defillamaFeesCandidates[0], ACTIVE_TOKEN.defillamaFeesDataType || 'dailyRevenue') : '',
+        DEFILLAMA_PROTOCOL_URL: ACTIVE_TOKEN.defillamaProtocolSlug ? buildDefiLlamaProtocolUrl(ACTIVE_TOKEN.defillamaProtocolSlug) : '',
         COINGECKO_COIN_URL: ACTIVE_TOKEN.coingeckoId ? buildCoinGeckoCoinUrl(ACTIVE_TOKEN.coingeckoId) : '',
         COINGECKO_SIMPLE_PRICE_URL: ACTIVE_TOKEN.coingeckoId ? buildCoinGeckoSimplePriceUrl(ACTIVE_TOKEN.coingeckoId) : '',
         COINGECKO_MARKET_CHART_URL: ACTIVE_TOKEN.coingeckoId ? buildCoinGeckoMarketChartUrl(ACTIVE_TOKEN.coingeckoId, ACTIVE_TOKEN.marketChartDays, ACTIVE_TOKEN.marketChartInterval || '') : '',
@@ -5816,8 +6112,8 @@
         CONFIG.ALERT_COUNTED_STORAGE_KEY = getTokenStorageKey(token.storageScope, 'alert-counted');
         CONFIG.ZONES = cloneZoneConfig(token.zones);
         CONFIG.CANDLE_START = token.chartStart;
-        CONFIG.DEFILLAMA_URL = buildDefiLlamaFeesUrl(token.defillamaFeesCandidates[0], token.defillamaFeesDataType || 'dailyRevenue');
-        CONFIG.DEFILLAMA_PROTOCOL_URL = buildDefiLlamaProtocolUrl(token.defillamaProtocolSlug);
+        CONFIG.DEFILLAMA_URL = token.defillamaFeesCandidates?.[0] ? buildDefiLlamaFeesUrl(token.defillamaFeesCandidates[0], token.defillamaFeesDataType || 'dailyRevenue') : '';
+        CONFIG.DEFILLAMA_PROTOCOL_URL = token.defillamaProtocolSlug ? buildDefiLlamaProtocolUrl(token.defillamaProtocolSlug) : '';
         CONFIG.COINGECKO_COIN_URL = token.coingeckoId ? buildCoinGeckoCoinUrl(token.coingeckoId) : '';
         CONFIG.COINGECKO_SIMPLE_PRICE_URL = token.coingeckoId ? buildCoinGeckoSimplePriceUrl(token.coingeckoId) : '';
         CONFIG.COINGECKO_MARKET_CHART_URL = token.coingeckoId ? buildCoinGeckoMarketChartUrl(token.coingeckoId, token.marketChartDays, token.marketChartInterval || '') : '';
@@ -5840,7 +6136,7 @@
             this.peOverlayEnabled = false;
             this.zoneConfig = this.normalizeZoneConfigMap(cloneZoneConfig(CONFIG.ZONES));
             this.applyStaticZoneConfigOverride();
-            this.activeFeesSlug = this.token.defillamaFeesCandidates[0];
+            this.activeFeesSlug = this.token.defillamaFeesCandidates?.[0] || this.token.revenueSource || null;
             this.chart = null;
             this.candleSeries = null;
             this.volumeSeries = null;
@@ -6198,7 +6494,7 @@
                 this.chartMode = 'pe';
                 this.chartWidthDays = this.readChartWidthState(this.token);
                 this.clearViewportState(this.token, 'pe', this.chartWidthDays, this.historyMode);
-                this.activeFeesSlug = this.token.defillamaFeesCandidates[0];
+                this.activeFeesSlug = this.token.defillamaFeesCandidates?.[0] || this.token.revenueSource || null;
                 this.rawData = cachedRawData || null;
                 this._historyBackfillMeta = cachedRawData?.historyBackfillMeta || null;
 
@@ -6275,13 +6571,17 @@
             return !!(this.token.dynamicZones && this.token.dynamicZones[metricKey]);
         }
 
+        getDynamicZoneMinPoints() {
+            const configured = Number(this.token?.dynamicZoneMinPoints);
+            return Number.isFinite(configured) && configured > 0 ? configured : 4;
+        }
+
         setDerivedZones(metricKey, values) {
             if (!this.isDynamicZoneEnabled(metricKey)) return;
             const fallback = this.getZoneConfig(metricKey)
                 || (this.zoneConfig && this.zoneConfig[metricKey])
                 || (CONFIG.ZONES && CONFIG.ZONES[metricKey]);
-            const recentValues = Array.isArray(values) ? values.slice(-730) : values;
-            this.zoneConfig[metricKey] = this.deriveZonesFromSeries(recentValues, fallback);
+            this.zoneConfig[metricKey] = this.deriveZonesFromSeries(values, fallback);
         }
 
         roundZoneStep(value) {
@@ -6346,7 +6646,7 @@
                 .filter((value) => Number.isFinite(value) && value > 0)
                 .sort((a, b) => a - b);
 
-            if (cleanValues.length < 25) return fallback;
+            if (cleanValues.length < this.getDynamicZoneMinPoints()) return fallback;
 
             const quantile = (ratio) => {
                 const index = Math.max(0, Math.min(cleanValues.length - 1, Math.floor((cleanValues.length - 1) * ratio)));
@@ -6364,6 +6664,34 @@
             const zones = { cheap, fair, expensive };
 
             return this.normalizeEqualZoneWidths(zones) || fallback;
+        }
+
+        deriveExtremaZonesFromSeries(points, fallback) {
+            const lows = (points || [])
+                .map((point) => Number(point?.low))
+                .filter((value) => Number.isFinite(value) && value > 0);
+            const highs = (points || [])
+                .map((point) => Number(point?.high))
+                .filter((value) => Number.isFinite(value) && value > 0);
+            if (!lows.length || !highs.length) return fallback;
+
+            const seriesLow = Math.min(...lows);
+            const seriesHigh = Math.max(...highs);
+            const range = seriesHigh - seriesLow;
+            if (!Number.isFinite(range) || range <= 0) return fallback;
+
+            const rawZones = {
+                cheap: [seriesLow, seriesLow + (range * 0.28)],
+                fair: [seriesLow + (range * 0.36), seriesLow + (range * 0.64)],
+                expensive: [seriesLow + (range * 0.72), seriesHigh],
+            };
+            const zones = Object.fromEntries(Object.entries(rawZones).map(([key, band]) => [
+                key,
+                [this.roundZoneStep(band[0]), this.roundZoneStep(band[1])],
+            ]));
+
+            if (this.isValidDerivedZoneSet(zones)) return this.normalizeEqualZoneWidths(zones) || zones;
+            return this.deriveQuantileZonesFromSeries(points, fallback);
         }
 
         collectSwingExtrema(points, direction = 'high') {
@@ -6587,27 +6915,8 @@
 
         deriveZonesFromSeries(values, fallback) {
             const points = this.normalizeZoneSeries(values);
-            if (points.length < 25) return fallback;
-
-            const cheapCluster = this.findRepeatedLevelCluster(this.collectSwingExtrema(points, 'low'), points, 'low');
-            const expensiveCluster = this.findRepeatedLevelCluster(this.collectSwingExtrema(points, 'high'), points, 'high');
-            if (!cheapCluster || !expensiveCluster) {
-                return this.deriveQuantileZonesFromSeries(points, fallback);
-            }
-
-            const cheap = this.buildZoneFromLevelCluster(cheapCluster);
-            const expensive = this.buildZoneFromLevelCluster(expensiveCluster);
-            const sharedWidth = this.getSharedZoneWidth(cheapCluster, expensiveCluster, cheap, expensive);
-            if (!Number.isFinite(sharedWidth)) {
-                return this.deriveQuantileZonesFromSeries(points, fallback);
-            }
-
-            const fairCenter = (Number(cheapCluster.center) + Number(expensiveCluster.center)) / 2;
-            const zones = this.buildEqualWidthZoneSet(cheapCluster.center, fairCenter, expensiveCluster.center, sharedWidth);
-
-            return this.isValidDerivedZoneSet(zones)
-                ? zones
-                : this.deriveQuantileZonesFromSeries(points, fallback);
+            if (points.length < this.getDynamicZoneMinPoints()) return fallback;
+            return this.deriveExtremaZonesFromSeries(points, fallback);
         }
 
         /* ── Data Fetching ── */
@@ -6676,6 +6985,9 @@
                 coingeckoCoinUrl: token?.coingeckoId ? buildCoinGeckoCoinUrl(token.coingeckoId) : '',
                 coingeckoSimplePriceUrl: token?.coingeckoId ? buildCoinGeckoSimplePriceUrl(token.coingeckoId) : '',
                 coingeckoMarketChartUrl: token?.coingeckoId ? buildCoinGeckoMarketChartUrl(token.coingeckoId, token.marketChartDays, token.marketChartInterval || '') : '',
+                megaFeesEconomicsUrl: token?.megaFeesEconomicsUrl || '',
+                megaFeesUsdmMarketChartUrl: token?.megaFeesUsdmCoinGeckoId ? buildCoinGeckoMarketChartUrl(token.megaFeesUsdmCoinGeckoId, token.megaFeesUsdmMarketChartDays || 180, token.megaFeesUsdmMarketChartInterval || 'daily') : '',
+                megaFeesNetworkFeesUrl: token?.megaFeesNetworkFeesSlug ? buildDefiLlamaFeesUrl(token.megaFeesNetworkFeesSlug, token.megaFeesNetworkFeesDataType || 'dailyFees') : '',
                 tokenId: token?.hyperliquidTokenId || null,
                 burnAddress: token?.burnAddress || null,
             };
@@ -7206,6 +7518,21 @@
             return Math.round((endMs - startMs) / 86400000);
         }
 
+        buildDailyDateKeys(startDate, endDate = this.tsToDate(Math.floor(Date.now() / 1000))) {
+            const startMs = Date.parse(`${startDate}T00:00:00Z`);
+            const endMs = Date.parse(`${endDate}T00:00:00Z`);
+            if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || startMs > endMs) return [];
+
+            const dates = [];
+            const cursor = new Date(startMs);
+            const end = new Date(endMs);
+            while (cursor <= end) {
+                dates.push(this.tsToDate(Math.floor(cursor.getTime() / 1000)));
+                cursor.setUTCDate(cursor.getUTCDate() + 1);
+            }
+            return dates;
+        }
+
         trimTrailingZeroRevenuePoints(feesByDate, maxTrimDays = Number(this.token?.trimTrailingZeroRevenueDays ?? 0)) {
             if (!feesByDate || maxTrimDays <= 0) return { ...(feesByDate || {}) };
 
@@ -7341,6 +7668,50 @@
             return {
                 activeSlug: fallbackPayload.slug,
                 feesByDate: this.prepareFeesByDate(this.buildFeesByDateFromChart(fallbackPayload.data?.totalDataChart || [])),
+            };
+        }
+
+        async fetchMegaFeesRevenueHistory(fetchConfig = this.getTokenFetchConfig(this.token)) {
+            const [economicsRes, usdmMarketChartRes, networkFeesRes] = await Promise.all([
+                this.fetchJsonStrict(fetchConfig.megaFeesEconomicsUrl, 'MegaFees economics'),
+                fetchConfig.megaFeesUsdmMarketChartUrl
+                    ? this.fetchJsonOrNull(fetchConfig.megaFeesUsdmMarketChartUrl, 'MegaFees USDm market chart')
+                    : Promise.resolve(null),
+                fetchConfig.megaFeesNetworkFeesUrl
+                    ? this.fetchJsonOrNull(fetchConfig.megaFeesNetworkFeesUrl, 'MegaETH network fees')
+                    : Promise.resolve(null),
+            ]);
+
+            const usdmSupply = Number(economicsRes?.usdm?.supply);
+            const usdmPrice = Number(economicsRes?.usdm?.priceUsd) || 1;
+            const currentUsdmTvl = usdmSupply > 0 ? usdmSupply * usdmPrice : 0;
+            if (!(currentUsdmTvl > 0)) throw new Error('No USDm supply in MegaFees response');
+
+            const apy = Number(this.token?.megaFeesUsdmApy) || (0.90 * 0.99 * 0.0347);
+            const currentDate = this.tsToDate(Math.floor(Date.now() / 1000));
+            const tvlByDate = this.buildDailyNumericSeries(usdmMarketChartRes?.market_caps || []);
+            tvlByDate[currentDate] = currentUsdmTvl;
+
+            const networkFeesByDate = this.buildFeesByDateFromChart(networkFeesRes?.totalDataChart || []);
+            const startDate = this.token?.revenueStartDate || this.token?.tgeDate || currentDate;
+            const dateKeys = this.buildDailyDateKeys(startDate, currentDate);
+            const feesByDate = {};
+            let lastTvl = null;
+
+            for (const date of dateKeys) {
+                const tvl = Number(tvlByDate[date]);
+                if (tvl > 0) lastTvl = tvl;
+                if (!(lastTvl > 0)) lastTvl = currentUsdmTvl;
+
+                const usdmYield = (lastTvl * apy) / 365;
+                const networkFees = Math.max(Number(networkFeesByDate[date]) || 0, 0);
+                feesByDate[date] = usdmYield + networkFees;
+            }
+
+            return {
+                activeSlug: 'megafees',
+                feesByDate: this.prepareFeesByDate(feesByDate),
+                economics: economicsRes,
             };
         }
 
@@ -7640,13 +8011,15 @@
         }
 
         async fetchCoinGeckoTokenData(fetchConfig = this.getTokenFetchConfig(this.token)) {
-            const feesSourcePromise = this.token.key === 'sky'
-                ? this.fetchSkyFeesHistory()
-                : this.fetchBestFeesPayload();
+            const feesSourcePromise = this.token.revenueSource === 'megafees'
+                ? this.fetchMegaFeesRevenueHistory(fetchConfig)
+                : this.token.key === 'sky'
+                    ? this.fetchSkyFeesHistory()
+                    : this.fetchBestFeesPayload();
 
             const [feesSource, protocolRes, coinRes, simplePriceRes, marketChartRes] = await Promise.all([
                 feesSourcePromise,
-                this.fetchJsonOrNull(fetchConfig.defillamaProtocolUrl, 'DefiLlama protocol'),
+                fetchConfig.defillamaProtocolUrl ? this.fetchJsonOrNull(fetchConfig.defillamaProtocolUrl, 'DefiLlama protocol') : Promise.resolve(null),
                 this.fetchJsonOrNull(fetchConfig.coingeckoCoinUrl, 'CoinGecko coin'),
                 this.fetchJsonOrNull(fetchConfig.coingeckoSimplePriceUrl, 'CoinGecko simple price'),
                 this.fetchJsonStrict(fetchConfig.coingeckoMarketChartUrl, 'CoinGecko market chart'),
@@ -7670,12 +8043,10 @@
                 market_caps_count: Array.isArray(marketChartRes?.market_caps) ? marketChartRes.market_caps.length : 0,
             });
 
-            const feesByDate = this.token.key === 'sky'
-                ? (feesSource?.feesByDate || {})
+            const feesByDate = feesSource?.feesByDate
+                ? feesSource.feesByDate
                 : this.prepareFeesByDate(this.buildFeesByDateFromChart(feesSource?.data?.totalDataChart || []));
-            this.activeFeesSlug = this.token.key === 'sky'
-                ? (feesSource?.activeSlug || 'sky')
-                : feesSource.slug;
+            this.activeFeesSlug = feesSource?.activeSlug || feesSource?.slug || this.token.revenueSource || null;
 
             let candlesByDate = this.buildDailyCandlesFromSeries(marketChartRes?.prices || []);
             if (!Object.keys(candlesByDate).length) {
@@ -7958,7 +8329,7 @@
             if (!this.token.supportsBurnHistory) {
                 if (burnZoneItem) burnZoneItem.style.display = 'none';
                 if (status) status.textContent = 'Off';
-                if (burnMode) burnMode.textContent = 'Base supply';
+                if (burnMode && !this.token.tokenRights) burnMode.textContent = 'Base supply';
                 return;
             }
             if (toggle) {
@@ -7966,7 +8337,7 @@
                 toggle.setAttribute('aria-pressed', this.includeBurnInPe ? 'true' : 'false');
             }
             if (status) status.textContent = this.includeBurnInPe ? 'On' : 'Off';
-            if (burnMode) burnMode.textContent = this.includeBurnInPe ? 'Progressive adjusted' : 'Base supply';
+            if (burnMode && !this.token.tokenRights) burnMode.textContent = this.includeBurnInPe ? 'Progressive adjusted' : 'Base supply';
         }
 
         setCurrentTimeBoundsFromSeries(data) {
@@ -8609,7 +8980,6 @@
             // Median P/E
             const sortedPE = [...dailyPeCloses].sort((a, b) => a - b);
             const medianPE = sortedPE[Math.floor(sortedPE.length / 2)];
-            this.setDerivedZones(this.useFDV ? 'fdv' : 'mc', dailyPeCandles);
 
             const resolution = this.getDisplayCandleResolution();
             const visibleDates = this.getVisibleDates(allDates).filter((date) => annualRevPerTokenByDate[date]);
@@ -8663,6 +9033,7 @@
                 volumeData,
                 this.getAggregationTarget(peCandles.length, resolution),
             );
+            this.setDerivedZones(this.useFDV ? 'fdv' : 'mc', aggregatedPeWindow.candles?.length ? aggregatedPeWindow.candles : peCandles);
             const zoneConfig = this.getZoneConfig();
             const peAutoscaleClamp = this.getPeAutoscaleClamp(aggregatedPeWindow.candles, zoneConfig);
             const shouldCapPeDisplay = Boolean(peAutoscaleClamp?.max) && (!this.chartWidthDays || this.chartWidthDays >= 90);
