@@ -542,18 +542,56 @@
             position: absolute;
             top: calc(100% + 8px);
             left: 0;
-            min-width: 100%;
-            max-height: min(420px, calc(100vh - 170px));
+            width: min(390px, calc(100vw - 32px));
+            min-width: 260px;
+            max-height: min(560px, calc(100vh - 140px));
             overflow-y: auto;
             overscroll-behavior: contain;
-            padding: 5px;
+            padding: 8px;
             border: 1px solid var(--panel-border);
-            border-radius: 16px;
+            border-radius: 18px;
             background: var(--panel-0);
             box-shadow: var(--panel-shadow);
             z-index: 25;
             scrollbar-width: thin;
             scrollbar-color: rgba(232, 185, 35, 0.45) rgba(255, 255, 255, 0.04);
+        }
+        .chart-token-search-wrap {
+            position: sticky;
+            top: -8px;
+            z-index: 2;
+            padding: 2px 0 8px;
+            background: var(--panel-0);
+        }
+        .chart-token-search {
+            box-sizing: border-box;
+            width: 100%;
+            min-height: 38px;
+            padding: 0 12px;
+            border: 1px solid rgba(232, 185, 35, 0.24);
+            border-radius: 10px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.045);
+            color: var(--text-0);
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .chart-token-search:focus {
+            border-color: rgba(232, 185, 35, 0.52);
+            box-shadow: 0 0 0 3px rgba(232, 185, 35, 0.08);
+        }
+        .chart-token-search::placeholder {
+            color: var(--text-2);
+        }
+        .chart-token-list {
+            min-height: 160px;
+        }
+        .chart-token-empty {
+            padding: 16px 10px 12px;
+            color: var(--text-2);
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
         }
         .chart-token-menu::-webkit-scrollbar {
             width: 8px;
@@ -569,19 +607,65 @@
         .chart-token-switcher.open .chart-token-menu {
             display: block;
         }
+        .chart-token-category {
+            padding: 9px 8px 5px;
+            color: var(--text-2);
+            font-size: 9px;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .chart-token-category:first-child {
+            padding-top: 3px;
+        }
         .chart-token-option {
             appearance: none;
             width: 100%;
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 7px 8px;
+            padding: 9px 10px;
             border: 1px solid transparent;
             border-radius: 10px;
             background: transparent;
             color: var(--text-0);
             cursor: pointer;
             text-align: left;
+        }
+        .chart-token-option .chart-token-copy {
+            flex: 1 1 auto;
+        }
+        .chart-token-pe {
+            flex: 0 0 auto;
+            min-width: 54px;
+            margin-left: auto;
+            padding: 4px 7px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.035);
+            color: var(--text-2);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 800;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .chart-token-pe.cheap {
+            border-color: rgba(14, 203, 129, 0.28);
+            background: rgba(14, 203, 129, 0.09);
+            color: #0ecb81;
+        }
+        .chart-token-pe.fair {
+            border-color: rgba(240, 185, 11, 0.28);
+            background: rgba(240, 185, 11, 0.1);
+            color: #f0b90b;
+        }
+        .chart-token-pe.expensive {
+            border-color: rgba(246, 70, 93, 0.28);
+            background: rgba(246, 70, 93, 0.1);
+            color: #f6465d;
         }
         .chart-token-option + .chart-token-option {
             margin-top: 2px;
@@ -4049,12 +4133,13 @@
                 font-size: 10px;
             }
             .chart-token-menu {
-                min-width: 164px;
-                max-height: min(340px, calc(100vh - 150px));
+                width: min(330px, calc(100vw - 20px));
+                min-width: min(280px, calc(100vw - 20px));
+                max-height: min(430px, calc(100vh - 130px));
             }
             .chart-token-option {
                 gap: 7px;
-                padding: 6px 7px;
+                padding: 8px 9px;
             }
             /* Hide chart label on mobile to save space */
             .controls-left .chart-label { display: none; }
@@ -5230,6 +5315,42 @@
         return `${token.routePath}${query ? `?${query}` : ''}${location.hash || ''}`;
     }
 
+    const TOKEN_CATEGORY_ORDER = [
+        'infra',
+        'perps',
+        'dex',
+        'lending',
+        'launchpad',
+        'prediction-market',
+        'oracle',
+        'neobank',
+        'ai',
+        'tcg',
+        'staking',
+        'privacy',
+        'yield',
+        'mining',
+        'other',
+    ];
+
+    const TOKEN_CATEGORY_LABELS = {
+        infra: 'Infra',
+        perps: 'Perps',
+        dex: 'DEX',
+        lending: 'Lending',
+        launchpad: 'Launchpad',
+        'prediction-market': 'Prediction Market',
+        oracle: 'Oracle',
+        neobank: 'Neobank',
+        ai: 'AI',
+        tcg: 'TCG',
+        staking: 'Staking',
+        privacy: 'Privacy',
+        yield: 'Yield',
+        mining: 'Mining',
+        other: 'Other',
+    };
+
     const TOKEN_CONFIGS = {
         hype: {
             key: 'hype',
@@ -5237,6 +5358,7 @@
             displayName: 'Hyperliquid',
             protocolName: 'Hyperliquid',
             menuMarketCapRank: 5,
+            menuCategory: 'perps',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/50882/small/hyperliquid.jpg?1729431300',
             routePath: '/hype',
             priceLabel: 'HYPE Price',
@@ -5285,6 +5407,7 @@
             displayName: 'Lighter',
             protocolName: 'Lighter',
             menuMarketCapRank: 20,
+            menuCategory: 'perps',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/71121/small/lighter.png?1765888098',
             routePath: '/lit',
             priceLabel: 'LIT Price',
@@ -5339,6 +5462,7 @@
             displayName: 'Pump.fun',
             protocolName: 'Pump.fun',
             menuMarketCapRank: 12,
+            menuCategory: 'launchpad',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/67164/small/pump.jpg?1751949376',
             routePath: '/pump',
             priceLabel: 'PUMP Price',
@@ -5388,6 +5512,7 @@
             displayName: 'Sky',
             protocolName: 'Sky',
             menuMarketCapRank: 11,
+            menuCategory: 'lending',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/39925/small/sky.jpg?1724827980',
             routePath: '/sky',
             priceLabel: 'SKY Price',
@@ -5449,6 +5574,7 @@
             displayName: 'Aave',
             protocolName: 'Aave',
             menuMarketCapRank: 10,
+            menuCategory: 'lending',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/12645/small/aave-token-round.png?1720472354',
             routePath: '/aave',
             priceLabel: 'AAVE Price',
@@ -5509,6 +5635,7 @@
             displayName: 'edgeX',
             protocolName: 'edgeX',
             menuMarketCapRank: 16,
+            menuCategory: 'perps',
             logoUrl: 'https://assets.coingecko.com/coins/images/102172616/standard/edgex.png?1774332310',
             routePath: '/edge',
             priceLabel: 'EDGE Price',
@@ -5564,6 +5691,7 @@
             displayName: 'Collector Crypt',
             protocolName: 'Collector Crypt',
             menuMarketCapRank: 28,
+            menuCategory: 'tcg',
             logoUrl: 'https://assets.coingecko.com/coins/images/68728/standard/cards-logo.jpeg?1756534539',
             routePath: '/cars',
             priceLabel: 'CARDS Price',
@@ -5618,6 +5746,7 @@
             displayName: 'Aster',
             protocolName: 'Aster',
             menuMarketCapRank: 9,
+            menuCategory: 'perps',
             logoUrl: 'https://assets.coingecko.com/coins/images/69040/standard/_ASTER.png?1757326782',
             routePath: '/aster',
             priceLabel: 'ASTER Price',
@@ -5673,6 +5802,7 @@
             displayName: 'Chainlink',
             protocolName: 'Chainlink',
             menuMarketCapRank: 6,
+            menuCategory: 'oracle',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/877/small/Chainlink_Logo_500.png?1760023405',
             routePath: '/link',
             priceLabel: 'LINK Price',
@@ -5731,6 +5861,7 @@
             displayName: 'Uniswap',
             protocolName: 'Uniswap',
             menuMarketCapRank: 7,
+            menuCategory: 'dex',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/12504/small/uniswap-logo.png?1720676669',
             routePath: '/uni',
             priceLabel: 'UNI Price',
@@ -5787,6 +5918,7 @@
             displayName: 'PancakeSwap',
             protocolName: 'PancakeSwap',
             menuMarketCapRank: 17,
+            menuCategory: 'dex',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/12632/small/pancakeswap-cake-logo_%281%29.png?1696512440',
             routePath: '/cake',
             priceLabel: 'CAKE Price',
@@ -5842,6 +5974,7 @@
             displayName: 'Lido',
             protocolName: 'Lido',
             menuMarketCapRank: 21,
+            menuCategory: 'staking',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/13573/small/Lido_DAO.png?1696513326',
             routePath: '/lido',
             priceLabel: 'LDO Price',
@@ -5897,6 +6030,7 @@
             displayName: 'Rhea Finance',
             protocolName: 'Rhea Finance',
             menuMarketCapRank: 30,
+            menuCategory: 'dex',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/67682/small/RHEA_Logo.png?1753517263',
             routePath: '/rhea',
             priceLabel: 'RHEA Price',
@@ -5951,6 +6085,7 @@
             displayName: 'Railgun',
             protocolName: 'Railgun',
             menuMarketCapRank: 24,
+            menuCategory: 'privacy',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/16840/small/railgun.jpeg?1696516407',
             routePath: '/railgun',
             priceLabel: 'RAIL Price',
@@ -6005,6 +6140,7 @@
             displayName: 'ether.fi',
             protocolName: 'ether.fi',
             menuMarketCapRank: 19,
+            menuCategory: 'neobank',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/35958/small/etherfi.jpeg?1710254562',
             routePath: '/ethfi',
             priceLabel: 'ETHFI Price',
@@ -6059,6 +6195,7 @@
             displayName: 'MetaDAO',
             protocolName: 'MetaDAO',
             menuMarketCapRank: 27,
+            menuCategory: 'launchpad',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/68320/small/META.png?1755335883',
             routePath: '/metadao',
             priceLabel: 'META Price',
@@ -6113,6 +6250,7 @@
             displayName: 'MegaETH',
             protocolName: 'MegaETH',
             menuMarketCapRank: 25,
+            menuCategory: 'infra',
             logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_megaeth.jpg',
             routePath: '/mega',
             priceLabel: 'MEGA Price',
@@ -6176,6 +6314,7 @@
             displayName: 'Ethereum',
             protocolName: 'Ethereum',
             menuMarketCapRank: 1,
+            menuCategory: 'infra',
             logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_ethereum.jpg',
             routePath: '/ethereum',
             priceLabel: 'ETH Price',
@@ -6225,6 +6364,7 @@
             displayName: 'Arbitrum',
             protocolName: 'Arbitrum',
             menuMarketCapRank: 14,
+            menuCategory: 'infra',
             logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_arbitrum.jpg',
             routePath: '/arbitrum',
             priceLabel: 'ARB Price',
@@ -6274,6 +6414,7 @@
             displayName: 'Solana',
             protocolName: 'Solana',
             menuMarketCapRank: 3,
+            menuCategory: 'infra',
             logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_solana.jpg',
             routePath: '/solana',
             priceLabel: 'SOL Price',
@@ -6323,6 +6464,7 @@
             displayName: 'Tron',
             protocolName: 'Tron',
             menuMarketCapRank: 4,
+            menuCategory: 'infra',
             logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_tron.jpg',
             routePath: '/tron',
             priceLabel: 'TRX Price',
@@ -6372,6 +6514,7 @@
             displayName: 'BSC',
             protocolName: 'BNB Smart Chain',
             menuMarketCapRank: 2,
+            menuCategory: 'infra',
             logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_bsc.jpg',
             routePath: '/bsc',
             priceLabel: 'BNB Price',
@@ -6421,6 +6564,7 @@
             displayName: 'NEAR',
             protocolName: 'NEAR',
             menuMarketCapRank: 8,
+            menuCategory: 'infra',
             logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_near.jpg',
             routePath: '/near',
             priceLabel: 'NEAR Price',
@@ -6430,7 +6574,8 @@
             supportsIntradayCandles: true,
             storageScope: 'near',
             minRollingDays: 14,
-            defillamaFeesCandidates: ['near'],
+            defillamaFeesCandidates: ['near', 'near-intents'],
+            defillamaFeesAggregation: 'sum',
             defillamaProtocolSlug: '',
             coingeckoId: 'near',
             supplyFallback: 1_296_616_712,
@@ -6441,7 +6586,8 @@
             marketChartInterval: 'daily',
             intradayMarketChartDays: 30,
             intradayMarketChartInterval: 'hourly',
-            dynamicZones: { mc: true, fdv: true },
+            dynamicZones: { mc: false, fdv: false },
+            preserveZoneWidths: true,
             zones: {
                 mc: { cheap: [20, 35], fair: [50, 80], expensive: [120, 180] },
                 fdv: { cheap: [20, 35], fair: [50, 80], expensive: [120, 180] },
@@ -6449,19 +6595,19 @@
             tokenRights: {
                 badge: 'NEAR Rights',
                 rows: [
-                    { label: 'DefiLlama', value: 'NEAR chain revenue benchmark' },
+                    { label: 'DefiLlama', value: 'NEAR chain + NEAR Intents revenue benchmark' },
                     { label: 'Buybacks', value: 'No fixed NEAR buyback program modeled' },
                     { label: 'Token claim', value: 'Native gas and staking asset for NEAR' },
-                    { label: 'Revenue scope', value: 'Chain revenue from DefiLlama' },
+                    { label: 'Revenue scope', value: 'Chain revenue plus NEAR Intents revenue from DefiLlama' },
                 ],
             },
-            footerDataHtml: 'Data: <a href="https://defillama.com/chain/NEAR" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/near-protocol" target="_blank">CoinGecko</a> + <a href="https://near.org/" target="_blank">NEAR</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            footerDataHtml: 'Data: <a href="https://defillama.com/chain/NEAR" target="_blank">DefiLlama</a> + <a href="https://defillama.com/protocol/near-intents" target="_blank">NEAR Intents</a> + <a href="https://www.coingecko.com/en/coins/near-protocol" target="_blank">CoinGecko</a> + <a href="https://near.org/" target="_blank">NEAR</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
             meta: {
                 title: 'Hypurrmium | NEAR P/E Ratio',
-                description: 'Track the live P/E ratio of NEAR using DefiLlama chain revenue and CoinGecko market cap data.',
+                description: 'Track the live P/E ratio of NEAR using DefiLlama chain revenue, NEAR Intents revenue, and CoinGecko market cap data.',
                 keywords: 'NEAR, NEAR Protocol, P/E ratio, price earnings ratio, NEAR revenue, NEAR valuation, crypto valuation chart',
                 ogTitle: 'Hypurrmium - Live NEAR P/E Ratio',
-                ogDescription: 'Track NEAR valuation using chain revenue and market cap data.',
+                ogDescription: 'Track NEAR valuation using chain revenue, NEAR Intents revenue, and market cap data.',
             },
         },
         limitless: {
@@ -6470,6 +6616,7 @@
             displayName: 'Limitless',
             protocolName: 'Limitless Exchange',
             menuMarketCapRank: 29,
+            menuCategory: 'prediction-market',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/69506/large/Green_-_Sign_%282%29_-_token-circle-200.png',
             routePath: '/limitless',
             priceLabel: 'LMTS Price',
@@ -6479,6 +6626,7 @@
             supportsIntradayCandles: true,
             storageScope: 'limitless',
             minRollingDays: 14,
+            revenueSmoothingDays: 7,
             defillamaFeesCandidates: ['limitless-exchange'],
             defillamaProtocolSlug: 'limitless-exchange',
             coingeckoId: 'limitless-3',
@@ -6491,6 +6639,11 @@
             intradayMarketChartDays: 30,
             intradayMarketChartInterval: 'hourly',
             dynamicZones: { mc: true, fdv: true },
+            zoneQuantiles: {
+                cheap: [0.08, 0.24],
+                fair: [0.38, 0.62],
+                expensive: [0.70, 0.86],
+            },
             zones: {
                 mc: { cheap: [8, 14], fair: [20, 32], expensive: [48, 72] },
                 fdv: { cheap: [60, 100], fair: [140, 220], expensive: [320, 480] },
@@ -6519,6 +6672,7 @@
             displayName: 'Opinion',
             protocolName: 'Opinion',
             menuMarketCapRank: 26,
+            menuCategory: 'prediction-market',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/102171893/large/Opinon.jpg',
             routePath: '/opinion',
             priceLabel: 'OPN Price',
@@ -6568,6 +6722,7 @@
             displayName: 'Bankr',
             protocolName: 'Bankr',
             menuMarketCapRank: 23,
+            menuCategory: 'ai',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/52626/large/bankr-static.png',
             routePath: '/bankr',
             priceLabel: 'BNKR Price',
@@ -6617,6 +6772,7 @@
             displayName: 'ORE',
             protocolName: 'ORE Protocol',
             menuMarketCapRank: 22,
+            menuCategory: 'mining',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/36854/large/IMG_7340.png',
             routePath: '/ore',
             priceLabel: 'ORE Price',
@@ -6666,6 +6822,7 @@
             displayName: 'Aerodrome',
             protocolName: 'Aerodrome',
             menuMarketCapRank: 15,
+            menuCategory: 'dex',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/31745/large/token.png',
             routePath: '/aerodrome',
             priceLabel: 'AERO Price',
@@ -6715,6 +6872,7 @@
             displayName: 'Polygon',
             protocolName: 'Polygon',
             menuMarketCapRank: 13,
+            menuCategory: 'infra',
             logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_polygon.jpg',
             routePath: '/polygon',
             priceLabel: 'POL Price',
@@ -6724,7 +6882,8 @@
             supportsIntradayCandles: true,
             storageScope: 'polygon',
             minRollingDays: 14,
-            defillamaFeesCandidates: ['polygon'],
+            defillamaFeesCandidates: ['polygon', 'polygon-zkevm'],
+            defillamaFeesAggregation: 'sum',
             defillamaProtocolSlug: '',
             coingeckoId: 'polygon-ecosystem-token',
             supplyFallback: 10_740_000_000,
@@ -6741,7 +6900,8 @@
                 label: 'MATIC',
                 startDate: '2019-04-28',
             },
-            dynamicZones: { mc: true, fdv: true },
+            dynamicZones: { mc: false, fdv: false },
+            preserveZoneWidths: true,
             zones: {
                 mc: { cheap: [25, 40], fair: [60, 90], expensive: [130, 190] },
                 fdv: { cheap: [25, 40], fair: [60, 90], expensive: [130, 190] },
@@ -6749,19 +6909,19 @@
             tokenRights: {
                 badge: 'POL Rights',
                 rows: [
-                    { label: 'DefiLlama', value: 'Polygon chain revenue benchmark' },
+                    { label: 'DefiLlama', value: 'Polygon PoS + zkEVM chain revenue benchmark' },
                     { label: 'Buybacks', value: 'No fixed POL buyback program modeled' },
                     { label: 'Token claim', value: 'Native gas and staking asset for Polygon' },
-                    { label: 'Revenue scope', value: 'Polygon chain revenue from DefiLlama' },
+                    { label: 'Revenue scope', value: 'Polygon PoS and zkEVM chain revenue from DefiLlama' },
                 ],
             },
-            footerDataHtml: 'Data: <a href="https://defillama.com/chain/Polygon" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/polygon-ecosystem-token" target="_blank">CoinGecko</a> + <a href="https://polygon.technology/" target="_blank">Polygon</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            footerDataHtml: 'Data: <a href="https://defillama.com/chain/Polygon" target="_blank">DefiLlama</a> + <a href="https://defillama.com/chain/Polygon%20zkEVM" target="_blank">Polygon zkEVM</a> + <a href="https://www.coingecko.com/en/coins/polygon-ecosystem-token" target="_blank">CoinGecko</a> + <a href="https://polygon.technology/" target="_blank">Polygon</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
             meta: {
                 title: 'Hypurrmium | POL P/E Ratio',
-                description: 'Track the live P/E ratio of Polygon with DefiLlama chain revenue and CoinGecko market cap data.',
+                description: 'Track the live P/E ratio of Polygon with DefiLlama Polygon PoS and zkEVM chain revenue plus CoinGecko market cap data.',
                 keywords: 'Polygon, POL, MATIC, P/E ratio, Polygon revenue, POL valuation, crypto valuation chart',
                 ogTitle: 'Hypurrmium - Live POL P/E Ratio',
-                ogDescription: 'Track POL valuation using Polygon chain revenue and market cap data.',
+                ogDescription: 'Track POL valuation using Polygon PoS + zkEVM chain revenue and market cap data.',
             },
         },
         maple: {
@@ -6770,6 +6930,7 @@
             displayName: 'Maple',
             protocolName: 'Maple',
             menuMarketCapRank: 18,
+            menuCategory: 'lending',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/51232/large/_syrup_token_logo.png',
             routePath: '/maple',
             priceLabel: 'SYRUP Price',
@@ -6819,6 +6980,7 @@
             displayName: 'Jupiter',
             protocolName: 'Jupiter',
             menuMarketCapRank: 12.5,
+            menuCategory: 'dex',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/34188/large/jup.png?1704266489',
             routePath: '/jupiter',
             priceLabel: 'JUP Price',
@@ -6875,6 +7037,7 @@
             displayName: 'Jito',
             protocolName: 'Jito',
             menuMarketCapRank: 18.3,
+            menuCategory: 'staking',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/33228/large/jto.png?1701137022',
             routePath: '/jito',
             priceLabel: 'JTO Price',
@@ -6929,6 +7092,7 @@
             displayName: 'Pendle',
             protocolName: 'Pendle',
             menuMarketCapRank: 18.4,
+            menuCategory: 'yield',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/15069/large/Pendle_Logo_Normal-03.png?1696514728',
             routePath: '/pendle',
             priceLabel: 'PENDLE Price',
@@ -6983,6 +7147,7 @@
             displayName: 'Raydium',
             protocolName: 'Raydium',
             menuMarketCapRank: 20.5,
+            menuCategory: 'dex',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/13928/large/PSigc4ie_400x400.jpg?1696513668',
             routePath: '/raydium',
             priceLabel: 'RAY Price',
@@ -7037,6 +7202,7 @@
             displayName: 'Fluid',
             protocolName: 'Fluid',
             menuMarketCapRank: 23.5,
+            menuCategory: 'lending',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/14688/large/Logo_1_%28brighter%29.png?1734430693',
             routePath: '/fluid',
             priceLabel: 'FLUID Price',
@@ -7093,6 +7259,7 @@
             displayName: 'Kamino',
             protocolName: 'Kamino',
             menuMarketCapRank: 24.5,
+            menuCategory: 'lending',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/35801/large/Kamino_200x200.png?1767944671',
             routePath: '/kamino',
             priceLabel: 'KMNO Price',
@@ -7147,6 +7314,7 @@
             displayName: 'Meteora',
             protocolName: 'Meteora',
             menuMarketCapRank: 25.5,
+            menuCategory: 'dex',
             logoUrl: 'https://coin-images.coingecko.com/coins/images/69110/large/meteora.png?1757517561',
             routePath: '/meteora',
             priceLabel: 'MET Price',
@@ -7346,6 +7514,7 @@
             this._historyBackfillMeta = null;
             this._tokenDataCache = new Map();
             this._tokenPrefetchPromises = new Map();
+            this._tokenMenuPeWarmupPromise = null;
             this._viewportState = new Map();
             this._intradayFetchPromise = null;
             this._intradayFetchKey = '';
@@ -7502,25 +7671,136 @@
                 tokenName.className = 'chart-token-name';
                 tokenName.textContent = token.displayName || token.protocolName;
 
+                const peBadge = document.createElement('span');
+                peBadge.className = 'chart-token-pe loading';
+                peBadge.dataset.tokenPe = token.key;
+                peBadge.textContent = '—';
+
                 copy.append(tokenSymbol, tokenName);
-                button.append(image, copy);
+                button.append(image, copy, peBadge);
+                this.updateTokenMenuPeBadge(token, null, button);
                 return button;
             };
 
-            if (menu) {
-                Object.values(TOKEN_CONFIGS).forEach((token) => {
-                    const hasOption = Array.from(menu.querySelectorAll('.chart-token-option'))
-                        .some((button) => button.dataset.token === token.key);
-                    if (!hasOption) menu.appendChild(createTokenOption(token));
-                });
+            const createCategoryHeader = (categoryKey) => {
+                const header = document.createElement('div');
+                header.className = 'chart-token-category';
+                header.setAttribute('role', 'presentation');
+                header.textContent = TOKEN_CATEGORY_LABELS[categoryKey] || categoryKey;
+                return header;
+            };
 
-                Array.from(menu.querySelectorAll('.chart-token-option'))
+            const getCategoryIndex = (token) => {
+                const category = token.menuCategory || 'other';
+                const index = TOKEN_CATEGORY_ORDER.indexOf(category);
+                return index === -1 ? TOKEN_CATEGORY_ORDER.length : index;
+            };
+
+            const closeMenu = () => {
+                if (!switcher || !trigger) return;
+                switcher.classList.remove('open');
+                trigger.setAttribute('aria-expanded', 'false');
+            };
+
+            const bindTokenOptions = () => {
+                document.querySelectorAll('.chart-token-option').forEach((button) => {
+                    const isActive = button.dataset.token === this.token.key;
+                    button.classList.toggle('active', isActive);
+                    button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                    if (button.dataset.bound === '1') return;
+                    button.dataset.bound = '1';
+                    const scheduleOptionPrefetch = () => {
+                        const token = TOKEN_CONFIGS[button.dataset.token];
+                        if (!token || token.key === this.token.key) return;
+                        this.prefetchTokenData(token, this.readHistoryModeState(token), { fast: true }).catch(() => {});
+                    };
+                    button.addEventListener('pointerenter', scheduleOptionPrefetch, { passive: true });
+                    button.addEventListener('focus', scheduleOptionPrefetch);
+                    button.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        closeMenu();
+                        this.navigateToToken(button.dataset.token);
+                    });
+                });
+            };
+
+            const getSearchText = (token) => [
+                token.symbol,
+                token.displayName,
+                token.protocolName,
+                token.key,
+                TOKEN_CATEGORY_LABELS[token.menuCategory || 'other'],
+            ].filter(Boolean).join(' ').toLowerCase();
+
+            let sortedTokens = [];
+
+            if (menu) {
+                const previousQuery = menu.querySelector('.chart-token-search')?.value || '';
+                const searchWrap = document.createElement('div');
+                searchWrap.className = 'chart-token-search-wrap';
+
+                const searchInput = document.createElement('input');
+                searchInput.className = 'chart-token-search';
+                searchInput.type = 'search';
+                searchInput.placeholder = 'Search tokens';
+                searchInput.autocomplete = 'off';
+                searchInput.spellcheck = false;
+                searchInput.value = previousQuery;
+
+                const tokenList = document.createElement('div');
+                tokenList.className = 'chart-token-list';
+
+                searchWrap.appendChild(searchInput);
+                menu.replaceChildren();
+                menu.append(searchWrap, tokenList);
+
+                sortedTokens = Object.values(TOKEN_CONFIGS)
                     .sort((left, right) => {
-                        const leftRank = Number(TOKEN_CONFIGS[left.dataset.token]?.menuMarketCapRank || Number.MAX_SAFE_INTEGER);
-                        const rightRank = Number(TOKEN_CONFIGS[right.dataset.token]?.menuMarketCapRank || Number.MAX_SAFE_INTEGER);
-                        return leftRank - rightRank;
-                    })
-                    .forEach((button) => menu.appendChild(button));
+                        const categoryDiff = getCategoryIndex(left) - getCategoryIndex(right);
+                        if (categoryDiff) return categoryDiff;
+                        const leftRank = Number(left.menuMarketCapRank || Number.MAX_SAFE_INTEGER);
+                        const rightRank = Number(right.menuMarketCapRank || Number.MAX_SAFE_INTEGER);
+                        return (leftRank - rightRank) || String(left.symbol).localeCompare(String(right.symbol));
+                    });
+
+                const renderTokenList = (query = '') => {
+                    const normalizedQuery = query.trim().toLowerCase();
+                    const matchingTokens = normalizedQuery
+                        ? sortedTokens.filter((token) => getSearchText(token).includes(normalizedQuery))
+                        : sortedTokens;
+                    tokenList.replaceChildren();
+
+                    let lastCategory = '';
+                    matchingTokens.forEach((token) => {
+                        const category = token.menuCategory || 'other';
+                        if (category !== lastCategory) {
+                            tokenList.appendChild(createCategoryHeader(category));
+                            lastCategory = category;
+                        }
+                        tokenList.appendChild(createTokenOption(token));
+                    });
+
+                    if (!matchingTokens.length) {
+                        const empty = document.createElement('div');
+                        empty.className = 'chart-token-empty';
+                        empty.textContent = 'No tokens found';
+                        tokenList.appendChild(empty);
+                    }
+
+                    bindTokenOptions();
+                    this.updateTokenMenuPeBadges(tokenList);
+                    if (switcher?.classList.contains('open')) this.warmTokenMenuPeBadges(matchingTokens);
+                };
+
+                searchInput.addEventListener('input', () => renderTokenList(searchInput.value));
+                searchInput.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        tokenList.querySelector('.chart-token-option')?.click();
+                    }
+                });
+                searchInput.addEventListener('click', (event) => event.stopPropagation());
+                renderTokenList(previousQuery);
             }
 
             if (icon) {
@@ -7530,32 +7810,6 @@
             if (symbol) symbol.textContent = this.token.symbol;
             if (name) name.textContent = this.token.displayName || this.token.protocolName;
 
-            const closeMenu = () => {
-                if (!switcher || !trigger) return;
-                switcher.classList.remove('open');
-                trigger.setAttribute('aria-expanded', 'false');
-            };
-
-            document.querySelectorAll('.chart-token-option').forEach((button) => {
-                const isActive = button.dataset.token === this.token.key;
-                button.classList.toggle('active', isActive);
-                button.setAttribute('aria-selected', isActive ? 'true' : 'false');
-                if (button.dataset.bound === '1') return;
-                button.dataset.bound = '1';
-                const scheduleOptionPrefetch = () => {
-                    const token = TOKEN_CONFIGS[button.dataset.token];
-                    if (!token || token.key === this.token.key) return;
-                    this.prefetchTokenData(token).catch(() => {});
-                };
-                button.addEventListener('pointerenter', scheduleOptionPrefetch, { passive: true });
-                button.addEventListener('focus', scheduleOptionPrefetch);
-                button.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    closeMenu();
-                    this.navigateToToken(button.dataset.token);
-                });
-            });
-
             if (trigger && switcher && menu && trigger.dataset.bound !== '1') {
                 trigger.dataset.bound = '1';
                 trigger.addEventListener('click', (event) => {
@@ -7563,6 +7817,11 @@
                     event.stopPropagation();
                     const isOpen = switcher.classList.toggle('open');
                     trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    if (isOpen) {
+                        this.updateTokenMenuPeBadges(menu);
+                        this.warmTokenMenuPeBadges(sortedTokens);
+                        setTimeout(() => menu.querySelector('.chart-token-search')?.focus(), 0);
+                    }
                 });
                 document.addEventListener('click', (event) => {
                     if (!switcher.contains(event.target)) closeMenu();
@@ -7767,7 +8026,7 @@
 
         getZoneConfig(key = (this.useFDV ? 'fdv' : 'mc')) {
             const candidate = (this.zoneConfig && this.zoneConfig[key]) || CONFIG.ZONES[key];
-            if (this.token?.key === 'cars') return candidate;
+            if (this.token?.key === 'cars' || this.token?.preserveZoneWidths) return candidate;
             return this.normalizeEqualZoneWidths(candidate) || candidate;
         }
 
@@ -7780,7 +8039,7 @@
         normalizeZoneConfigMap(zonesByMetric) {
             const nextZones = cloneZoneConfig(zonesByMetric || {});
             ['mc', 'fdv'].forEach((metricKey) => {
-                if (this.token?.key === 'cars') return;
+                if (this.token?.key === 'cars' || this.token?.preserveZoneWidths) return;
                 const candidate = nextZones?.[metricKey];
                 const normalized = this.normalizeEqualZoneWidths(candidate);
                 if (normalized) nextZones[metricKey] = normalized;
@@ -7857,6 +8116,7 @@
                 && band.length === 2
                 && Number.isFinite(Number(band[0]))
                 && Number.isFinite(Number(band[1]))
+                && Number(band[0]) > 0
                 && band[0] < band[1];
             if (!isBand(cheap) || !isBand(fair) || !isBand(expensive)) return false;
             return cheap[1] < fair[0] && fair[1] < expensive[0];
@@ -7885,7 +8145,7 @@
             const expensive = [this.roundZoneStep(quantile(expensiveProfile[0])), this.roundZoneStep(quantile(expensiveProfile[1]))];
             const zones = { cheap, fair, expensive };
 
-            return this.normalizeEqualZoneWidths(zones) || fallback;
+            return this.normalizeEqualZoneWidths(zones) || (this.isValidDerivedZoneSet(zones) ? zones : fallback);
         }
 
         deriveExtremaZonesFromSeries(points, fallback) {
@@ -8138,6 +8398,9 @@
         deriveZonesFromSeries(values, fallback) {
             const points = this.normalizeZoneSeries(values);
             if (points.length < this.getDynamicZoneMinPoints()) return fallback;
+            if (this.token?.zoneQuantiles) {
+                return this.deriveQuantileZonesFromSeries(points, fallback);
+            }
             return this.deriveExtremaZonesFromSeries(points, fallback);
         }
 
@@ -8294,7 +8557,7 @@
             window.setTimeout(runPrefetch, 250);
         }
 
-        async prefetchTokenData(token, historyMode = this.readHistoryModeState(token)) {
+        async prefetchTokenData(token, historyMode = this.readHistoryModeState(token), options = {}) {
             if (!token) return null;
 
             const resolvedHistoryMode = token.key === 'sky'
@@ -8317,10 +8580,15 @@
             prefetchContext.activeFeesSlug = token.defillamaFeesCandidates?.[0] || null;
             prefetchContext._historyBackfillMeta = null;
 
-            const prefetchPromise = prefetchContext.fetchAllData(this.getTokenFetchConfig(token))
+            const fetchConfig = options?.fast
+                ? this.getFastInitialFetchConfig(token)
+                : this.getTokenFetchConfig(token);
+
+            const prefetchPromise = prefetchContext.fetchAllData(fetchConfig)
                 .then((rawData) => {
                     if (!rawData) return null;
                     this.writeTokenDataCache(rawData, token, resolvedHistoryMode);
+                    this.updateTokenMenuPeBadge(token, rawData);
                     console.info(`[${token.symbol}] Prefetched token data`);
                     return rawData;
                 })
@@ -8491,6 +8759,218 @@
                 this.cloneRawDataPayload(data),
             );
             this.writePersistentTokenDataCache(data, token, historyMode);
+            this.updateTokenMenuPeBadge(token, data);
+        }
+
+        getTokenMenuPreparedFeesByDate(feesByDate, token = this.token) {
+            if (!feesByDate) return {};
+            const previousToken = this.token;
+            try {
+                this.token = token || previousToken;
+                return this.prepareFeesByDate(feesByDate);
+            } catch (error) {
+                return { ...(feesByDate || {}) };
+            } finally {
+                this.token = previousToken;
+            }
+        }
+
+        buildTokenMenuPeContext(token, rawData, metricKey = 'mc') {
+            if (!token || !rawData?.feesByDate || !rawData?.candlesByDate) return null;
+
+            const useFDV = metricKey === 'fdv';
+            const feesByDate = this.getTokenMenuPreparedFeesByDate(rawData.feesByDate, token);
+            const candlesByDate = rawData.candlesByDate || {};
+            const allDates = Object.keys(feesByDate)
+                .filter((date) => candlesByDate[date])
+                .sort();
+            if (!allDates.length) return null;
+
+            const feeValues = allDates.map((date) => Math.max(Number(feesByDate[date]) || 0, 0));
+            const configuredDays = Number(this.rollingDays);
+            const fallbackDays = Number(CONFIG.DEFAULT_ROLLING) || 30;
+            const requestedDays = Number.isFinite(configuredDays) && configuredDays >= 0 ? configuredDays : fallbackDays;
+            const effectiveDays = requestedDays === 0
+                ? feeValues.length
+                : Math.max(1, Math.min(feeValues.length, requestedDays || fallbackDays));
+            const minRollingDays = Math.max(0, Math.min(Number(token.minRollingDays ?? 14), effectiveDays - 1));
+            const fallbackSupply = useFDV
+                ? (Number(token.fdvSupplyFallback) || Number(token.supplyFallback) || 0)
+                : (Number(token.supplyFallback) || 0);
+            const baseSupply = useFDV
+                ? (Number(rawData.totalSupply) || fallbackSupply)
+                : (Number(rawData.circulatingSupply) || fallbackSupply);
+            if (!Number.isFinite(baseSupply) || baseSupply <= 0) return null;
+
+            const series = [];
+            const rollingAverages = [];
+            let lastAverage = 0;
+            let lastSupply = baseSupply;
+            let lastDate = '';
+
+            for (let index = 0; index < allDates.length; index += 1) {
+                const start = requestedDays === 0 ? 0 : Math.max(0, index - effectiveDays + 1);
+                const windowValues = feeValues.slice(start, index + 1);
+                const rollingAverage = windowValues.reduce((sum, value) => sum + value, 0) / windowValues.length;
+                rollingAverages.push(rollingAverage);
+
+                const date = allDates[index];
+                const dynamicSupply = useFDV ? 0 : Number(rawData.circulatingSupplyByDate?.[date]);
+                const supply = Number.isFinite(dynamicSupply) && dynamicSupply > 0 ? dynamicSupply : baseSupply;
+                lastAverage = rollingAverage;
+                lastSupply = supply;
+                lastDate = date;
+
+                if (index < minRollingDays || rollingAverage <= 0 || supply <= 0) continue;
+                const annualRevenuePerToken = (rollingAverage * 365) / supply;
+                if (!Number.isFinite(annualRevenuePerToken) || annualRevenuePerToken <= 0) continue;
+
+                const candle = candlesByDate[date];
+                const open = Number(candle.o ?? candle.c);
+                const high = Number(candle.h ?? candle.c);
+                const low = Number(candle.l ?? candle.c);
+                const close = Number(candle.c);
+                if (![open, high, low, close].every((value) => Number.isFinite(value) && value > 0)) continue;
+
+                series.push({
+                    time: date,
+                    open: open / annualRevenuePerToken,
+                    high: high / annualRevenuePerToken,
+                    low: low / annualRevenuePerToken,
+                    close: close / annualRevenuePerToken,
+                });
+            }
+
+            return {
+                series,
+                rollingAverages,
+                lastAverage,
+                lastDate,
+                lastSupply,
+                lastCandle: lastDate ? candlesByDate[lastDate] : null,
+            };
+        }
+
+        getTokenMenuZones(token, rawData, metricKey = (this.useFDV ? 'fdv' : 'mc')) {
+            if (!token) return this.getZoneConfig(metricKey);
+            const zonesByMetric = cloneZoneConfig(token.zones || CONFIG.ZONES || {});
+            let zones = zonesByMetric?.[metricKey] || CONFIG.ZONES?.[metricKey] || this.getZoneConfig(metricKey);
+            if (token.key !== 'cars' && !token.preserveZoneWidths) {
+                zones = this.normalizeEqualZoneWidths(zones) || zones;
+            }
+
+            const previousToken = this.token;
+            try {
+                this.token = token;
+                if (rawData && this.isDynamicZoneEnabled(metricKey)) {
+                    const context = this.buildTokenMenuPeContext(token, rawData, metricKey);
+                    zones = this.deriveZonesFromSeries(context?.series || [], zones) || zones;
+                }
+            } catch (error) {
+                return zones;
+            } finally {
+                this.token = previousToken;
+            }
+
+            return zones;
+        }
+
+        getTokenMenuPeSnapshot(token, rawData, metricKey = (this.useFDV ? 'fdv' : 'mc')) {
+            const context = this.buildTokenMenuPeContext(token, rawData, metricKey);
+            if (!context?.series?.length) return null;
+
+            const latestPoint = context.series[context.series.length - 1];
+            const latestPrice = Number(rawData?.livePrice) || Number(context.lastCandle?.c);
+            const annualRevenue = context.lastAverage * 365;
+            const reportedValuation = metricKey === 'fdv'
+                ? Number(rawData?.currentFDV)
+                : Number(rawData?.currentMarketCap);
+            const priceValuation = latestPrice > 0 && context.lastSupply > 0 ? latestPrice * context.lastSupply : 0;
+            const valuation = Number.isFinite(priceValuation) && priceValuation > 0
+                ? priceValuation
+                : reportedValuation;
+
+            const pe = annualRevenue > 0 && valuation > 0 ? (valuation / annualRevenue) : Number(latestPoint.close);
+            if (!Number.isFinite(pe) || pe <= 0) return null;
+
+            const zones = this.getTokenMenuZones(token, rawData, metricKey);
+            return {
+                pe,
+                date: context.lastDate,
+                status: this.getPeZoneStatus(pe, zones),
+            };
+        }
+
+        formatTokenMenuPe(pe) {
+            const value = Number(pe);
+            if (!Number.isFinite(value) || value <= 0) return '—';
+            if (value >= 1000) return `${(value / 1000).toFixed(1)}kx`;
+            if (value >= 100) return `${Math.round(value)}x`;
+            return `${value.toFixed(1)}x`;
+        }
+
+        getTokenMenuPeData(token) {
+            if (!token) return null;
+            const historyMode = this.readHistoryModeState(token);
+            return (token.key === this.token?.key ? this.rawData : null)
+                || this.readTokenDataCache(token, historyMode)
+                || this.readPersistentTokenDataCache(token, historyMode);
+        }
+
+        updateTokenMenuPeBadge(token, rawData = null, root = document) {
+            if (!token || !root?.querySelectorAll) return;
+            const badges = Array.from(root.querySelectorAll('.chart-token-pe'))
+                .filter((badge) => badge.dataset.tokenPe === token.key);
+            if (!badges.length) return;
+
+            const metricKey = this.useFDV ? 'fdv' : 'mc';
+            const metricLabel = metricKey.toUpperCase();
+            const snapshot = this.getTokenMenuPeSnapshot(token, rawData || this.getTokenMenuPeData(token), metricKey);
+            badges.forEach((badge) => {
+                badge.classList.remove('cheap', 'fair', 'expensive', 'loading');
+                if (!snapshot) {
+                    badge.classList.add('loading');
+                    badge.textContent = '—';
+                    badge.title = `${token.symbol} current ${metricLabel} P/E loading`;
+                    return;
+                }
+
+                const tone = snapshot.status?.tone || 'fair';
+                badge.classList.add(tone);
+                badge.textContent = this.formatTokenMenuPe(snapshot.pe);
+                badge.title = `${token.symbol} current ${metricLabel} P/E: ${this.formatTokenMenuPe(snapshot.pe)} · ${snapshot.status?.label || 'Fair'}`;
+            });
+        }
+
+        updateTokenMenuPeBadges(root = document) {
+            if (!root?.querySelectorAll) return;
+            const tokenKeys = new Set(Array.from(root.querySelectorAll('.chart-token-pe'))
+                .map((badge) => badge.dataset.tokenPe)
+                .filter(Boolean));
+            tokenKeys.forEach((tokenKey) => this.updateTokenMenuPeBadge(TOKEN_CONFIGS[tokenKey], null, root));
+        }
+
+        warmTokenMenuPeBadges(tokens = Object.values(TOKEN_CONFIGS)) {
+            if (this._tokenMenuPeWarmupPromise) return this._tokenMenuPeWarmupPromise;
+            const queue = Array.from(new Set((tokens || []).map((token) => token?.key)))
+                .map((tokenKey) => TOKEN_CONFIGS[tokenKey])
+                .filter(Boolean);
+            if (!queue.length) return null;
+
+            this._tokenMenuPeWarmupPromise = (async () => {
+                for (const token of queue) {
+                    const cachedData = this.getTokenMenuPeData(token);
+                    if (cachedData) {
+                        this.updateTokenMenuPeBadge(token, cachedData);
+                        continue;
+                    }
+                    await this.prefetchTokenData(token, this.readHistoryModeState(token), { fast: true });
+                }
+            })().finally(() => {
+                this._tokenMenuPeWarmupPromise = null;
+            });
+
+            return this._tokenMenuPeWarmupPromise;
         }
 
         async withSoftTimeout(promise, timeoutMs, label, fallback = null) {
@@ -9067,6 +9547,52 @@
             };
         }
 
+        buildAggregatedFeesPayload(candidates) {
+            const combinedByDate = {};
+            const slugs = [];
+            const sourceSeries = [];
+
+            for (const candidate of (candidates || [])) {
+                if (!candidate?.slug) continue;
+                const sourceByDate = this.buildFeesByDateFromChart(candidate.data?.totalDataChart || []);
+                const sourceDates = Object.keys(sourceByDate).sort();
+                if (!sourceDates.length) continue;
+                slugs.push(candidate.slug);
+                sourceSeries.push({ byDate: sourceByDate, lastDate: sourceDates[sourceDates.length - 1] });
+            }
+
+            const maxCompleteDate = sourceSeries
+                .map((source) => source.lastDate)
+                .sort()[0] || null;
+
+            sourceSeries.forEach((source) => {
+                Object.entries(source.byDate).forEach(([date, value]) => {
+                    if (maxCompleteDate && date > maxCompleteDate) return;
+                    const numericValue = Number(value);
+                    if (!Number.isFinite(numericValue)) return;
+                    combinedByDate[date] = (Number(combinedByDate[date]) || 0) + numericValue;
+                });
+            });
+
+            const dateKeys = Object.keys(combinedByDate).sort();
+            const totalDataChart = dateKeys.map((date) => [
+                Math.floor(Date.parse(`${date}T00:00:00Z`) / 1000),
+                combinedByDate[date],
+            ]);
+            const lastPoint = totalDataChart[totalDataChart.length - 1] || null;
+            const slug = slugs.join('+');
+
+            return {
+                slug,
+                activeSlug: slug,
+                sources: slugs,
+                data: { totalDataChart },
+                feesByDate: this.prepareFeesByDate(combinedByDate),
+                count: totalDataChart.length,
+                lastTs: lastPoint ? Number(lastPoint[0]) : 0,
+            };
+        }
+
         buildDailyCandlesFromBinanceKlines(klines) {
             const candles = {};
             for (const entry of (klines || [])) {
@@ -9239,6 +9765,10 @@
 
             const validCandidates = candidates.filter((candidate) => candidate && candidate.count > 0);
             if (!validCandidates.length) throw new Error('No fee data in DefiLlama response');
+
+            if (this.token.defillamaFeesAggregation === 'sum') {
+                return this.buildAggregatedFeesPayload(validCandidates);
+            }
 
             validCandidates.sort((left, right) => (right.lastTs - left.lastTs) || (right.count - left.count));
             return validCandidates[0];
@@ -10306,8 +10836,8 @@
 
                 const date = allDates[i];
                 const dailySupply = effectiveSupply[i];
-                const annualizedRevenue = (Number(feesByDate[date]) || 0) * 365;
                 const annualRevPerToken = (rollingAvg[i] * 365) / dailySupply;
+                const annualizedRevenue = rollingAvg[i] * 365;
 
                 if (annualRevPerToken <= 0) continue;
 
@@ -11146,7 +11676,7 @@
                 ? this.getEffectiveSupply(baseSupply, burnedHype)
                 : baseSupply;
             const annualRevForPe = lastAvg * 365;
-            const displayAnnualRev = (Number(lastFee) || 0) * 365;
+            const displayAnnualRev = annualRevForPe;
             const valuation = this.useFDV
                 ? (Number(this.rawData.currentFDV) || (lastCandle.c * activeSupply))
                 : (Number(this.rawData.currentMarketCap) || (lastCandle.c * activeSupply));
@@ -12008,6 +12538,7 @@
                     btnFDV.classList.remove('active');
                     try { this.chart.priceScale('right').applyOptions({ autoScale: true }); } catch(e) {}
                     this.updateData();
+                    this.updateTokenMenuPeBadges();
                     this.syncCurrentPEFromBackend().catch(() => {});
                     this.updateAllAlertLabels();
                     this.renderAlertList();
@@ -12020,6 +12551,7 @@
                     btnMC.classList.remove('active');
                     try { this.chart.priceScale('right').applyOptions({ autoScale: true }); } catch(e) {}
                     this.updateData();
+                    this.updateTokenMenuPeBadges();
                     this.syncCurrentPEFromBackend().catch(() => {});
                     this.updateAllAlertLabels();
                     this.renderAlertList();
