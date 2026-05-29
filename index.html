@@ -78,7 +78,7 @@
         (function() {
             const tokenFromQuery = String(new URLSearchParams(location.search || '').get('token') || '').trim().toLowerCase();
             const normalizedPath = location.pathname.replace(/\/+$/, '').toLowerCase() || '/';
-            const knownTokens = new Set(['hype', 'lit', 'pump', 'sky', 'aave', 'edge', 'cars', 'aster', 'link', 'uni', 'cake', 'lido', 'rhea', 'railgun', 'ethfi', 'metadao', 'mega']);
+            const knownTokens = new Set(['hype', 'lit', 'pump', 'sky', 'aave', 'edge', 'cars', 'aster', 'link', 'uni', 'cake', 'lido', 'rhea', 'railgun', 'ethfi', 'metadao', 'mega', 'ethereum', 'arbitrum', 'solana', 'tron', 'bsc', 'near', 'limitless', 'opinion', 'bankr', 'ore', 'aerodrome', 'polygon', 'maple', 'meteora', 'pendle', 'jito', 'jupiter', 'raydium', 'fluid', 'kamino']);
             const pathCandidate = normalizedPath === '/' ? '' : normalizedPath.replace(/^\//, '');
             const pathToken = knownTokens.has(pathCandidate) ? pathCandidate : '';
             const routeToken = knownTokens.has(tokenFromQuery) ? tokenFromQuery : (pathToken || 'hype');
@@ -100,6 +100,26 @@
                 ethfi: 'Hypurrmium | ETHFI P/E Ratio',
                 metadao: 'Hypurrmium | META P/E Ratio',
                 mega: 'Hypurrmium | MEGA P/E Ratio',
+                ethereum: 'Hypurrmium | ETH P/E Ratio',
+                arbitrum: 'Hypurrmium | ARB P/E Ratio',
+                solana: 'Hypurrmium | SOL P/E Ratio',
+                tron: 'Hypurrmium | TRX P/E Ratio',
+                bsc: 'Hypurrmium | BNB P/E Ratio',
+                near: 'Hypurrmium | NEAR P/E Ratio',
+                limitless: 'Hypurrmium | LMTS P/E Ratio',
+                opinion: 'Hypurrmium | OPN P/E Ratio',
+                bankr: 'Hypurrmium | BNKR P/E Ratio',
+                ore: 'Hypurrmium | ORE P/E Ratio',
+                aerodrome: 'Hypurrmium | AERO P/E Ratio',
+                polygon: 'Hypurrmium | POL P/E Ratio',
+                maple: 'Hypurrmium | SYRUP P/E Ratio',
+                meteora: 'Hypurrmium | MET P/E Ratio',
+                pendle: 'Hypurrmium | PENDLE P/E Ratio',
+                jito: 'Hypurrmium | JTO P/E Ratio',
+                jupiter: 'Hypurrmium | JUP P/E Ratio',
+                raydium: 'Hypurrmium | RAY P/E Ratio',
+                fluid: 'Hypurrmium | FLUID P/E Ratio',
+                kamino: 'Hypurrmium | KMNO P/E Ratio',
             };
             window.HYPURRMIUM_ROUTE_TOKEN = routeToken;
             document.title = routeTitles[routeToken] || routeTitles.hype;
@@ -4686,6 +4706,146 @@
                                 <span class="chart-token-name">MegaETH</span>
                             </span>
                         </button>
+                        <button class="chart-token-option" type="button" data-token="ethereum" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://icons.llamao.fi/icons/chains/rsz_ethereum.jpg" alt="ETH icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">ETH</span>
+                                <span class="chart-token-name">Ethereum</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="arbitrum" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://icons.llamao.fi/icons/chains/rsz_arbitrum.jpg" alt="ARB icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">ARB</span>
+                                <span class="chart-token-name">Arbitrum</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="solana" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://icons.llamao.fi/icons/chains/rsz_solana.jpg" alt="SOL icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">SOL</span>
+                                <span class="chart-token-name">Solana</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="tron" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://icons.llamao.fi/icons/chains/rsz_tron.jpg" alt="TRX icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">TRX</span>
+                                <span class="chart-token-name">Tron</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="bsc" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://icons.llamao.fi/icons/chains/rsz_bsc.jpg" alt="BNB icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">BNB</span>
+                                <span class="chart-token-name">BSC</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="near" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://icons.llamao.fi/icons/chains/rsz_near.jpg" alt="NEAR icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">NEAR</span>
+                                <span class="chart-token-name">NEAR</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="limitless" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/69506/large/Green_-_Sign_%282%29_-_token-circle-200.png" alt="LMTS icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">LMTS</span>
+                                <span class="chart-token-name">Limitless</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="opinion" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/102171893/large/Opinon.jpg" alt="OPN icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">OPN</span>
+                                <span class="chart-token-name">Opinion</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="bankr" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/52626/large/bankr-static.png" alt="BNKR icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">BNKR</span>
+                                <span class="chart-token-name">Bankr</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="ore" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/36854/large/IMG_7340.png" alt="ORE icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">ORE</span>
+                                <span class="chart-token-name">ORE</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="aerodrome" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/31745/large/token.png" alt="AERO icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">AERO</span>
+                                <span class="chart-token-name">Aerodrome</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="polygon" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://icons.llamao.fi/icons/chains/rsz_polygon.jpg" alt="POL icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">POL</span>
+                                <span class="chart-token-name">Polygon</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="maple" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/51232/large/_syrup_token_logo.png" alt="SYRUP icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">SYRUP</span>
+                                <span class="chart-token-name">Maple</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="jupiter" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/34188/large/jup.png" alt="JUP icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">JUP</span>
+                                <span class="chart-token-name">Jupiter</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="jito" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/33228/large/jto.png" alt="JTO icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">JTO</span>
+                                <span class="chart-token-name">Jito</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="pendle" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/15069/large/Pendle_Logo_Normal-03.png" alt="PENDLE icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">PENDLE</span>
+                                <span class="chart-token-name">Pendle</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="raydium" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/13928/large/PSigc4ie_400x400.jpg" alt="RAY icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">RAY</span>
+                                <span class="chart-token-name">Raydium</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="fluid" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/14688/large/Logo_1_%28brighter%29.png" alt="FLUID icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">FLUID</span>
+                                <span class="chart-token-name">Fluid</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="kamino" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/35801/large/Kamino_200x200.png" alt="KMNO icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">KMNO</span>
+                                <span class="chart-token-name">Kamino</span>
+                            </span>
+                        </button>
+                        <button class="chart-token-option" type="button" data-token="meteora" role="option" aria-selected="false">
+                            <img class="chart-token-icon" src="https://coin-images.coingecko.com/coins/images/69110/large/meteora.png" alt="MET icon">
+                            <span class="chart-token-copy">
+                                <span class="chart-token-symbol">MET</span>
+                                <span class="chart-token-name">Meteora</span>
+                            </span>
+                        </button>
                     </div>
                 </div>
                 <span class="chart-label" id="chart-mode-label">HYPE / Revenue · P/E</span>
@@ -4973,15 +5133,17 @@
         );
     }
 
-    function buildCoinGeckoMarketChartUrl(id, days = '365', interval = '') {
+    function buildCoinGeckoMarketChartUrl(id, days = '365', interval = '', { preferLlama = false } = {}) {
         const search = new URLSearchParams({
             id,
             vs_currency: 'usd',
             days: String(days || '365'),
         });
         if (interval) search.set('interval', interval);
+        const proxySearch = new URLSearchParams(search);
+        if (preferLlama) proxySearch.set('preferLlama', 'true');
         return resolveBackendProxyUrl(
-            `/coingecko/market_chart?${search.toString()}`,
+            `/coingecko/market_chart?${proxySearch.toString()}`,
             `https://api.coingecko.com/api/v3/coins/${encodeURIComponent(id)}/market_chart?${search.toString()}`,
         );
     }
@@ -5074,7 +5236,7 @@
             symbol: 'HYPE',
             displayName: 'Hyperliquid',
             protocolName: 'Hyperliquid',
-            menuMarketCapRank: 1,
+            menuMarketCapRank: 5,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/50882/small/hyperliquid.jpg?1729431300',
             routePath: '/hype',
             priceLabel: 'HYPE Price',
@@ -5122,7 +5284,7 @@
             symbol: 'LIT',
             displayName: 'Lighter',
             protocolName: 'Lighter',
-            menuMarketCapRank: 11,
+            menuMarketCapRank: 20,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/71121/small/lighter.png?1765888098',
             routePath: '/lit',
             priceLabel: 'LIT Price',
@@ -5176,7 +5338,7 @@
             symbol: 'PUMP',
             displayName: 'Pump.fun',
             protocolName: 'Pump.fun',
-            menuMarketCapRank: 7,
+            menuMarketCapRank: 12,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/67164/small/pump.jpg?1751949376',
             routePath: '/pump',
             priceLabel: 'PUMP Price',
@@ -5225,7 +5387,7 @@
             symbol: 'SKY',
             displayName: 'Sky',
             protocolName: 'Sky',
-            menuMarketCapRank: 5,
+            menuMarketCapRank: 11,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/39925/small/sky.jpg?1724827980',
             routePath: '/sky',
             priceLabel: 'SKY Price',
@@ -5286,7 +5448,7 @@
             symbol: 'AAVE',
             displayName: 'Aave',
             protocolName: 'Aave',
-            menuMarketCapRank: 6,
+            menuMarketCapRank: 10,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/12645/small/aave-token-round.png?1720472354',
             routePath: '/aave',
             priceLabel: 'AAVE Price',
@@ -5346,7 +5508,7 @@
             symbol: 'EDGE',
             displayName: 'edgeX',
             protocolName: 'edgeX',
-            menuMarketCapRank: 8,
+            menuMarketCapRank: 16,
             logoUrl: 'https://assets.coingecko.com/coins/images/102172616/standard/edgex.png?1774332310',
             routePath: '/edge',
             priceLabel: 'EDGE Price',
@@ -5401,7 +5563,7 @@
             symbol: 'CARDS',
             displayName: 'Collector Crypt',
             protocolName: 'Collector Crypt',
-            menuMarketCapRank: 16,
+            menuMarketCapRank: 28,
             logoUrl: 'https://assets.coingecko.com/coins/images/68728/standard/cards-logo.jpeg?1756534539',
             routePath: '/cars',
             priceLabel: 'CARDS Price',
@@ -5455,7 +5617,7 @@
             symbol: 'ASTER',
             displayName: 'Aster',
             protocolName: 'Aster',
-            menuMarketCapRank: 4,
+            menuMarketCapRank: 9,
             logoUrl: 'https://assets.coingecko.com/coins/images/69040/standard/_ASTER.png?1757326782',
             routePath: '/aster',
             priceLabel: 'ASTER Price',
@@ -5510,7 +5672,7 @@
             symbol: 'LINK',
             displayName: 'Chainlink',
             protocolName: 'Chainlink',
-            menuMarketCapRank: 2,
+            menuMarketCapRank: 6,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/877/small/Chainlink_Logo_500.png?1760023405',
             routePath: '/link',
             priceLabel: 'LINK Price',
@@ -5568,7 +5730,7 @@
             symbol: 'UNI',
             displayName: 'Uniswap',
             protocolName: 'Uniswap',
-            menuMarketCapRank: 3,
+            menuMarketCapRank: 7,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/12504/small/uniswap-logo.png?1720676669',
             routePath: '/uni',
             priceLabel: 'UNI Price',
@@ -5624,7 +5786,7 @@
             symbol: 'CAKE',
             displayName: 'PancakeSwap',
             protocolName: 'PancakeSwap',
-            menuMarketCapRank: 9,
+            menuMarketCapRank: 17,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/12632/small/pancakeswap-cake-logo_%281%29.png?1696512440',
             routePath: '/cake',
             priceLabel: 'CAKE Price',
@@ -5679,7 +5841,7 @@
             symbol: 'LDO',
             displayName: 'Lido',
             protocolName: 'Lido',
-            menuMarketCapRank: 12,
+            menuMarketCapRank: 21,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/13573/small/Lido_DAO.png?1696513326',
             routePath: '/lido',
             priceLabel: 'LDO Price',
@@ -5734,7 +5896,7 @@
             symbol: 'RHEA',
             displayName: 'Rhea Finance',
             protocolName: 'Rhea Finance',
-            menuMarketCapRank: 17,
+            menuMarketCapRank: 30,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/67682/small/RHEA_Logo.png?1753517263',
             routePath: '/rhea',
             priceLabel: 'RHEA Price',
@@ -5788,7 +5950,7 @@
             symbol: 'RAIL',
             displayName: 'Railgun',
             protocolName: 'Railgun',
-            menuMarketCapRank: 13,
+            menuMarketCapRank: 24,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/16840/small/railgun.jpeg?1696516407',
             routePath: '/railgun',
             priceLabel: 'RAIL Price',
@@ -5842,7 +6004,7 @@
             symbol: 'ETHFI',
             displayName: 'ether.fi',
             protocolName: 'ether.fi',
-            menuMarketCapRank: 10,
+            menuMarketCapRank: 19,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/35958/small/etherfi.jpeg?1710254562',
             routePath: '/ethfi',
             priceLabel: 'ETHFI Price',
@@ -5896,7 +6058,7 @@
             symbol: 'META',
             displayName: 'MetaDAO',
             protocolName: 'MetaDAO',
-            menuMarketCapRank: 15,
+            menuMarketCapRank: 27,
             logoUrl: 'https://coin-images.coingecko.com/coins/images/68320/small/META.png?1755335883',
             routePath: '/metadao',
             priceLabel: 'META Price',
@@ -5950,7 +6112,7 @@
             symbol: 'MEGA',
             displayName: 'MegaETH',
             protocolName: 'MegaETH',
-            menuMarketCapRank: 14,
+            menuMarketCapRank: 25,
             logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_megaeth.jpg',
             routePath: '/mega',
             priceLabel: 'MEGA Price',
@@ -6006,6 +6168,1031 @@
                 keywords: 'MegaETH, MEGA, P/E ratio, price earnings ratio, MEGA valuation, MegaETH revenue, USDm revenue, MegaFees, crypto valuation chart',
                 ogTitle: 'Hypurrmium - Live MEGA P/E Ratio',
                 ogDescription: 'Is MEGA cheap or expensive right now? Track the live P/E ratio of MegaETH using MegaFees USDm revenue and CoinGecko market cap data.',
+            },
+        },
+        ethereum: {
+            key: 'ethereum',
+            symbol: 'ETH',
+            displayName: 'Ethereum',
+            protocolName: 'Ethereum',
+            menuMarketCapRank: 1,
+            logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_ethereum.jpg',
+            routePath: '/ethereum',
+            priceLabel: 'ETH Price',
+            overlayLabel: '+ETHUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'ethereum',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['ethereum'],
+            defillamaProtocolSlug: '',
+            coingeckoId: 'ethereum',
+            supplyFallback: 120_685_456,
+            fdvSupplyFallback: 120_685_456,
+            chartStart: null,
+            tgeDate: '2015-07-30',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zones: {
+                mc: { cheap: [40, 70], fair: [90, 130], expensive: [170, 240] },
+                fdv: { cheap: [40, 70], fair: [90, 130], expensive: [170, 240] },
+            },
+            tokenRights: {
+                badge: 'ETH Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Ethereum chain revenue benchmark' },
+                    { label: 'Buybacks', value: 'No buybacks; EIP-1559 burns base fees' },
+                    { label: 'Supply effect', value: 'ETH burn exists but is not modeled as adjusted supply here' },
+                    { label: 'Revenue scope', value: 'Execution-layer chain revenue from DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/chain/Ethereum" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/ethereum" target="_blank">CoinGecko</a> + <a href="https://ethereum.org/" target="_blank">Ethereum</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | ETH P/E Ratio',
+                description: 'Track the live P/E ratio of Ethereum\'s ETH token with DefiLlama chain revenue and CoinGecko market cap data.',
+                keywords: 'Ethereum, ETH, P/E ratio, price earnings ratio, Ethereum revenue, ETH valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live ETH P/E Ratio',
+                ogDescription: 'Track ETH valuation using Ethereum chain revenue and market cap data.',
+            },
+        },
+        arbitrum: {
+            key: 'arbitrum',
+            symbol: 'ARB',
+            displayName: 'Arbitrum',
+            protocolName: 'Arbitrum',
+            menuMarketCapRank: 14,
+            logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_arbitrum.jpg',
+            routePath: '/arbitrum',
+            priceLabel: 'ARB Price',
+            overlayLabel: '+ARBUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'arbitrum',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['arbitrum'],
+            defillamaProtocolSlug: '',
+            coingeckoId: 'arbitrum',
+            supplyFallback: 5_150_000_000,
+            fdvSupplyFallback: 10_000_000_000,
+            chartStart: null,
+            tgeDate: '2023-03-23',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zones: {
+                mc: { cheap: [10, 16], fair: [20, 28], expensive: [36, 52] },
+                fdv: { cheap: [20, 32], fair: [40, 56], expensive: [72, 104] },
+            },
+            tokenRights: {
+                badge: 'ARB Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Arbitrum chain revenue benchmark' },
+                    { label: 'Buybacks', value: 'No fixed ARB buyback program modeled' },
+                    { label: 'Token claim', value: 'Governance over DAO treasury and chain parameters' },
+                    { label: 'Revenue scope', value: 'L2 chain revenue from DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/chain/Arbitrum" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/arbitrum" target="_blank">CoinGecko</a> + <a href="https://arbitrum.io/" target="_blank">Arbitrum</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | ARB P/E Ratio',
+                description: 'Track the live P/E ratio of Arbitrum\'s ARB token with DefiLlama chain revenue and CoinGecko market cap data.',
+                keywords: 'Arbitrum, ARB, P/E ratio, price earnings ratio, Arbitrum revenue, ARB valuation, L2 valuation chart',
+                ogTitle: 'Hypurrmium - Live ARB P/E Ratio',
+                ogDescription: 'Track ARB valuation using Arbitrum chain revenue and market cap data.',
+            },
+        },
+        solana: {
+            key: 'solana',
+            symbol: 'SOL',
+            displayName: 'Solana',
+            protocolName: 'Solana',
+            menuMarketCapRank: 3,
+            logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_solana.jpg',
+            routePath: '/solana',
+            priceLabel: 'SOL Price',
+            overlayLabel: '+SOLUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'solana',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['solana'],
+            defillamaProtocolSlug: '',
+            coingeckoId: 'solana',
+            supplyFallback: 609_000_000,
+            fdvSupplyFallback: 612_000_000,
+            chartStart: null,
+            tgeDate: '2020-04-10',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zones: {
+                mc: { cheap: [80, 130], fair: [170, 240], expensive: [320, 460] },
+                fdv: { cheap: [80, 130], fair: [170, 240], expensive: [320, 460] },
+            },
+            tokenRights: {
+                badge: 'SOL Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Solana chain revenue benchmark' },
+                    { label: 'Buybacks', value: 'No SOL buyback program modeled' },
+                    { label: 'Supply effect', value: 'Fee burns exist but are not modeled as adjusted supply here' },
+                    { label: 'Revenue scope', value: 'Chain revenue and priority-fee activity from DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/chain/Solana" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/solana" target="_blank">CoinGecko</a> + <a href="https://solana.com/" target="_blank">Solana</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | SOL P/E Ratio',
+                description: 'Track the live P/E ratio of Solana\'s SOL token with DefiLlama chain revenue and CoinGecko market cap data.',
+                keywords: 'Solana, SOL, P/E ratio, price earnings ratio, Solana revenue, SOL valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live SOL P/E Ratio',
+                ogDescription: 'Track SOL valuation using Solana chain revenue and market cap data.',
+            },
+        },
+        tron: {
+            key: 'tron',
+            symbol: 'TRX',
+            displayName: 'Tron',
+            protocolName: 'Tron',
+            menuMarketCapRank: 4,
+            logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_tron.jpg',
+            routePath: '/tron',
+            priceLabel: 'TRX Price',
+            overlayLabel: '+TRXUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'tron',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['tron'],
+            defillamaProtocolSlug: '',
+            coingeckoId: 'tron',
+            supplyFallback: 94_700_000_000,
+            fdvSupplyFallback: 94_700_000_000,
+            chartStart: null,
+            tgeDate: '2017-09-13',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zones: {
+                mc: { cheap: [45, 65], fair: [80, 110], expensive: [140, 190] },
+                fdv: { cheap: [45, 65], fair: [80, 110], expensive: [140, 190] },
+            },
+            tokenRights: {
+                badge: 'TRX Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Tron chain revenue benchmark' },
+                    { label: 'Buybacks', value: 'No TRX buyback program modeled' },
+                    { label: 'Supply effect', value: 'TRX fee burns are not modeled as adjusted supply here' },
+                    { label: 'Revenue scope', value: 'Chain revenue from DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/chain/Tron" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/tron" target="_blank">CoinGecko</a> + <a href="https://tron.network/" target="_blank">Tron</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | TRX P/E Ratio',
+                description: 'Track the live P/E ratio of Tron\'s TRX token with DefiLlama chain revenue and CoinGecko market cap data.',
+                keywords: 'Tron, TRX, P/E ratio, price earnings ratio, Tron revenue, TRX valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live TRX P/E Ratio',
+                ogDescription: 'Track TRX valuation using Tron chain revenue and market cap data.',
+            },
+        },
+        bsc: {
+            key: 'bsc',
+            symbol: 'BNB',
+            displayName: 'BSC',
+            protocolName: 'BNB Smart Chain',
+            menuMarketCapRank: 2,
+            logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_bsc.jpg',
+            routePath: '/bsc',
+            priceLabel: 'BNB Price',
+            overlayLabel: '+BNBUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'bsc',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['bsc'],
+            defillamaProtocolSlug: '',
+            coingeckoId: 'binancecoin',
+            supplyFallback: 139_290_000,
+            fdvSupplyFallback: 139_290_000,
+            chartStart: null,
+            tgeDate: '2017-07-25',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zones: {
+                mc: { cheap: [120, 180], fair: [240, 340], expensive: [440, 620] },
+                fdv: { cheap: [120, 180], fair: [240, 340], expensive: [440, 620] },
+            },
+            tokenRights: {
+                badge: 'BNB Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'BSC chain revenue benchmark' },
+                    { label: 'Buybacks', value: 'BNB Auto-Burn exists; no BSC revenue buyback modeled' },
+                    { label: 'Supply effect', value: 'BNB burns are not modeled as adjusted supply here' },
+                    { label: 'Revenue scope', value: 'BNB Smart Chain revenue from DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/chain/BSC" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/bnb" target="_blank">CoinGecko</a> + <a href="https://www.bnbchain.org/" target="_blank">BNB Chain</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | BNB P/E Ratio',
+                description: 'Track the live P/E ratio of BNB using BSC chain revenue and CoinGecko market cap data.',
+                keywords: 'BSC, BNB Chain, BNB, P/E ratio, price earnings ratio, BSC revenue, BNB valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live BNB P/E Ratio',
+                ogDescription: 'Track BNB valuation using BSC chain revenue and market cap data.',
+            },
+        },
+        near: {
+            key: 'near',
+            symbol: 'NEAR',
+            displayName: 'NEAR',
+            protocolName: 'NEAR',
+            menuMarketCapRank: 8,
+            logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_near.jpg',
+            routePath: '/near',
+            priceLabel: 'NEAR Price',
+            overlayLabel: '+NEARUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'near',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['near'],
+            defillamaProtocolSlug: '',
+            coingeckoId: 'near',
+            supplyFallback: 1_296_616_712,
+            fdvSupplyFallback: 1_296_616_771,
+            chartStart: null,
+            tgeDate: '2020-10-14',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zones: {
+                mc: { cheap: [20, 35], fair: [50, 80], expensive: [120, 180] },
+                fdv: { cheap: [20, 35], fair: [50, 80], expensive: [120, 180] },
+            },
+            tokenRights: {
+                badge: 'NEAR Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'NEAR chain revenue benchmark' },
+                    { label: 'Buybacks', value: 'No fixed NEAR buyback program modeled' },
+                    { label: 'Token claim', value: 'Native gas and staking asset for NEAR' },
+                    { label: 'Revenue scope', value: 'Chain revenue from DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/chain/NEAR" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/near-protocol" target="_blank">CoinGecko</a> + <a href="https://near.org/" target="_blank">NEAR</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | NEAR P/E Ratio',
+                description: 'Track the live P/E ratio of NEAR using DefiLlama chain revenue and CoinGecko market cap data.',
+                keywords: 'NEAR, NEAR Protocol, P/E ratio, price earnings ratio, NEAR revenue, NEAR valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live NEAR P/E Ratio',
+                ogDescription: 'Track NEAR valuation using chain revenue and market cap data.',
+            },
+        },
+        limitless: {
+            key: 'limitless',
+            symbol: 'LMTS',
+            displayName: 'Limitless',
+            protocolName: 'Limitless Exchange',
+            menuMarketCapRank: 29,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/69506/large/Green_-_Sign_%282%29_-_token-circle-200.png',
+            routePath: '/limitless',
+            priceLabel: 'LMTS Price',
+            overlayLabel: '+LMTSUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'limitless',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['limitless-exchange'],
+            defillamaProtocolSlug: 'limitless-exchange',
+            coingeckoId: 'limitless-3',
+            supplyFallback: 138_800_000,
+            fdvSupplyFallback: 1_000_000_000,
+            chartStart: null,
+            tgeDate: '2024-10-12',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zones: {
+                mc: { cheap: [8, 14], fair: [20, 32], expensive: [48, 72] },
+                fdv: { cheap: [60, 100], fair: [140, 220], expensive: [320, 480] },
+            },
+            tokenRights: {
+                badge: 'LMTS Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Limitless Exchange revenue benchmark' },
+                    { label: 'Buybacks', value: 'No fixed LMTS buyback program modeled' },
+                    { label: 'Token claim', value: 'Prediction market token economics, not direct equity' },
+                    { label: 'Revenue scope', value: 'Protocol revenue from DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/limitless-exchange" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/limitless" target="_blank">CoinGecko</a> + <a href="https://limitless.exchange/" target="_blank">Limitless</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | LMTS P/E Ratio',
+                description: 'Track the live P/E ratio of Limitless Exchange with DefiLlama revenue and CoinGecko market cap data.',
+                keywords: 'Limitless, LMTS, Limitless Exchange, P/E ratio, prediction market revenue, LMTS valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live LMTS P/E Ratio',
+                ogDescription: 'Track LMTS valuation using Limitless Exchange revenue and market cap data.',
+            },
+        },
+        opinion: {
+            key: 'opinion',
+            symbol: 'OPN',
+            displayName: 'Opinion',
+            protocolName: 'Opinion',
+            menuMarketCapRank: 26,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/102171893/large/Opinon.jpg',
+            routePath: '/opinion',
+            priceLabel: 'OPN Price',
+            overlayLabel: '+OPNUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'opinion',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['opinion'],
+            defillamaProtocolSlug: 'opinion',
+            coingeckoId: 'opinion',
+            supplyFallback: 141_160_000,
+            fdvSupplyFallback: 1_000_000_000,
+            chartStart: null,
+            tgeDate: '2025-10-23',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zones: {
+                mc: { cheap: [12, 20], fair: [28, 44], expensive: [64, 96] },
+                fdv: { cheap: [80, 130], fair: [180, 280], expensive: [420, 620] },
+            },
+            tokenRights: {
+                badge: 'OPN Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Opinion protocol revenue benchmark' },
+                    { label: 'Buybacks', value: 'No fixed OPN buyback program modeled' },
+                    { label: 'Token claim', value: 'Prediction market token economics, not direct equity' },
+                    { label: 'Revenue scope', value: 'Protocol revenue from DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/opinion" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/opinion" target="_blank">CoinGecko</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | OPN P/E Ratio',
+                description: 'Track the live P/E ratio of Opinion with DefiLlama revenue and CoinGecko market cap data.',
+                keywords: 'Opinion, OPN, P/E ratio, prediction market revenue, OPN valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live OPN P/E Ratio',
+                ogDescription: 'Track OPN valuation using Opinion revenue and market cap data.',
+            },
+        },
+        bankr: {
+            key: 'bankr',
+            symbol: 'BNKR',
+            displayName: 'Bankr',
+            protocolName: 'Bankr',
+            menuMarketCapRank: 23,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/52626/large/bankr-static.png',
+            routePath: '/bankr',
+            priceLabel: 'BNKR Price',
+            overlayLabel: '+BNKRUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'bankr',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['bankr'],
+            defillamaProtocolSlug: 'bankr',
+            coingeckoId: 'bankercoin-2',
+            supplyFallback: 99_390_000_000,
+            fdvSupplyFallback: 100_000_000_000,
+            chartStart: null,
+            tgeDate: '2025-08-12',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zones: {
+                mc: { cheap: [8, 14], fair: [20, 32], expensive: [48, 72] },
+                fdv: { cheap: [8, 14], fair: [20, 32], expensive: [48, 72] },
+            },
+            tokenRights: {
+                badge: 'BNKR Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Bankr interface revenue benchmark' },
+                    { label: 'Buybacks', value: 'No fixed BNKR buyback program modeled' },
+                    { label: 'Token claim', value: 'App/token ecosystem exposure, not direct equity' },
+                    { label: 'Revenue scope', value: 'Interface revenue from DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/bankr" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/bankrcoin" target="_blank">CoinGecko</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | BNKR P/E Ratio',
+                description: 'Track the live P/E ratio of Bankr with DefiLlama revenue and CoinGecko market cap data.',
+                keywords: 'Bankr, BNKR, BankrCoin, P/E ratio, Bankr revenue, BNKR valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live BNKR P/E Ratio',
+                ogDescription: 'Track BNKR valuation using Bankr revenue and market cap data.',
+            },
+        },
+        ore: {
+            key: 'ore',
+            symbol: 'ORE',
+            displayName: 'ORE',
+            protocolName: 'ORE Protocol',
+            menuMarketCapRank: 22,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/36854/large/IMG_7340.png',
+            routePath: '/ore',
+            priceLabel: 'ORE Price',
+            overlayLabel: '+OREUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'ore',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['ore-protocol'],
+            defillamaProtocolSlug: 'ore-protocol',
+            coingeckoId: 'ore',
+            supplyFallback: 458_800,
+            fdvSupplyFallback: 21_000_000,
+            chartStart: null,
+            tgeDate: '2024-04-02',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zones: {
+                mc: { cheap: [80, 130], fair: [180, 280], expensive: [420, 620] },
+                fdv: { cheap: [2000, 3500], fair: [5000, 8000], expensive: [12000, 18000] },
+            },
+            tokenRights: {
+                badge: 'ORE Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'ORE Protocol revenue benchmark' },
+                    { label: 'Buybacks', value: 'No ORE buyback program modeled' },
+                    { label: 'Token claim', value: 'Gamified mining token economics, not direct equity' },
+                    { label: 'Revenue scope', value: 'Protocol revenue from DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/ore-protocol" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/ore" target="_blank">CoinGecko</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | ORE P/E Ratio',
+                description: 'Track the live P/E ratio of ORE Protocol with DefiLlama revenue and CoinGecko market cap data.',
+                keywords: 'ORE, ORE Protocol, P/E ratio, ORE revenue, ORE valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live ORE P/E Ratio',
+                ogDescription: 'Track ORE valuation using protocol revenue and market cap data.',
+            },
+        },
+        aerodrome: {
+            key: 'aerodrome',
+            symbol: 'AERO',
+            displayName: 'Aerodrome',
+            protocolName: 'Aerodrome',
+            menuMarketCapRank: 15,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/31745/large/token.png',
+            routePath: '/aerodrome',
+            priceLabel: 'AERO Price',
+            overlayLabel: '+AEROUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'aerodrome',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['aerodrome'],
+            defillamaProtocolSlug: 'aerodrome',
+            coingeckoId: 'aerodrome-finance',
+            supplyFallback: 944_600_000,
+            fdvSupplyFallback: 1_920_000_000,
+            chartStart: null,
+            tgeDate: '2023-08-28',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zones: {
+                mc: { cheap: [12, 20], fair: [28, 44], expensive: [64, 96] },
+                fdv: { cheap: [24, 40], fair: [56, 88], expensive: [128, 192] },
+            },
+            tokenRights: {
+                badge: 'AERO Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Aerodrome protocol revenue benchmark' },
+                    { label: 'Model', value: 've(3,3): emissions, fees, and incentives route through veAERO' },
+                    { label: 'Buybacks', value: 'No fixed AERO buyback program modeled' },
+                    { label: 'Revenue scope', value: 'DEX revenue from DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/aerodrome" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/aerodrome-finance" target="_blank">CoinGecko</a> + <a href="https://aerodrome.finance/" target="_blank">Aerodrome</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | AERO P/E Ratio',
+                description: 'Track the live P/E ratio of Aerodrome with DefiLlama revenue and CoinGecko market cap data, including its ve(3,3) model context.',
+                keywords: 'Aerodrome, AERO, ve(3,3), P/E ratio, Aerodrome revenue, AERO valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live AERO P/E Ratio',
+                ogDescription: 'Track AERO valuation using Aerodrome revenue and market cap data.',
+            },
+        },
+        polygon: {
+            key: 'polygon',
+            symbol: 'POL',
+            displayName: 'Polygon',
+            protocolName: 'Polygon',
+            menuMarketCapRank: 13,
+            logoUrl: 'https://icons.llamao.fi/icons/chains/rsz_polygon.jpg',
+            routePath: '/polygon',
+            priceLabel: 'POL Price',
+            overlayLabel: '+POLUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'polygon',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['polygon'],
+            defillamaProtocolSlug: '',
+            coingeckoId: 'polygon-ecosystem-token',
+            supplyFallback: 10_740_000_000,
+            fdvSupplyFallback: 10_740_000_000,
+            chartStart: null,
+            tgeDate: '2019-04-28',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            priceBackfillSource: {
+                provider: 'binance',
+                symbol: 'MATICUSDT',
+                label: 'MATIC',
+                startDate: '2019-04-28',
+            },
+            dynamicZones: { mc: true, fdv: true },
+            zones: {
+                mc: { cheap: [25, 40], fair: [60, 90], expensive: [130, 190] },
+                fdv: { cheap: [25, 40], fair: [60, 90], expensive: [130, 190] },
+            },
+            tokenRights: {
+                badge: 'POL Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Polygon chain revenue benchmark' },
+                    { label: 'Buybacks', value: 'No fixed POL buyback program modeled' },
+                    { label: 'Token claim', value: 'Native gas and staking asset for Polygon' },
+                    { label: 'Revenue scope', value: 'Polygon chain revenue from DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/chain/Polygon" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/polygon-ecosystem-token" target="_blank">CoinGecko</a> + <a href="https://polygon.technology/" target="_blank">Polygon</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | POL P/E Ratio',
+                description: 'Track the live P/E ratio of Polygon with DefiLlama chain revenue and CoinGecko market cap data.',
+                keywords: 'Polygon, POL, MATIC, P/E ratio, Polygon revenue, POL valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live POL P/E Ratio',
+                ogDescription: 'Track POL valuation using Polygon chain revenue and market cap data.',
+            },
+        },
+        maple: {
+            key: 'maple',
+            symbol: 'SYRUP',
+            displayName: 'Maple',
+            protocolName: 'Maple',
+            menuMarketCapRank: 18,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/51232/large/_syrup_token_logo.png',
+            routePath: '/maple',
+            priceLabel: 'SYRUP Price',
+            overlayLabel: '+SYRUPUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'maple',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['maple'],
+            defillamaProtocolSlug: 'maple',
+            coingeckoId: 'syrup',
+            supplyFallback: 1_160_000_000,
+            fdvSupplyFallback: 1_160_000_000,
+            chartStart: null,
+            tgeDate: '2024-11-13',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zones: {
+                mc: { cheap: [12, 20], fair: [28, 44], expensive: [64, 96] },
+                fdv: { cheap: [12, 20], fair: [28, 44], expensive: [64, 96] },
+            },
+            tokenRights: {
+                badge: 'SYRUP Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Maple lending revenue benchmark' },
+                    { label: 'Buybacks', value: 'No fixed SYRUP buyback program modeled' },
+                    { label: 'Token claim', value: 'Governance and staking exposure to Maple ecosystem' },
+                    { label: 'Revenue scope', value: 'Lending protocol revenue from DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/maple" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/maple-finance" target="_blank">CoinGecko</a> + <a href="https://maple.finance/" target="_blank">Maple</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | SYRUP P/E Ratio',
+                description: 'Track the live P/E ratio of Maple using DefiLlama lending revenue and CoinGecko market cap data.',
+                keywords: 'Maple, SYRUP, Maple Finance, P/E ratio, Maple revenue, SYRUP valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live SYRUP P/E Ratio',
+                ogDescription: 'Track SYRUP valuation using Maple revenue and market cap data.',
+            },
+        },
+        jupiter: {
+            key: 'jupiter',
+            symbol: 'JUP',
+            displayName: 'Jupiter',
+            protocolName: 'Jupiter',
+            menuMarketCapRank: 12.5,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/34188/large/jup.png?1704266489',
+            routePath: '/jupiter',
+            priceLabel: 'JUP Price',
+            overlayLabel: '+JUPUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'jupiter',
+            minRollingDays: 14,
+            trimTrailingLowRevenueDays: 2,
+            trimTrailingLowRevenueRatio: 0.25,
+            defillamaFeesCandidates: ['jupiter'],
+            defillamaProtocolSlug: 'jupiter',
+            coingeckoId: 'jupiter-exchange-solana',
+            supplyFallback: 3_320_312_968,
+            fdvSupplyFallback: 7_000_000_000,
+            chartStart: null,
+            tgeDate: '2024-01-31',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zoneQuantiles: {
+                cheap: [0.08, 0.24],
+                fair: [0.38, 0.62],
+                expensive: [0.78, 0.94],
+            },
+            zones: {
+                mc: { cheap: [7, 10], fair: [12, 18], expensive: [24, 36] },
+                fdv: { cheap: [16, 22], fair: [28, 40], expensive: [52, 76] },
+            },
+            tokenRights: {
+                badge: 'JUP Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Jupiter aggregate revenue benchmark' },
+                    { label: 'Buybacks', value: 'Yes - Jupiter has referenced 50% protocol fee buybacks' },
+                    { label: 'Buyback %', value: '50% of protocol fees, not normalized in DefiLlama data' },
+                    { label: 'Revenue scope', value: 'Aggregator, perps, lending and app revenue on DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/jupiter" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/jupiter-exchange-solana" target="_blank">CoinGecko</a> + <a href="https://jup.ag/" target="_blank">Jupiter</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | JUP P/E Ratio',
+                description: 'Track the live P/E ratio of Jupiter\'s JUP token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'Jupiter, JUP, P/E ratio, price earnings ratio, JUP valuation, Jupiter revenue, Solana DEX aggregator valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live JUP P/E Ratio',
+                ogDescription: 'Is JUP cheap or expensive right now? Track the live P/E ratio of Jupiter using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        jito: {
+            key: 'jito',
+            symbol: 'JTO',
+            displayName: 'Jito',
+            protocolName: 'Jito',
+            menuMarketCapRank: 18.3,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/33228/large/jto.png?1701137022',
+            routePath: '/jito',
+            priceLabel: 'JTO Price',
+            overlayLabel: '+JTOUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'jito',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['jito'],
+            defillamaProtocolSlug: 'jito',
+            coingeckoId: 'jito-governance-token',
+            supplyFallback: 476_809_751,
+            fdvSupplyFallback: 1_000_000_000,
+            chartStart: null,
+            tgeDate: '2023-12-07',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zoneQuantiles: {
+                cheap: [0.08, 0.24],
+                fair: [0.38, 0.62],
+                expensive: [0.78, 0.94],
+            },
+            zones: {
+                mc: { cheap: [25, 35], fair: [45, 60], expensive: [80, 120] },
+                fdv: { cheap: [50, 70], fair: [90, 120], expensive: [160, 240] },
+            },
+            tokenRights: {
+                badge: 'JTO Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Jito MEV and DAO revenue benchmark' },
+                    { label: 'Buybacks', value: 'No fixed JTO buyback program modeled' },
+                    { label: 'Token claim', value: 'Governance over the Jito network and treasury' },
+                    { label: 'Revenue scope', value: 'MEV tips and Jito DAO service revenue' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/jito" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/jito-governance-token" target="_blank">CoinGecko</a> + <a href="https://www.jito.network/" target="_blank">Jito</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | JTO P/E Ratio',
+                description: 'Track the live P/E ratio of Jito\'s JTO token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'Jito, JTO, P/E ratio, price earnings ratio, JTO valuation, Jito revenue, Solana MEV valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live JTO P/E Ratio',
+                ogDescription: 'Is JTO cheap or expensive right now? Track the live P/E ratio of Jito using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        pendle: {
+            key: 'pendle',
+            symbol: 'PENDLE',
+            displayName: 'Pendle',
+            protocolName: 'Pendle',
+            menuMarketCapRank: 18.4,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/15069/large/Pendle_Logo_Normal-03.png?1696514728',
+            routePath: '/pendle',
+            priceLabel: 'PENDLE Price',
+            overlayLabel: '+PENDLEUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'pendle',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['pendle'],
+            defillamaProtocolSlug: 'pendle',
+            coingeckoId: 'pendle',
+            supplyFallback: 170_644_372,
+            fdvSupplyFallback: 258_446_029,
+            chartStart: null,
+            tgeDate: '2021-04-29',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zoneQuantiles: {
+                cheap: [0.08, 0.24],
+                fair: [0.38, 0.62],
+                expensive: [0.78, 0.94],
+            },
+            zones: {
+                mc: { cheap: [10, 14], fair: [18, 24], expensive: [32, 48] },
+                fdv: { cheap: [18, 24], fair: [30, 42], expensive: [56, 82] },
+            },
+            tokenRights: {
+                badge: 'PENDLE Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Pendle protocol revenue benchmark' },
+                    { label: 'Buybacks', value: 'No fixed PENDLE buyback program modeled' },
+                    { label: 'Token claim', value: 'vePENDLE directs incentives and fee distribution' },
+                    { label: 'Revenue scope', value: 'Yield trading protocol revenue from DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/pendle" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/pendle" target="_blank">CoinGecko</a> + <a href="https://www.pendle.finance/" target="_blank">Pendle</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | PENDLE P/E Ratio',
+                description: 'Track the live P/E ratio of Pendle\'s PENDLE token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'Pendle, PENDLE, P/E ratio, price earnings ratio, PENDLE valuation, Pendle revenue, yield trading valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live PENDLE P/E Ratio',
+                ogDescription: 'Is PENDLE cheap or expensive right now? Track the live P/E ratio of Pendle using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        raydium: {
+            key: 'raydium',
+            symbol: 'RAY',
+            displayName: 'Raydium',
+            protocolName: 'Raydium',
+            menuMarketCapRank: 20.5,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/13928/large/PSigc4ie_400x400.jpg?1696513668',
+            routePath: '/raydium',
+            priceLabel: 'RAY Price',
+            overlayLabel: '+RAYUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'raydium',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['raydium'],
+            defillamaProtocolSlug: 'raydium',
+            coingeckoId: 'raydium',
+            supplyFallback: 268_977_952,
+            fdvSupplyFallback: 555_000_000,
+            chartStart: null,
+            tgeDate: '2021-02-21',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zoneQuantiles: {
+                cheap: [0.08, 0.24],
+                fair: [0.38, 0.62],
+                expensive: [0.78, 0.94],
+            },
+            zones: {
+                mc: { cheap: [8, 12], fair: [16, 24], expensive: [32, 48] },
+                fdv: { cheap: [18, 24], fair: [30, 42], expensive: [56, 82] },
+            },
+            tokenRights: {
+                badge: 'RAY Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Raydium protocol revenue benchmark' },
+                    { label: 'Buybacks', value: 'Yes - protocol fee share supports RAY buybacks' },
+                    { label: 'Buyback %', value: 'CLMM docs route 12% of trading fees; venues vary' },
+                    { label: 'Revenue scope', value: 'AMM, CLMM and trading fee revenue on DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/raydium" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/raydium" target="_blank">CoinGecko</a> + <a href="https://raydium.io/" target="_blank">Raydium</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | RAY P/E Ratio',
+                description: 'Track the live P/E ratio of Raydium\'s RAY token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'Raydium, RAY, P/E ratio, price earnings ratio, RAY valuation, Raydium revenue, Solana DEX valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live RAY P/E Ratio',
+                ogDescription: 'Is RAY cheap or expensive right now? Track the live P/E ratio of Raydium using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        fluid: {
+            key: 'fluid',
+            symbol: 'FLUID',
+            displayName: 'Fluid',
+            protocolName: 'Fluid',
+            menuMarketCapRank: 23.5,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/14688/large/Logo_1_%28brighter%29.png?1734430693',
+            routePath: '/fluid',
+            priceLabel: 'FLUID Price',
+            overlayLabel: '+FLUIDUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'fluid',
+            minRollingDays: 14,
+            trimTrailingLowRevenueDays: 2,
+            trimTrailingLowRevenueRatio: 0.25,
+            defillamaFeesCandidates: ['fluid'],
+            defillamaProtocolSlug: 'fluid',
+            coingeckoId: 'instadapp',
+            supplyFallback: 77_946_997,
+            fdvSupplyFallback: 100_000_000,
+            chartStart: null,
+            tgeDate: '2021-06-17',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zoneQuantiles: {
+                cheap: [0.08, 0.24],
+                fair: [0.38, 0.62],
+                expensive: [0.78, 0.94],
+            },
+            zones: {
+                mc: { cheap: [8, 12], fair: [16, 24], expensive: [32, 48] },
+                fdv: { cheap: [10, 16], fair: [22, 32], expensive: [44, 64] },
+            },
+            tokenRights: {
+                badge: 'FLUID Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Fluid protocol revenue benchmark' },
+                    { label: 'Buybacks', value: 'No fixed FLUID buyback program modeled' },
+                    { label: 'Token claim', value: 'Governance exposure to Fluid lending and DEX activity' },
+                    { label: 'Revenue scope', value: 'Lending, DEX and vault revenue on DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/fluid" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/instadapp" target="_blank">CoinGecko</a> + <a href="https://fluid.instadapp.io/" target="_blank">Fluid</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | FLUID P/E Ratio',
+                description: 'Track the live P/E ratio of Fluid\'s FLUID token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'Fluid, FLUID, Instadapp, P/E ratio, price earnings ratio, FLUID valuation, Fluid revenue, DeFi lending valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live FLUID P/E Ratio',
+                ogDescription: 'Is FLUID cheap or expensive right now? Track the live P/E ratio of Fluid using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        kamino: {
+            key: 'kamino',
+            symbol: 'KMNO',
+            displayName: 'Kamino',
+            protocolName: 'Kamino',
+            menuMarketCapRank: 24.5,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/35801/large/Kamino_200x200.png?1767944671',
+            routePath: '/kamino',
+            priceLabel: 'KMNO Price',
+            overlayLabel: '+KMNOUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'kamino',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['kamino'],
+            defillamaProtocolSlug: 'kamino',
+            coingeckoId: 'kamino',
+            supplyFallback: 4_710_959_169,
+            fdvSupplyFallback: 10_000_000_000,
+            chartStart: null,
+            tgeDate: '2024-04-30',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zoneQuantiles: {
+                cheap: [0.08, 0.24],
+                fair: [0.38, 0.62],
+                expensive: [0.78, 0.94],
+            },
+            zones: {
+                mc: { cheap: [5, 8], fair: [10, 14], expensive: [18, 28] },
+                fdv: { cheap: [10, 16], fair: [20, 28], expensive: [36, 52] },
+            },
+            tokenRights: {
+                badge: 'KMNO Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Kamino protocol revenue benchmark' },
+                    { label: 'Buybacks', value: 'No fixed KMNO buyback program modeled' },
+                    { label: 'Token claim', value: 'Governance exposure to Kamino lending and liquidity activity' },
+                    { label: 'Revenue scope', value: 'Lending and liquidity manager revenue on DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/kamino" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/kamino" target="_blank">CoinGecko</a> + <a href="https://kamino.finance/" target="_blank">Kamino</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | KMNO P/E Ratio',
+                description: 'Track the live P/E ratio of Kamino\'s KMNO token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'Kamino, KMNO, P/E ratio, price earnings ratio, KMNO valuation, Kamino revenue, Solana lending valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live KMNO P/E Ratio',
+                ogDescription: 'Is KMNO cheap or expensive right now? Track the live P/E ratio of Kamino using DefiLlama revenue and CoinGecko market cap data.',
+            },
+        },
+        meteora: {
+            key: 'meteora',
+            symbol: 'MET',
+            displayName: 'Meteora',
+            protocolName: 'Meteora',
+            menuMarketCapRank: 25.5,
+            logoUrl: 'https://coin-images.coingecko.com/coins/images/69110/large/meteora.png?1757517561',
+            routePath: '/meteora',
+            priceLabel: 'MET Price',
+            overlayLabel: '+METUSD',
+            supportsAutoBuy: false,
+            supportsBurnHistory: false,
+            supportsIntradayCandles: true,
+            storageScope: 'meteora',
+            minRollingDays: 14,
+            defillamaFeesCandidates: ['meteora'],
+            defillamaProtocolSlug: 'meteora',
+            coingeckoId: 'meteora',
+            supplyFallback: 523_464_764,
+            fdvSupplyFallback: 1_000_000_000,
+            chartStart: null,
+            tgeDate: '2025-10-23',
+            marketChartDays: 'max',
+            marketChartInterval: 'daily',
+            intradayMarketChartDays: 30,
+            intradayMarketChartInterval: 'hourly',
+            dynamicZones: { mc: true, fdv: true },
+            zoneQuantiles: {
+                cheap: [0.08, 0.24],
+                fair: [0.38, 0.62],
+                expensive: [0.78, 0.94],
+            },
+            zones: {
+                mc: { cheap: [2, 3.5], fair: [5, 7.5], expensive: [10, 15] },
+                fdv: { cheap: [4, 6], fair: [8, 12], expensive: [16, 24] },
+            },
+            tokenRights: {
+                badge: 'MET Rights',
+                rows: [
+                    { label: 'DefiLlama', value: 'Meteora protocol revenue benchmark' },
+                    { label: 'Buybacks', value: 'No fixed MET buyback program modeled' },
+                    { label: 'Token claim', value: 'Governance exposure to Meteora liquidity activity' },
+                    { label: 'Revenue scope', value: 'DLMM, DAMM and vault fee streams on DefiLlama' },
+                ],
+            },
+            footerDataHtml: 'Data: <a href="https://defillama.com/protocol/meteora" target="_blank">DefiLlama</a> + <a href="https://www.coingecko.com/en/coins/meteora" target="_blank">CoinGecko</a> + <a href="https://meteora.ag/" target="_blank">Meteora</a> · <a href="docs.html" style="color:var(--accent);">Docs</a>',
+            meta: {
+                title: 'Hypurrmium | MET P/E Ratio',
+                description: 'Track the live P/E ratio of Meteora\'s MET token with DefiLlama revenue and CoinGecko market cap data. Compare current valuation against historical cheap, fair, and expensive ranges.',
+                keywords: 'Meteora, MET, P/E ratio, price earnings ratio, MET valuation, Meteora revenue, Solana DEX valuation, crypto valuation chart',
+                ogTitle: 'Hypurrmium - Live MET P/E Ratio',
+                ogDescription: 'Is MET cheap or expensive right now? Track the live P/E ratio of Meteora using DefiLlama revenue and CoinGecko market cap data.',
             },
         },
     };
@@ -6291,7 +7478,42 @@
             const symbol = document.getElementById('chart-token-symbol');
             const name = document.getElementById('chart-token-name');
 
+            const createTokenOption = (token) => {
+                const button = document.createElement('button');
+                button.className = 'chart-token-option';
+                button.type = 'button';
+                button.dataset.token = token.key;
+                button.setAttribute('role', 'option');
+                button.setAttribute('aria-selected', 'false');
+
+                const image = document.createElement('img');
+                image.className = 'chart-token-icon';
+                image.src = token.logoUrl;
+                image.alt = `${token.symbol} icon`;
+
+                const copy = document.createElement('span');
+                copy.className = 'chart-token-copy';
+
+                const tokenSymbol = document.createElement('span');
+                tokenSymbol.className = 'chart-token-symbol';
+                tokenSymbol.textContent = token.symbol;
+
+                const tokenName = document.createElement('span');
+                tokenName.className = 'chart-token-name';
+                tokenName.textContent = token.displayName || token.protocolName;
+
+                copy.append(tokenSymbol, tokenName);
+                button.append(image, copy);
+                return button;
+            };
+
             if (menu) {
+                Object.values(TOKEN_CONFIGS).forEach((token) => {
+                    const hasOption = Array.from(menu.querySelectorAll('.chart-token-option'))
+                        .some((button) => button.dataset.token === token.key);
+                    if (!hasOption) menu.appendChild(createTokenOption(token));
+                });
+
                 Array.from(menu.querySelectorAll('.chart-token-option'))
                     .sort((left, right) => {
                         const leftRank = Number(TOKEN_CONFIGS[left.dataset.token]?.menuMarketCapRank || Number.MAX_SAFE_INTEGER);
@@ -6923,20 +8145,25 @@
 
         async init() {
             try {
-                this.rawData = await this.fetchAllData();
+                const cachedRawData = this.readTokenDataCache() || this.readPersistentTokenDataCache();
+                const renderFromCache = this.isRenderableRawData(cachedRawData);
+                const initialFetchConfig = renderFromCache ? null : this.getFastInitialFetchConfig();
+
+                this.rawData = renderFromCache
+                    ? cachedRawData
+                    : await this.fetchAllData(initialFetchConfig);
                 this.writeTokenDataCache(this.rawData);
-                this.updateHistoryControls();
-                this.buildChart();
-                this.updateData();
-                this.scheduleChartLayoutSync();
-                this.setupControls();
-                this.setupMetricCards();
-                this.setupForecastView();
-                this.setupResize();
-                this.setupAlert();
-                await this.syncCurrentPEFromBackend();
+                this.initializePresentation();
                 this.startLiveSync();
                 this.hideLoadingOverlay();
+                this.syncCurrentPEFromBackend().catch((error) => {
+                    console.warn(`[${this.token.symbol}] Initial live sync failed`, error);
+                });
+                if (renderFromCache || initialFetchConfig?.isFastInitialLoad) {
+                    this.refreshAllData(renderFromCache ? 'initial-cache' : 'initial-fast').catch((error) => {
+                        console.warn(`[${this.token.symbol}] Background refresh after first paint failed`, error);
+                    });
+                }
                 this.scheduleTokenPrefetch();
             } catch (e) {
                 console.error('Init error:', e);
@@ -6952,6 +8179,18 @@
                 document.getElementById('error-msg').textContent =
                     `Unable to load data.\n${e.message}\n\n${localHint}`;
             }
+        }
+
+        initializePresentation() {
+            this.updateHistoryControls();
+            this.buildChart();
+            this.updateData();
+            this.scheduleChartLayoutSync();
+            this.setupControls();
+            this.setupMetricCards();
+            this.setupForecastView();
+            this.setupResize();
+            this.setupAlert();
         }
 
         async refreshAllData(reason = 'manual') {
@@ -6991,6 +8230,31 @@
                 tokenId: token?.hyperliquidTokenId || null,
                 burnAddress: token?.burnAddress || null,
             };
+        }
+
+        getFastInitialFetchConfig(token = this.token) {
+            const fetchConfig = this.getTokenFetchConfig(token);
+            fetchConfig.isFastInitialLoad = true;
+            fetchConfig.optionalTimeoutMs = 1200;
+            fetchConfig.skipExtendedHistory = true;
+            fetchConfig.skipIntradayCandles = true;
+            fetchConfig.skipTokenDetails = !!token?.hyperliquidCoin;
+            if (token?.hyperliquidCoin) {
+                const fastDays = Number(token.fastMarketChartDays || 365);
+                const fastStart = Date.now() - (Math.max(30, fastDays) * 24 * 60 * 60 * 1000);
+                const configuredStart = Number(token.chartStart) || 0;
+                fetchConfig.candleStart = Math.max(configuredStart, fastStart);
+            }
+            if (token?.coingeckoId) {
+                const days = token.fastMarketChartDays || 365;
+                fetchConfig.coingeckoMarketChartUrl = buildCoinGeckoMarketChartUrl(
+                    token.coingeckoId,
+                    days,
+                    token.marketChartInterval || 'daily',
+                    { preferLlama: true },
+                );
+            }
+            return fetchConfig;
         }
 
         getTokenPrefetchCandidates(limit = 1) {
@@ -7179,6 +8443,43 @@
             }
         }
 
+        isRenderableRawData(data) {
+            return !!(
+                data
+                && Object.keys(data.feesByDate || {}).length
+                && Object.keys(data.candlesByDate || {}).length
+            );
+        }
+
+        getPersistentTokenDataCacheKey(token = this.token, historyMode = this.historyMode) {
+            return `hypurrmium.tokenData.v2.${this.getTokenDataCacheKey(token, historyMode)}`;
+        }
+
+        readPersistentTokenDataCache(token = this.token, historyMode = this.historyMode) {
+            try {
+                const raw = localStorage.getItem(this.getPersistentTokenDataCacheKey(token, historyMode));
+                if (!raw) return null;
+                const parsed = JSON.parse(raw);
+                const maxAgeMs = Number(token?.persistentCacheMaxAgeMs || (6 * 60 * 60 * 1000));
+                if (!parsed || !parsed.data || Date.now() - Number(parsed.savedAt || 0) > maxAgeMs) return null;
+                return this.isRenderableRawData(parsed.data) ? this.cloneRawDataPayload(parsed.data) : null;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        writePersistentTokenDataCache(data, token = this.token, historyMode = this.historyMode) {
+            if (!this.isRenderableRawData(data) || !token) return;
+            try {
+                const payload = JSON.stringify({ savedAt: Date.now(), data });
+                localStorage.setItem(this.getPersistentTokenDataCacheKey(token, historyMode), payload);
+            } catch (error) {
+                try {
+                    localStorage.removeItem(this.getPersistentTokenDataCacheKey(token, historyMode));
+                } catch (_error) {}
+            }
+        }
+
         readTokenDataCache(token = this.token, historyMode = this.historyMode) {
             return this.cloneRawDataPayload(this._tokenDataCache.get(this.getTokenDataCacheKey(token, historyMode)) || null);
         }
@@ -7189,6 +8490,30 @@
                 this.getTokenDataCacheKey(token, historyMode),
                 this.cloneRawDataPayload(data),
             );
+            this.writePersistentTokenDataCache(data, token, historyMode);
+        }
+
+        async withSoftTimeout(promise, timeoutMs, label, fallback = null) {
+            const delay = Number(timeoutMs);
+            if (!Number.isFinite(delay) || delay <= 0) return promise;
+
+            let timeoutId = null;
+            const guardedPromise = Promise.resolve(promise).catch((error) => {
+                console.warn(`[${this.token.symbol}] ${label} unavailable`, error);
+                return fallback;
+            });
+            const timeoutPromise = new Promise((resolve) => {
+                timeoutId = window.setTimeout(() => {
+                    console.warn(`[${this.token.symbol}] ${label} timed out after ${delay}ms`);
+                    resolve(fallback);
+                }, delay);
+            });
+
+            try {
+                return await Promise.race([guardedPromise, timeoutPromise]);
+            } finally {
+                if (timeoutId) window.clearTimeout(timeoutId);
+            }
         }
 
         getViewportStateKey(token = this.token, mode = this.chartMode, chartWidthDays = this.chartWidthDays, historyMode = this.historyMode) {
@@ -7591,6 +8916,32 @@
             return filled;
         }
 
+        trimTrailingLowRevenuePoints(feesByDate, maxTrimDays = Number(this.token?.trimTrailingLowRevenueDays ?? 0), ratio = Number(this.token?.trimTrailingLowRevenueRatio ?? 0)) {
+            if (!feesByDate || maxTrimDays <= 0 || ratio <= 0) return { ...(feesByDate || {}) };
+
+            const trimmed = { ...feesByDate };
+            let dates = this.getSortedDateKeys(trimmed);
+            let trimmedCount = 0;
+
+            while (dates.length > 8 && trimmedCount < maxTrimDays) {
+                const lastDate = dates[dates.length - 1];
+                const lastValue = Number(trimmed[lastDate]);
+                if (!Number.isFinite(lastValue) || lastValue <= 0) break;
+
+                const previousValues = dates.slice(Math.max(0, dates.length - 15), -1)
+                    .map((date) => Number(trimmed[date]))
+                    .filter((value) => Number.isFinite(value) && value > 0);
+                const referenceValue = this.getQuantileValue(previousValues, 0.5);
+                if (!Number.isFinite(referenceValue) || referenceValue <= 0 || lastValue >= referenceValue * ratio) break;
+
+                delete trimmed[lastDate];
+                trimmedCount += 1;
+                dates = this.getSortedDateKeys(trimmed);
+            }
+
+            return trimmed;
+        }
+
         smoothRevenueSeries(feesByDate, windowDays = Number(this.token?.revenueSmoothingDays ?? 0)) {
             if (!feesByDate || windowDays <= 1) return { ...(feesByDate || {}) };
 
@@ -7610,8 +8961,9 @@
         }
 
         prepareFeesByDate(feesByDate) {
-            const trimmed = this.trimTrailingZeroRevenuePoints(feesByDate);
-            const gapFilled = this.fillShortZeroRevenueGaps(trimmed);
+            const zeroTrimmed = this.trimTrailingZeroRevenuePoints(feesByDate);
+            const lowTrimmed = this.trimTrailingLowRevenuePoints(zeroTrimmed);
+            const gapFilled = this.fillShortZeroRevenueGaps(lowTrimmed);
             return this.smoothRevenueSeries(gapFilled);
         }
 
@@ -7914,7 +9266,7 @@
                     if (!r.ok) throw new Error(`Hyperliquid API: ${r.status}`);
                     return r.json();
                 }),
-                fetch(CONFIG.HL_API_URL, {
+                fetchConfig.skipIntradayCandles ? Promise.resolve([]) : fetch(CONFIG.HL_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -7922,12 +9274,14 @@
                         req: { coin: this.token.hyperliquidCoin, interval: '1h', startTime: fetchConfig.candleStart }
                     })
                 }).then(r => r.json()).catch(() => []),
-                fetch(CONFIG.HL_API_URL, {
+                fetchConfig.skipTokenDetails ? Promise.resolve(null) : this.withSoftTimeout(fetch(CONFIG.HL_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type: 'tokenDetails', tokenId: fetchConfig.tokenId })
-                }).then(r => r.json()).catch(() => null),
-                this.fetchJsonOrNull(fetchConfig.defillamaProtocolUrl, 'DefiLlama protocol')
+                }).then(r => r.json()), fetchConfig.optionalTimeoutMs, 'Hyperliquid token details'),
+                fetchConfig.defillamaProtocolUrl
+                    ? this.withSoftTimeout(this.fetchJsonOrNull(fetchConfig.defillamaProtocolUrl, 'DefiLlama protocol'), fetchConfig.optionalTimeoutMs, 'DefiLlama protocol')
+                    : Promise.resolve(null)
             ]);
 
             console.log(`[${this.token.symbol}] DefiLlama protocol probe`, {
@@ -8017,12 +9371,17 @@
                     ? this.fetchSkyFeesHistory()
                     : this.fetchBestFeesPayload();
 
-            const [feesSource, protocolRes, coinRes, simplePriceRes, marketChartRes] = await Promise.all([
+            const optionalTimeoutMs = Number(fetchConfig.optionalTimeoutMs || 0);
+            const [feesSource, marketChartRes] = await Promise.all([
                 feesSourcePromise,
-                fetchConfig.defillamaProtocolUrl ? this.fetchJsonOrNull(fetchConfig.defillamaProtocolUrl, 'DefiLlama protocol') : Promise.resolve(null),
-                this.fetchJsonOrNull(fetchConfig.coingeckoCoinUrl, 'CoinGecko coin'),
-                this.fetchJsonOrNull(fetchConfig.coingeckoSimplePriceUrl, 'CoinGecko simple price'),
                 this.fetchJsonStrict(fetchConfig.coingeckoMarketChartUrl, 'CoinGecko market chart'),
+            ]);
+            const [protocolRes, coinRes, simplePriceRes] = await Promise.all([
+                fetchConfig.defillamaProtocolUrl
+                    ? this.withSoftTimeout(this.fetchJsonOrNull(fetchConfig.defillamaProtocolUrl, 'DefiLlama protocol'), optionalTimeoutMs, 'DefiLlama protocol')
+                    : Promise.resolve(null),
+                this.withSoftTimeout(this.fetchJsonOrNull(fetchConfig.coingeckoCoinUrl, 'CoinGecko coin'), optionalTimeoutMs, 'CoinGecko coin'),
+                this.withSoftTimeout(this.fetchJsonOrNull(fetchConfig.coingeckoSimplePriceUrl, 'CoinGecko simple price'), optionalTimeoutMs, 'CoinGecko simple price'),
             ]);
 
             const simpleEntry = simplePriceRes && this.token.coingeckoId
@@ -8053,7 +9412,9 @@
                 throw new Error('No market chart data in CoinGecko response');
             }
 
-            const extendedHistory = await this.buildExtendedDailyPriceHistory(candlesByDate, feesByDate);
+            const extendedHistory = fetchConfig.skipExtendedHistory
+                ? { candlesByDate, meta: null }
+                : await this.buildExtendedDailyPriceHistory(candlesByDate, feesByDate);
             candlesByDate = extendedHistory.candlesByDate;
             this._historyBackfillMeta = extendedHistory.meta || null;
 

@@ -12,6 +12,30 @@ const HYPERLIQUID_EXCHANGE_URL = 'https://api.hyperliquid.xyz/exchange';
 const DEFILLAMA_PROTOCOL_TTL_MS = 30 * 60 * 1000;
 const COINGECKO_SIMPLE_PRICE_TTL_MS = 90 * 1000;
 const COINGECKO_MARKET_CHART_TTL_MS = 30 * 60 * 1000;
+const COINS_LLAMA_CHART_SPAN_DAYS = 365;
+const COINS_LLAMA_MAX_CHART_CHUNKS = 20;
+const COINS_LLAMA_MAX_FALLBACK_START_DATES = {
+  ethereum: '2015-07-30',
+  binancecoin: '2017-07-25',
+  tron: '2017-09-13',
+  solana: '2020-04-10',
+  arbitrum: '2023-03-23',
+  near: '2020-10-14',
+  'limitless-3': '2024-10-12',
+  opinion: '2025-10-23',
+  'bankercoin-2': '2025-08-12',
+  ore: '2024-04-02',
+  'aerodrome-finance': '2023-08-28',
+  'polygon-ecosystem-token': '2019-04-28',
+  syrup: '2024-11-13',
+  meteora: '2025-10-24',
+  pendle: '2021-04-29',
+  'jito-governance-token': '2023-12-07',
+  'jupiter-exchange-solana': '2024-01-31',
+  raydium: '2021-02-21',
+  instadapp: '2021-06-17',
+  kamino: '2024-04-30',
+};
 const WORKER_JSON_CACHE = new Map();
 
 function normalizeUpstreamSegment(value, fallback = '') {
@@ -179,25 +203,66 @@ async function fetchCoinsLlamaCurrentPriceFallback(incomingUrl) {
   };
 }
 
+function getUnixStartOfDay(dateValue) {
+  const timestamp = Date.parse(`${dateValue}T00:00:00Z`);
+  return Number.isFinite(timestamp) ? Math.floor(timestamp / 1000) : 0;
+}
+
+function getCoinsLlamaMaxFallbackStart(id) {
+  const configuredDate = COINS_LLAMA_MAX_FALLBACK_START_DATES[id];
+  if (configuredDate) return getUnixStartOfDay(configuredDate);
+  return Math.floor(Date.now() / 1000) - (COINS_LLAMA_CHART_SPAN_DAYS * 24 * 60 * 60);
+}
+
+async function fetchCoinsLlamaChartPoints(id, params) {
+  const data = await fetchJsonStrict(`${COINS_LLAMA_API_ROOT}/chart/coingecko:${id}?${params.toString()}`);
+  const points = data?.coins?.[`coingecko:${id}`]?.prices;
+  return Array.isArray(points) ? points : [];
+}
+
+async function fetchCoinsLlamaMaxChartPoints(id) {
+  const points = [];
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  const chunkSeconds = COINS_LLAMA_CHART_SPAN_DAYS * 24 * 60 * 60;
+  const firstStart = getCoinsLlamaMaxFallbackStart(id);
+
+  for (let chunkStart = firstStart, chunkCount = 0;
+    chunkStart <= nowSeconds && chunkCount < COINS_LLAMA_MAX_CHART_CHUNKS;
+    chunkStart += chunkSeconds, chunkCount += 1) {
+    const params = new URLSearchParams({
+      start: String(chunkStart),
+      span: String(COINS_LLAMA_CHART_SPAN_DAYS),
+      period: '1d',
+    });
+    points.push(...(await fetchCoinsLlamaChartPoints(id, params)));
+  }
+
+  return points;
+}
+
+function normalizeCoinsLlamaChartPoints(points) {
+  const pricesByTimestamp = new Map();
+  for (const point of points || []) {
+    const timestamp = Number(point?.timestamp);
+    const price = Number(point?.price);
+    if (!Number.isFinite(timestamp) || !Number.isFinite(price) || price <= 0) continue;
+    pricesByTimestamp.set(timestamp * 1000, price);
+  }
+  return Array.from(pricesByTimestamp.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([timestamp, price]) => [timestamp, price]);
+}
+
 async function fetchCoinsLlamaChartFallback(incomingUrl) {
   const id = normalizeUpstreamSegment(incomingUrl.searchParams.get('id'), 'lighter');
   const span = normalizeCoinGeckoDays(incomingUrl.searchParams.get('days'), '365');
-  const params = new URLSearchParams({
-    span: span === 'max' ? '365' : span,
-    period: '1d',
-  });
-  const data = await fetchJsonStrict(`${COINS_LLAMA_API_ROOT}/chart/coingecko:${id}?${params.toString()}`);
-  const points = data?.coins?.[`coingecko:${id}`]?.prices;
-  if (!Array.isArray(points) || !points.length) return null;
+  const points = span === 'max'
+    ? await fetchCoinsLlamaMaxChartPoints(id)
+    : await fetchCoinsLlamaChartPoints(id, new URLSearchParams({ span, period: '1d' }));
+  const prices = normalizeCoinsLlamaChartPoints(points);
+  if (!prices.length) return null;
   return {
-    prices: points
-      .map((point) => {
-        const timestamp = Number(point?.timestamp);
-        const price = Number(point?.price);
-        if (!Number.isFinite(timestamp) || !Number.isFinite(price) || price <= 0) return null;
-        return [timestamp * 1000, price];
-      })
-      .filter(Boolean),
+    prices,
     market_caps: [],
     total_volumes: [],
   };
@@ -262,8 +327,22 @@ export async function onRequest(context) {
 
   if (proxiedPath === '/coingecko/market_chart') {
     try {
+      const id = normalizeUpstreamSegment(incomingUrl.searchParams.get('id'), 'lighter');
+      const days = normalizeCoinGeckoDays(incomingUrl.searchParams.get('days'), '365');
+      const preferLlama = normalizeBooleanFlag(incomingUrl.searchParams.get('preferLlama'));
+      if (preferLlama) {
+        const cacheKey = `coinsllama:market_chart:${id}:${days}`;
+        const cached = getCachedWorkerJson(cacheKey, COINGECKO_MARKET_CHART_TTL_MS);
+        if (cached && cached.expiresAt > Date.now()) return jsonResponse(cached.data, 200);
+
+        const fallbackData = await fetchCoinsLlamaChartFallback(incomingUrl);
+        if (!fallbackData) throw new Error('Coins.Llama chart fallback returned no data');
+        setCachedWorkerJson(cacheKey, fallbackData, COINGECKO_MARKET_CHART_TTL_MS);
+        return jsonResponse(fallbackData, 200);
+      }
+
       const data = await fetchCachedJsonWithFallback(buildDirectProxyTarget(incomingUrl, proxiedPath), {
-        cacheKey: `coingecko:market_chart:${normalizeUpstreamSegment(incomingUrl.searchParams.get('id'), 'lighter')}:${normalizeCoinGeckoDays(incomingUrl.searchParams.get('days'), '365')}`,
+        cacheKey: `coingecko:market_chart:${id}:${days}`,
         ttlMs: COINGECKO_MARKET_CHART_TTL_MS,
         fallback: () => fetchCoinsLlamaChartFallback(incomingUrl),
       });

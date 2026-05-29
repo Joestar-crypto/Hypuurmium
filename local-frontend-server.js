@@ -5,7 +5,7 @@ const { URL } = require('url');
 
 const port = Number(process.env.FRONTEND_PORT || 8080);
 const siteRoot = __dirname;
-const tokenRoutes = new Set(['/', '/index.html', '/hype', '/hype/', '/lit', '/lit/', '/pump', '/pump/', '/sky', '/sky/', '/aave', '/aave/', '/edge', '/edge/', '/cars', '/cars/', '/aster', '/aster/', '/link', '/link/', '/uni', '/uni/', '/cake', '/cake/', '/lido', '/lido/', '/rhea', '/rhea/', '/railgun', '/railgun/', '/ethfi', '/ethfi/', '/metadao', '/metadao/', '/mega', '/mega/']);
+const tokenRoutes = new Set(['/', '/index.html', '/hype', '/hype/', '/lit', '/lit/', '/pump', '/pump/', '/sky', '/sky/', '/aave', '/aave/', '/edge', '/edge/', '/cars', '/cars/', '/aster', '/aster/', '/link', '/link/', '/uni', '/uni/', '/cake', '/cake/', '/lido', '/lido/', '/rhea', '/rhea/', '/railgun', '/railgun/', '/ethfi', '/ethfi/', '/metadao', '/metadao/', '/mega', '/mega/', '/ethereum', '/ethereum/', '/arbitrum', '/arbitrum/', '/solana', '/solana/', '/tron', '/tron/', '/bsc', '/bsc/', '/near', '/near/', '/limitless', '/limitless/', '/opinion', '/opinion/', '/bankr', '/bankr/', '/ore', '/ore/', '/aerodrome', '/aerodrome/', '/polygon', '/polygon/', '/maple', '/maple/', '/meteora', '/meteora/', '/pendle', '/pendle/', '/jito', '/jito/', '/jupiter', '/jupiter/', '/raydium', '/raydium/', '/fluid', '/fluid/', '/kamino', '/kamino/']);
 const fileRouteMap = new Map([
   ['/docs', 'docs.html'],
   ['/docs.html', 'docs.html'],
