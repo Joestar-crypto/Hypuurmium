@@ -5584,6 +5584,7 @@
             supportsIntradayCandles: true,
             storageScope: 'aave',
             minRollingDays: 14,
+            defaultRollingDays: 365,
             defillamaFeesCandidates: ['aave'],
             defillamaProtocolSlug: 'aave',
             coingeckoId: 'aave',
@@ -7421,11 +7422,16 @@
 
     applyHeadMetadata(ACTIVE_TOKEN);
 
+    function getTokenDefaultRollingDays(token) {
+        const configured = Number(token?.defaultRollingDays);
+        return Number.isFinite(configured) && configured >= 0 ? configured : 30;
+    }
+
     const CONFIG = {
         TOKEN: ACTIVE_TOKEN,
         SUPPLY: ACTIVE_TOKEN.supplyFallback,
         FDV_SUPPLY: ACTIVE_TOKEN.fdvSupplyFallback,
-        DEFAULT_ROLLING: 30,
+        DEFAULT_ROLLING: getTokenDefaultRollingDays(ACTIVE_TOKEN),
         BURN_TOGGLE_STORAGE_KEY: getTokenStorageKey(ACTIVE_TOKEN.storageScope, 'pe.include-burn'),
         HISTORICAL_BURN_STORAGE_KEY: getTokenStorageKey(ACTIVE_TOKEN.storageScope, 'pe.history-burn'),
         ALERTS_STORAGE_KEY: getTokenStorageKey(ACTIVE_TOKEN.storageScope, 'alerts'),
@@ -7466,6 +7472,7 @@
         CONFIG.ALERT_EMAIL_STORAGE_KEY = getTokenStorageKey(token.storageScope, 'alert-email');
         CONFIG.ALERT_COUNTED_STORAGE_KEY = getTokenStorageKey(token.storageScope, 'alert-counted');
         CONFIG.ZONES = cloneZoneConfig(token.zones);
+        CONFIG.DEFAULT_ROLLING = getTokenDefaultRollingDays(token);
         CONFIG.CANDLE_START = token.chartStart;
         CONFIG.DEFILLAMA_URL = token.defillamaFeesCandidates?.[0] ? buildDefiLlamaFeesUrl(token.defillamaFeesCandidates[0], token.defillamaFeesDataType || 'dailyRevenue') : '';
         CONFIG.DEFILLAMA_PROTOCOL_URL = token.defillamaProtocolSlug ? buildDefiLlamaProtocolUrl(token.defillamaProtocolSlug) : '';
@@ -7955,6 +7962,7 @@
                 rawData: this.rawData,
                 zoneConfig: cloneZoneConfig(this.zoneConfig),
                 includeBurnInPe: this.includeBurnInPe,
+                rollingDays: this.rollingDays,
                 activeFeesSlug: this.activeFeesSlug,
                 chartMode: this.chartMode,
                 chartWidthDays: this.chartWidthDays,
@@ -7971,6 +7979,7 @@
                 this.zoneConfig = this.normalizeZoneConfigMap(cloneZoneConfig(CONFIG.ZONES));
                 this.applyStaticZoneConfigOverride();
                 this.includeBurnInPe = this.token.supportsBurnHistory ? this.readBurnToggleState() : false;
+                this.rollingDays = getTokenDefaultRollingDays(targetToken);
                 this.historyMode = targetHistoryMode;
                 this.chartMode = 'pe';
                 this.chartWidthDays = this.readChartWidthState(this.token);
@@ -8006,6 +8015,7 @@
                 this.rawData = previousState.rawData;
                 this.zoneConfig = previousState.zoneConfig;
                 this.includeBurnInPe = previousState.includeBurnInPe;
+                this.rollingDays = previousState.rollingDays;
                 this.activeFeesSlug = previousState.activeFeesSlug;
                 this.chartMode = previousState.chartMode;
                 this.chartWidthDays = previousState.chartWidthDays;
@@ -8787,8 +8797,8 @@
             if (!allDates.length) return null;
 
             const feeValues = allDates.map((date) => Math.max(Number(feesByDate[date]) || 0, 0));
-            const configuredDays = Number(this.rollingDays);
-            const fallbackDays = Number(CONFIG.DEFAULT_ROLLING) || 30;
+            const fallbackDays = getTokenDefaultRollingDays(token);
+            const configuredDays = token.key === this.token?.key ? Number(this.rollingDays) : fallbackDays;
             const requestedDays = Number.isFinite(configuredDays) && configuredDays >= 0 ? configuredDays : fallbackDays;
             const effectiveDays = requestedDays === 0
                 ? feeValues.length
@@ -11927,6 +11937,7 @@
             };
 
             const buybackSharePct = annualRev > 0 ? 100 : 0;
+            const revenueWindowLabel = this.formatRollingRevenueWindowLabel(this.rollingDays);
             const livePrice = Math.max(currentPrice || 0, 0.01);
             const startSupply = Math.max(activeSupply, 1);
             const zoneMid = {
@@ -12055,7 +12066,7 @@
                 insights,
                 hoverRows,
                 peekRange,
-                note: `History uses rolling 30-day annualized revenue checkpoints. Base follows the recent median monthly change. Bear and Bull use the 35th and 65th percentile paths for year one, then drift back to that median. Buybacks assume ${buybackSharePct.toFixed(0)}% of revenue and burns execute no cheaper than current spot.`,
+                note: `History uses rolling ${revenueWindowLabel} annualized revenue checkpoints. Base follows the recent median monthly change. Bear and Bull use the 35th and 65th percentile paths for year one, then drift back to that median. Buybacks assume ${buybackSharePct.toFixed(0)}% of revenue and burns execute no cheaper than current spot.`,
             };
         }
 
@@ -12652,6 +12663,14 @@
         formatBuybackWindowLabel(days) {
             const map = { 1: '1D', 7: '1W', 14: '2W', 30: '1M', 365: '1Y' };
             return map[days] || `${days}D`;
+        }
+
+        formatRollingRevenueWindowLabel(days = this.rollingDays) {
+            const numericDays = Number(days);
+            if (!Number.isFinite(numericDays)) return '30-day';
+            if (numericDays === 0) return 'full-history';
+            const map = { 1: '1-day', 7: '7-day', 14: '14-day', 30: '30-day', 365: '1-year' };
+            return map[numericDays] || `${numericDays}-day`;
         }
 
         updateModeControls() {
