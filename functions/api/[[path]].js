@@ -20,6 +20,7 @@ const COINS_LLAMA_MAX_FALLBACK_START_DATES = {
   tron: '2017-09-13',
   solana: '2020-04-10',
   arbitrum: '2023-03-23',
+  aave: '2020-10-03',
   near: '2020-10-14',
   'limitless-3': '2024-10-12',
   opinion: '2025-10-23',

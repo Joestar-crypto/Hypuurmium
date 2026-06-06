@@ -5585,6 +5585,7 @@
             storageScope: 'aave',
             minRollingDays: 14,
             defaultRollingDays: 365,
+            dataCacheVersion: 'history-2021',
             defillamaFeesCandidates: ['aave'],
             defillamaProtocolSlug: 'aave',
             coingeckoId: 'aave',
@@ -5595,6 +5596,7 @@
             historyStartDate: '2021-01-01',
             marketChartDays: 'max',
             marketChartInterval: 'daily',
+            fastMarketChartDays: 'max',
             intradayMarketChartDays: 30,
             intradayMarketChartInterval: 'hourly',
             priceBackfillSource: {
@@ -8705,7 +8707,9 @@
 
         getTokenDataCacheKey(token = this.token, historyMode = this.historyMode) {
             if (!token) return 'unknown:default';
-            return `${token.key}:${token.key === 'sky' ? (historyMode === 'legacy' ? 'legacy' : 'native') : 'default'}`;
+            const mode = token.key === 'sky' ? (historyMode === 'legacy' ? 'legacy' : 'native') : 'default';
+            const version = token.dataCacheVersion ? `:${token.dataCacheVersion}` : '';
+            return `${token.key}:${mode}${version}`;
         }
 
         cloneRawDataPayload(data) {
