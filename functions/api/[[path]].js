@@ -9,6 +9,7 @@ const COINGECKO_API_ROOT = 'https://api.coingecko.com/api/v3';
 const COINS_LLAMA_API_ROOT = 'https://coins.llama.fi';
 const HYPERLIQUID_INFO_URL = 'https://api.hyperliquid.xyz/info';
 const HYPERLIQUID_EXCHANGE_URL = 'https://api.hyperliquid.xyz/exchange';
+const DEFILLAMA_FEES_TTL_MS = 10 * 60 * 1000;
 const DEFILLAMA_PROTOCOL_TTL_MS = 30 * 60 * 1000;
 const COINGECKO_SIMPLE_PRICE_TTL_MS = 90 * 1000;
 const COINGECKO_MARKET_CHART_TTL_MS = 30 * 60 * 1000;
@@ -55,6 +56,11 @@ function normalizeBooleanFlag(value) {
   return /^(1|true|yes|on)$/i.test(String(value || ''));
 }
 
+function normalizeDefiLlamaDataType(value) {
+  const normalized = String(value || '').trim();
+  return normalized || 'dailyRevenue';
+}
+
 function normalizeCoinGeckoDays(value, fallback = '365') {
   const normalized = String(value || '').trim().toLowerCase();
   if (!normalized) return fallback;
@@ -67,7 +73,7 @@ function normalizeCoinGeckoDays(value, fallback = '365') {
 function buildDirectProxyTarget(incomingUrl, proxiedPath) {
   if (proxiedPath === '/defillama/fees') {
     const slug = normalizeUpstreamSegment(incomingUrl.searchParams.get('slug'), 'hyperliquid');
-    const dataType = String(incomingUrl.searchParams.get('dataType') || 'dailyRevenue').trim() || 'dailyRevenue';
+    const dataType = normalizeDefiLlamaDataType(incomingUrl.searchParams.get('dataType'));
     const params = new URLSearchParams({ dataType });
     return `${DEFILLAMA_API_ROOT}/summary/fees/${slug}?${params.toString()}`;
   }
@@ -309,6 +315,23 @@ async function proxyRequest(targetUrl, context) {
 export async function onRequest(context) {
   const incomingUrl = new URL(context.request.url);
   const proxiedPath = incomingUrl.pathname.replace(/^\/api/i, '');
+
+  if (proxiedPath === '/defillama/fees') {
+    try {
+      const slug = normalizeUpstreamSegment(incomingUrl.searchParams.get('slug'), 'hyperliquid');
+      const dataType = normalizeDefiLlamaDataType(incomingUrl.searchParams.get('dataType'));
+      const data = await fetchCachedJsonWithFallback(buildDirectProxyTarget(incomingUrl, proxiedPath), {
+        cacheKey: `defillama:fees:${slug}:${dataType}`,
+        ttlMs: DEFILLAMA_FEES_TTL_MS,
+      });
+      return jsonResponse(data, 200);
+    } catch (error) {
+      return jsonResponse({
+        error: 'Failed to reach upstream revenue data provider from Cloudflare proxy.',
+        detail: error && error.message ? error.message : 'Unknown proxy error',
+      }, error?.status || 502);
+    }
+  }
 
   if (proxiedPath === '/coingecko/simple/price') {
     try {

@@ -55,10 +55,7 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    <script>(function(){ emailjs.init('dARa8ELkV3Wwlg-UN'); })();</script>
+    <script defer src="https://unpkg.com/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"></script>
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EHGTYLP8KM"></script>
@@ -13727,9 +13724,44 @@ const AutoBuy = (function() {
     let priceSource = 'spot'; // 'spot' | 'median'
     let selectedZone = null; // 'cheap' | 'fair' | 'expensive' | null
     let lastBackendError = '';
+    let ethersLoadPromise = null;
+    const ETHERS_SCRIPT_URL = 'https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js';
 
     // ── Helpers ──
     function $(id) { return document.getElementById(id); }
+
+    function ensureEthers() {
+        if (window.ethers && window.ethers.BrowserProvider) return Promise.resolve(window.ethers);
+        if (ethersLoadPromise) return ethersLoadPromise;
+
+        ethersLoadPromise = new Promise((resolve, reject) => {
+            const existing = document.getElementById('ethers-lib')
+                || document.querySelector(`script[src="${ETHERS_SCRIPT_URL}"]`);
+            const finish = () => {
+                if (window.ethers && window.ethers.BrowserProvider) resolve(window.ethers);
+                else reject(new Error('Wallet library failed to initialize'));
+            };
+
+            if (existing) {
+                existing.addEventListener('load', finish, { once: true });
+                existing.addEventListener('error', () => reject(new Error('Wallet library failed to load')), { once: true });
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.id = 'ethers-lib';
+            script.src = ETHERS_SCRIPT_URL;
+            script.async = true;
+            script.onload = finish;
+            script.onerror = () => reject(new Error('Wallet library failed to load'));
+            document.head.appendChild(script);
+        }).catch((error) => {
+            ethersLoadPromise = null;
+            throw error;
+        });
+
+        return ethersLoadPromise;
+    }
 
     function isAutoBuySupported() {
         return !!(CONFIG && CONFIG.TOKEN && CONFIG.TOKEN.supportsAutoBuy);
@@ -14745,8 +14777,8 @@ const AutoBuy = (function() {
             if (newAddr === userAddress) return; // same address, ignore
             console.log('[Wallet] Account changed:', userAddress, '→', newAddr);
             // Re-initialize with new address
-            provider = new ethers.BrowserProvider(window.ethereum);
-            signer = await provider.getSigner();
+            provider = null;
+            signer = null;
             userAddress = newAddr;
             // Reset strategy state for new user
             strategies = [];
@@ -14782,7 +14814,8 @@ const AutoBuy = (function() {
                 return;
             }
 
-            provider = new ethers.BrowserProvider(window.ethereum);
+            const ethersApi = await ensureEthers();
+            provider = new ethersApi.BrowserProvider(window.ethereum);
             await provider.send('eth_requestAccounts', []);
             signer = await provider.getSigner();
             userAddress = (await signer.getAddress()).toLowerCase();
@@ -14883,7 +14916,8 @@ const AutoBuy = (function() {
         if (!userAddress || !builderAddress) return null;
 
         const nonce = Date.now();
-        const checksumBuilder = ethers.getAddress(builderAddress).toLowerCase();
+        const ethersApi = await ensureEthers();
+        const checksumBuilder = ethersApi.getAddress(builderAddress).toLowerCase();
         const approveTypes = {
             'HyperliquidTransaction:ApproveBuilderFee': [
                 { name: 'hyperliquidChain', type: 'string' },
@@ -15002,7 +15036,8 @@ const AutoBuy = (function() {
 
             const nonce = Date.now();
             // Ensure agent address is EIP-55 checksummed
-            const checksumAgent = ethers.getAddress(agentAddress);
+            const ethersApi = await ensureEthers();
+            const checksumAgent = ethersApi.getAddress(agentAddress);
 
             const approveTypes = {
                 'HyperliquidTransaction:ApproveAgent': [
@@ -15385,7 +15420,8 @@ const AutoBuy = (function() {
                 showStep(1);
                 return;
             }
-            provider = new ethers.BrowserProvider(window.ethereum);
+            const ethersApi = await ensureEthers();
+            provider = new ethersApi.BrowserProvider(window.ethereum);
             await provider.send('eth_requestAccounts', []);
             signer = await provider.getSigner();
             userAddress = (await signer.getAddress()).toLowerCase();
@@ -15821,7 +15857,8 @@ const AutoBuy = (function() {
         const statusEl = $('ab-dash-status');
         try {
             const nonce = Date.now();
-            const checksumAgent = ethers.getAddress(agentAddress);
+            const ethersApi = await ensureEthers();
+            const checksumAgent = ethersApi.getAddress(agentAddress);
             const approveTypes = {
                 'HyperliquidTransaction:ApproveAgent': [
                     { name: 'hyperliquidChain', type: 'string' },
@@ -15879,7 +15916,8 @@ const AutoBuy = (function() {
                 const accs = await window.ethereum.request({ method: 'eth_accounts' });
                 if (accs && accs.length > 0) {
                     userAddress = accs[0].toLowerCase();
-                    provider = new ethers.BrowserProvider(window.ethereum);
+                    provider = null;
+                    signer = null;
                     setWalletBalancePending();
                     updateHeaderButtons();
                     refreshWalletBalances(userAddress).catch(() => {});
@@ -16294,7 +16332,7 @@ const AutoBuy = (function() {
                     // Hide onboarding tooltip for returning users
                     var _tip = document.getElementById('onboarding-tooltip');
                     if (_tip) _tip.style.display = 'none';
-                    provider = new ethers.BrowserProvider(window.ethereum);
+                    provider = null;
                     setWalletBalancePending();
                     updateHeaderButtons();
                     refreshWalletBalances().catch(() => {});

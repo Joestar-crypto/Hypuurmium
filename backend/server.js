@@ -54,6 +54,7 @@ const BINANCE_API_ROOT = 'https://api.binance.com/api/v3';
 const HYPERLIQUID_INFO_URL = 'https://api.hyperliquid.xyz/info';
 const HYPERLIQUID_EXCHANGE_URL = 'https://api.hyperliquid.xyz/exchange';
 const COINGECKO_COIN_TTL_MS = 6 * 60 * 60 * 1000;
+const DEFILLAMA_FEES_TTL_MS = 10 * 60 * 1000;
 const DEFILLAMA_PROTOCOL_TTL_MS = 30 * 60 * 1000;
 const COINGECKO_SIMPLE_PRICE_TTL_MS = 90 * 1000;
 const COINGECKO_MARKET_CHART_TTL_MS = 30 * 60 * 1000;
@@ -1208,7 +1209,13 @@ app.get('/api/pe', async (req, res) => {
 
 app.get('/api/defillama/fees', async (req, res) => {
   try {
-    const data = await fetchUpstreamJson(buildDefiLlamaFeesUrl(req.query || {}));
+    const slug = normalizeUpstreamSegment(req.query?.slug, 'hyperliquid');
+    const dataType = normalizeDefiLlamaDataType(req.query?.dataType);
+    const data = await fetchCachedUpstreamJson(buildDefiLlamaFeesUrl(req.query || {}), {
+      cacheKey: `defillama:fees:${slug}:${dataType}`,
+      ttlMs: DEFILLAMA_FEES_TTL_MS,
+      staleOnError: true,
+    });
     res.json(data);
   } catch (err) {
     console.error('[GET /api/defillama/fees]', err);
