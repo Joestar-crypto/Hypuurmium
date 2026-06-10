@@ -9,6 +9,9 @@ const tokenRoutes = new Set(['/', '/index.html', '/hype', '/hype/', '/lit', '/li
 const fileRouteMap = new Map([
   ['/docs', 'docs.html'],
   ['/docs.html', 'docs.html'],
+  ['/screener', 'screener.html'],
+  ['/screener/', 'screener.html'],
+  ['/screener.html', 'screener.html'],
   ['/admin', 'admin.html'],
   ['/admin.html', 'admin.html'],
 ]);

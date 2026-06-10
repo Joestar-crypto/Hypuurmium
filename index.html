@@ -711,6 +711,32 @@
             justify-content: flex-end;
             min-width: 0;
         }
+        .header-screener-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 0 15px;
+            border: 1px solid rgba(32, 209, 169, 0.34);
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(32, 209, 169, 0.12), rgba(232, 185, 35, 0.05));
+            color: var(--text-0);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.35px;
+            line-height: 1;
+            text-decoration: none;
+            white-space: nowrap;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+            transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        }
+        .header-screener-btn:hover {
+            border-color: rgba(32, 209, 169, 0.62);
+            background: linear-gradient(135deg, rgba(32, 209, 169, 0.2), rgba(232, 185, 35, 0.08));
+            box-shadow: 0 14px 30px rgba(32, 209, 169, 0.14);
+            transform: translateY(-1px);
+        }
         .header-wallet {
             appearance: none;
             display: none;
@@ -4027,6 +4053,11 @@
             .header-wallet {
                 position: static;
             }
+            .header-screener-btn {
+                min-height: 36px;
+                padding: 0 13px;
+                font-size: 11px;
+            }
             .forecast-view { padding: 12px; overflow: auto; }
             .forecast-chart-grid { grid-template-columns: 1fr; }
             .forecast-chart-wrap { height: 240px; }
@@ -4075,6 +4106,11 @@
             .header-wallet {
                 position: static;
                 padding: 8px 12px;
+            }
+            .header-screener-btn {
+                min-height: 34px;
+                padding: 0 11px;
+                font-size: 10px;
             }
             .header-wallet .wallet-trigger-main { max-width: 108px; font-size: 10px; }
             .header-wallet .wallet-trigger-sub { max-width: 108px; }
@@ -4267,6 +4303,7 @@
                 <div class="onboarding-tooltip" id="onboarding-tooltip" style="display:none;">
                     <span class="onboarding-arrow">→</span>Create an automated buy or sell strategy
                 </div>
+                <a class="header-screener-btn" href="screener.html" title="Open token screener">Screener</a>
                 <button class="autobuy-btn" id="connect-wallet-btn" onclick="AutoBuy.connectFromHeader()" style="display:inline-block;">Connect Wallet</button>
                 <button class="autobuy-btn" id="setup-strategy-btn" onclick="AutoBuy.open()" style="display:none;">Set Up Strategy</button>
                 <button class="ab-strategy-btn" id="add-strategy-btn" onclick="AutoBuy.newStrategy()" style="display:none;">+ Add Strategy</button>
@@ -4360,9 +4397,9 @@
                     </div>
 
                     <div class="ab-pe-ref" id="ab-pe-ref">
-                        <span class="ab-zone cheap" onclick="AutoBuy.useZone('cheap')">Cheap &lt;8x</span>
-                        <span class="ab-zone fair" onclick="AutoBuy.useZone('fair')">Fair 12-14x</span>
-                        <span class="ab-zone expensive" onclick="AutoBuy.useZone('expensive')">Expensive &gt;20x</span>
+                        <span class="ab-zone cheap" onclick="AutoBuy.useZone('cheap')">Cheap 1-10x</span>
+                        <span class="ab-zone fair" onclick="AutoBuy.useZone('fair')">Fair 11-20x</span>
+                        <span class="ab-zone expensive" onclick="AutoBuy.useZone('expensive')">Expensive 21-50x</span>
                         <span class="ab-zone current" id="ab-current-pe">Current: —</span>
                     </div>
                     <div class="ab-form">
@@ -4959,9 +4996,9 @@
             </div>
             <div class="controls-right" style="position:relative;">
                 <div class="zone-legend">
-                    <div class="zone-item"><div class="zone-dot cheap"></div> Cheap 6-8x</div>
-                    <div class="zone-item"><div class="zone-dot fair"></div> Fair 12-14x</div>
-                    <div class="zone-item"><div class="zone-dot expensive"></div> Expensive 20-22x</div>
+                    <div class="zone-item"><div class="zone-dot cheap"></div> Cheap 1-10x</div>
+                    <div class="zone-item"><div class="zone-dot fair"></div> Fair 11-20x</div>
+                    <div class="zone-item"><div class="zone-dot expensive"></div> Expensive 21-50x</div>
                     <div class="zone-item zone-item--toggle" id="burn-zone-item">
                         <div style="position:relative;display:inline-flex;" onmouseenter="document.getElementById('burn-legend-tooltip').style.display='block'" onmouseleave="document.getElementById('burn-legend-tooltip').style.display='none'">
                             <button class="burn-legend-toggle" id="burn-legend-toggle" type="button" aria-pressed="false" aria-describedby="burn-legend-tooltip">
@@ -5098,6 +5135,7 @@
             </div>
             <span id="footer-data-sources">Data: <a href="https://defillama.com/protocol/hyperliquid" target="_blank">DefiLlama</a> + <a href="https://app.hyperliquid.xyz" target="_blank">Hyperliquid API</a> · <a href="docs.html" style="color:var(--accent);">Docs</a></span>
             <span id="footer-rolling" style="display:none;">30D</span>
+            <a href="screener.html" style="color:var(--accent);">Screener</a>
             <div class="footer-theme">
                 <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme">
                     <span class="theme-icon theme-icon-moon" aria-hidden="true">
@@ -5174,8 +5212,97 @@
         return backendApiUrl ? `${backendApiUrl}${path}` : fallbackUrl;
     }
 
+    function cleanApiPathSegment(value, fallback = '') {
+        const normalized = String(value || '').trim();
+        return normalized ? encodeURIComponent(normalized) : fallback;
+    }
+
+    function resolveDirectProxyFallbackUrl(url) {
+        if (!isLocalRuntime()) return '';
+        let parsed;
+        try {
+            parsed = new URL(url, location.href);
+        } catch (error) {
+            return '';
+        }
+
+        const apiIndex = parsed.pathname.toLowerCase().lastIndexOf('/api/');
+        if (apiIndex < 0) return '';
+
+        const proxiedPath = parsed.pathname.slice(apiIndex + 4);
+        const params = parsed.searchParams;
+
+        if (proxiedPath === '/defillama/fees') {
+            const slug = cleanApiPathSegment(params.get('slug'), 'hyperliquid');
+            const dataType = encodeURIComponent(String(params.get('dataType') || 'dailyRevenue'));
+            return `https://api.llama.fi/summary/fees/${slug}?dataType=${dataType}`;
+        }
+
+        if (proxiedPath === '/defillama/protocol') {
+            const slug = cleanApiPathSegment(params.get('slug'), 'hyperliquid');
+            return `https://api.llama.fi/protocol/${slug}`;
+        }
+
+        if (proxiedPath === '/coingecko/coin') {
+            const id = cleanApiPathSegment(params.get('id'));
+            return id ? `https://api.coingecko.com/api/v3/coins/${id}` : '';
+        }
+
+        if (proxiedPath === '/coingecko/simple/price') {
+            const search = new URLSearchParams({
+                ids: params.get('ids') || '',
+                vs_currencies: params.get('vs_currencies') || 'usd',
+                include_market_cap: params.get('include_market_cap') || 'true',
+                include_24hr_change: params.get('include_24hr_change') || 'true',
+            });
+            if (!search.get('ids')) return '';
+            return `https://api.coingecko.com/api/v3/simple/price?${search.toString()}`;
+        }
+
+        if (proxiedPath === '/coingecko/market_chart') {
+            const id = cleanApiPathSegment(params.get('id'));
+            if (!id) return '';
+            const search = new URLSearchParams({
+                vs_currency: params.get('vs_currency') || 'usd',
+                days: params.get('days') || '365',
+            });
+            if (params.get('interval')) search.set('interval', params.get('interval'));
+            return `https://api.coingecko.com/api/v3/coins/${id}/market_chart?${search.toString()}`;
+        }
+
+        if (proxiedPath === '/binance/klines') {
+            const search = new URLSearchParams({
+                symbol: params.get('symbol') || '',
+                interval: params.get('interval') || '1d',
+                limit: params.get('limit') || '1000',
+            });
+            if (!search.get('symbol')) return '';
+            if (params.get('startTime')) search.set('startTime', params.get('startTime'));
+            if (params.get('endTime')) search.set('endTime', params.get('endTime'));
+            return `https://api.binance.com/api/v3/klines?${search.toString()}`;
+        }
+
+        if (proxiedPath === '/hl-info') return 'https://api.hyperliquid.xyz/info';
+        if (proxiedPath === '/hl-exchange') return 'https://api.hyperliquid.xyz/exchange';
+
+        return '';
+    }
+
     function cloneZoneConfig(zones) {
         return JSON.parse(JSON.stringify(zones || {}));
+    }
+
+    const STANDARD_PE_ZONES = {
+        mc: { cheap: [1, 10], fair: [11, 20], expensive: [21, 50] },
+        fdv: { cheap: [1, 10], fair: [11, 20], expensive: [21, 50] },
+    };
+
+    function getStandardPeZones(metricKey = 'mc') {
+        return cloneZoneConfig(STANDARD_PE_ZONES[metricKey] || STANDARD_PE_ZONES.mc);
+    }
+
+    function getStandardPeZoneConfig() {
+        return cloneZoneConfig(STANDARD_PE_ZONES);
     }
 
     function buildDefiLlamaFeesUrl(slug, dataType = 'dailyRevenue') {
@@ -7437,7 +7564,7 @@
         ALERT_EMAIL_STORAGE_KEY: getTokenStorageKey(ACTIVE_TOKEN.storageScope, 'alert-email'),
         ALERT_COUNTED_STORAGE_KEY: getTokenStorageKey(ACTIVE_TOKEN.storageScope, 'alert-counted'),
         BACKEND_API_URL: resolveBackendApiUrl(),
-        ZONES: cloneZoneConfig(ACTIVE_TOKEN.zones),
+        ZONES: getStandardPeZoneConfig(),
         CANDLE_START: ACTIVE_TOKEN.chartStart,
         DEFILLAMA_URL: ACTIVE_TOKEN.defillamaFeesCandidates?.[0] ? buildDefiLlamaFeesUrl(ACTIVE_TOKEN.defillamaFeesCandidates[0], ACTIVE_TOKEN.defillamaFeesDataType || 'dailyRevenue') : '',
         DEFILLAMA_PROTOCOL_URL: ACTIVE_TOKEN.defillamaProtocolSlug ? buildDefiLlamaProtocolUrl(ACTIVE_TOKEN.defillamaProtocolSlug) : '',
@@ -7470,7 +7597,7 @@
         CONFIG.ALERTS_STORAGE_KEY = getTokenStorageKey(token.storageScope, 'alerts');
         CONFIG.ALERT_EMAIL_STORAGE_KEY = getTokenStorageKey(token.storageScope, 'alert-email');
         CONFIG.ALERT_COUNTED_STORAGE_KEY = getTokenStorageKey(token.storageScope, 'alert-counted');
-        CONFIG.ZONES = cloneZoneConfig(token.zones);
+        CONFIG.ZONES = getStandardPeZoneConfig();
         CONFIG.DEFAULT_ROLLING = getTokenDefaultRollingDays(token);
         CONFIG.CANDLE_START = token.chartStart;
         CONFIG.DEFILLAMA_URL = token.defillamaFeesCandidates?.[0] ? buildDefiLlamaFeesUrl(token.defillamaFeesCandidates[0], token.defillamaFeesDataType || 'dailyRevenue') : '';
@@ -8034,31 +8161,19 @@
         }
 
         getZoneConfig(key = (this.useFDV ? 'fdv' : 'mc')) {
-            const candidate = (this.zoneConfig && this.zoneConfig[key]) || CONFIG.ZONES[key];
-            if (this.token?.key === 'cars' || this.token?.preserveZoneWidths) return candidate;
-            return this.normalizeEqualZoneWidths(candidate) || candidate;
+            return getStandardPeZones(key);
         }
 
         applyStaticZoneConfigOverride() {
-            if (this.token?.key === 'cars') {
-                this.zoneConfig = cloneZoneConfig(CONFIG.ZONES);
-            }
+            this.zoneConfig = getStandardPeZoneConfig();
         }
 
         normalizeZoneConfigMap(zonesByMetric) {
-            const nextZones = cloneZoneConfig(zonesByMetric || {});
-            ['mc', 'fdv'].forEach((metricKey) => {
-                if (this.token?.key === 'cars' || this.token?.preserveZoneWidths) return;
-                const candidate = nextZones?.[metricKey];
-                const normalized = this.normalizeEqualZoneWidths(candidate);
-                if (normalized) nextZones[metricKey] = normalized;
-            });
-            return nextZones;
+            return getStandardPeZoneConfig();
         }
 
         isDynamicZoneEnabled(metricKey) {
-            if (typeof this.token.dynamicZones === 'boolean') return this.token.dynamicZones;
-            return !!(this.token.dynamicZones && this.token.dynamicZones[metricKey]);
+            return false;
         }
 
         getDynamicZoneMinPoints() {
@@ -8614,9 +8729,18 @@
         }
 
         async fetchJsonStrict(url, label) {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`${label}: ${response.status}`);
-            return response.json();
+            const fallbackUrl = resolveDirectProxyFallbackUrl(url);
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`${label}: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                if (!fallbackUrl || fallbackUrl === url) throw error;
+                console.warn(`[${this.token.symbol}] ${label} proxy unavailable, retrying direct source`, error);
+                const response = await fetch(fallbackUrl);
+                if (!response.ok) throw new Error(`${label}: ${response.status}`);
+                return response.json();
+            }
         }
 
         async fetchJsonOrNull(url, label) {
@@ -8625,6 +8749,29 @@
             } catch (error) {
                 console.warn(`[${this.token.symbol}] ${label} unavailable`, error);
                 return null;
+            }
+        }
+
+        async fetchHyperliquidInfo(payload) {
+            const body = JSON.stringify(payload || {});
+            const request = async (url) => {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body,
+                });
+                if (!response.ok) throw new Error(`Hyperliquid API: ${response.status}`);
+                return response.json();
+            };
+
+            const url = CONFIG.HL_API_URL || 'https://api.hyperliquid.xyz/info';
+            const fallbackUrl = resolveDirectProxyFallbackUrl(url);
+            try {
+                return await request(url);
+            } catch (error) {
+                if (!fallbackUrl || fallbackUrl === url) throw error;
+                console.warn(`[${this.token.symbol}] Hyperliquid proxy unavailable, retrying direct source`, error);
+                return request(fallbackUrl);
             }
         }
 
@@ -8863,27 +9010,7 @@
         }
 
         getTokenMenuZones(token, rawData, metricKey = (this.useFDV ? 'fdv' : 'mc')) {
-            if (!token) return this.getZoneConfig(metricKey);
-            const zonesByMetric = cloneZoneConfig(token.zones || CONFIG.ZONES || {});
-            let zones = zonesByMetric?.[metricKey] || CONFIG.ZONES?.[metricKey] || this.getZoneConfig(metricKey);
-            if (token.key !== 'cars' && !token.preserveZoneWidths) {
-                zones = this.normalizeEqualZoneWidths(zones) || zones;
-            }
-
-            const previousToken = this.token;
-            try {
-                this.token = token;
-                if (rawData && this.isDynamicZoneEnabled(metricKey)) {
-                    const context = this.buildTokenMenuPeContext(token, rawData, metricKey);
-                    zones = this.deriveZonesFromSeries(context?.series || [], zones) || zones;
-                }
-            } catch (error) {
-                return zones;
-            } finally {
-                this.token = previousToken;
-            }
-
-            return zones;
+            return getStandardPeZones(metricKey);
         }
 
         getTokenMenuPeSnapshot(token, rawData, metricKey = (this.useFDV ? 'fdv' : 'mc')) {
@@ -9313,6 +9440,12 @@
             return dailyValues;
         }
 
+        extractDefiLlamaChart(data) {
+            if (Array.isArray(data?.totalDataChart) && data.totalDataChart.length) return data.totalDataChart;
+            if (Array.isArray(data?.totalDataChartBreakdown) && data.totalDataChartBreakdown.length) return data.totalDataChartBreakdown;
+            return Array.isArray(data) ? data : [];
+        }
+
         buildFeesByDateFromChart(chart = []) {
             const feesByDate = {};
             for (const [ts, val] of (chart || [])) {
@@ -9485,8 +9618,8 @@
                 this.fetchJsonOrNull(buildDefiLlamaFeesUrl('makerdao'), 'DefiLlama fees (makerdao)'),
             ]);
 
-            const skyFeesByDate = this.buildFeesByDateFromChart(skyFeesRes?.totalDataChart || []);
-            const makerFeesByDate = this.buildFeesByDateFromChart(makerFeesRes?.totalDataChart || []);
+            const skyFeesByDate = this.buildFeesByDateFromChart(this.extractDefiLlamaChart(skyFeesRes));
+            const makerFeesByDate = this.buildFeesByDateFromChart(this.extractDefiLlamaChart(makerFeesRes));
 
             if (this.historyMode === 'legacy' && Object.keys(makerFeesByDate).length) {
                 return {
@@ -9510,7 +9643,7 @@
             const fallbackPayload = await this.fetchBestFeesPayload();
             return {
                 activeSlug: fallbackPayload.slug,
-                feesByDate: this.prepareFeesByDate(this.buildFeesByDateFromChart(fallbackPayload.data?.totalDataChart || [])),
+                feesByDate: this.prepareFeesByDate(this.buildFeesByDateFromChart(this.extractDefiLlamaChart(fallbackPayload.data))),
             };
         }
 
@@ -9535,7 +9668,7 @@
             const tvlByDate = this.buildDailyNumericSeries(usdmMarketChartRes?.market_caps || []);
             tvlByDate[currentDate] = currentUsdmTvl;
 
-            const networkFeesByDate = this.buildFeesByDateFromChart(networkFeesRes?.totalDataChart || []);
+            const networkFeesByDate = this.buildFeesByDateFromChart(this.extractDefiLlamaChart(networkFeesRes));
             const startDate = this.token?.revenueStartDate || this.token?.tgeDate || currentDate;
             const dateKeys = this.buildDailyDateKeys(startDate, currentDate);
             const feesByDate = {};
@@ -9565,7 +9698,7 @@
 
             for (const candidate of (candidates || [])) {
                 if (!candidate?.slug) continue;
-                const sourceByDate = this.buildFeesByDateFromChart(candidate.data?.totalDataChart || []);
+                const sourceByDate = this.buildFeesByDateFromChart(candidate.chart || this.extractDefiLlamaChart(candidate.data));
                 const sourceDates = Object.keys(sourceByDate).sort();
                 if (!sourceDates.length) continue;
                 slugs.push(candidate.slug);
@@ -9754,7 +9887,7 @@
             const candidates = await Promise.all((this.token.defillamaFeesCandidates || []).map(async (slug) => {
                 try {
                     const data = await this.fetchJsonStrict(buildDefiLlamaFeesUrl(slug, feeDataType), `DefiLlama fees (${slug})`);
-                    const chart = Array.isArray(data?.totalDataChart) ? data.totalDataChart : [];
+                    const chart = this.extractDefiLlamaChart(data);
                     const lastPoint = chart.length ? chart[chart.length - 1] : null;
                     console.log(`[${this.token.symbol}] DefiLlama fees probe`, {
                         slug,
@@ -9764,17 +9897,25 @@
                     });
                     return {
                         slug,
-                        data,
+                        data: { ...(data || {}), totalDataChart: chart },
+                        chart,
+                        feesByDate: this.prepareFeesByDate(this.buildFeesByDateFromChart(chart)),
                         count: chart.length,
                         lastTs: lastPoint ? Number(lastPoint[0]) : 0,
                     };
                 } catch (error) {
                     console.warn(`[${this.token.symbol}] DefiLlama fees probe failed for ${slug}`, error);
-                    return null;
+                    return { slug, error };
                 }
             }));
 
             const validCandidates = candidates.filter((candidate) => candidate && candidate.count > 0);
+            const failedCandidates = candidates.filter((candidate) => candidate && candidate.error);
+            const emptyCandidates = candidates.filter((candidate) => candidate && !candidate.error && !candidate.count);
+            if (!validCandidates.length && failedCandidates.length && !emptyCandidates.length) {
+                const firstError = failedCandidates[0].error;
+                throw new Error(`DefiLlama fees unavailable: ${firstError?.message || 'request failed'}`);
+            }
             if (!validCandidates.length) throw new Error('No fee data in DefiLlama response');
 
             if (this.token.defillamaFeesAggregation === 'sum') {
@@ -9796,30 +9937,19 @@
             this.activeFeesSlug = feesPayload.slug;
 
             const [candlesRes, candles4hRes, tokenDetails, protocolRes] = await Promise.all([
-                fetch(CONFIG.HL_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        type: 'candleSnapshot',
-                        req: { coin: this.token.hyperliquidCoin, interval: '1d', startTime: fetchConfig.candleStart }
-                    })
-                }).then(r => {
-                    if (!r.ok) throw new Error(`Hyperliquid API: ${r.status}`);
-                    return r.json();
+                this.fetchHyperliquidInfo({
+                    type: 'candleSnapshot',
+                    req: { coin: this.token.hyperliquidCoin, interval: '1d', startTime: fetchConfig.candleStart }
                 }),
-                fetchConfig.skipIntradayCandles ? Promise.resolve([]) : fetch(CONFIG.HL_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        type: 'candleSnapshot',
-                        req: { coin: this.token.hyperliquidCoin, interval: '1h', startTime: fetchConfig.candleStart }
-                    })
-                }).then(r => r.json()).catch(() => []),
-                fetchConfig.skipTokenDetails ? Promise.resolve(null) : this.withSoftTimeout(fetch(CONFIG.HL_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'tokenDetails', tokenId: fetchConfig.tokenId })
-                }).then(r => r.json()), fetchConfig.optionalTimeoutMs, 'Hyperliquid token details'),
+                fetchConfig.skipIntradayCandles ? Promise.resolve([]) : this.fetchHyperliquidInfo({
+                    type: 'candleSnapshot',
+                    req: { coin: this.token.hyperliquidCoin, interval: '1h', startTime: fetchConfig.candleStart }
+                }).catch(() => []),
+                fetchConfig.skipTokenDetails ? Promise.resolve(null) : this.withSoftTimeout(
+                    this.fetchHyperliquidInfo({ type: 'tokenDetails', tokenId: fetchConfig.tokenId }),
+                    fetchConfig.optionalTimeoutMs,
+                    'Hyperliquid token details'
+                ),
                 fetchConfig.defillamaProtocolUrl
                     ? this.withSoftTimeout(this.fetchJsonOrNull(fetchConfig.defillamaProtocolUrl, 'DefiLlama protocol'), fetchConfig.optionalTimeoutMs, 'DefiLlama protocol')
                     : Promise.resolve(null)
@@ -9843,10 +9973,7 @@
                 }
             }
 
-            const feesByDate = {};
-            for (const [ts, val] of feesPayload.data.totalDataChart) {
-                feesByDate[this.tsToDate(ts)] = val;
-            }
+            const feesByDate = feesPayload.feesByDate || this.buildFeesByDateFromChart(this.extractDefiLlamaChart(feesPayload.data));
 
             const candlesByDate = {};
             if (!candlesRes || !candlesRes.length) {
@@ -9945,7 +10072,7 @@
 
             const feesByDate = feesSource?.feesByDate
                 ? feesSource.feesByDate
-                : this.prepareFeesByDate(this.buildFeesByDateFromChart(feesSource?.data?.totalDataChart || []));
+                : this.prepareFeesByDate(this.buildFeesByDateFromChart(this.extractDefiLlamaChart(feesSource?.data)));
             this.activeFeesSlug = feesSource?.activeSlug || feesSource?.slug || this.token.revenueSource || null;
 
             let candlesByDate = this.buildDailyCandlesFromSeries(marketChartRes?.prices || []);
@@ -10053,11 +10180,7 @@
                 let liveMarketCap = Number(syncRawData.currentMarketCap) || null;
 
                 if (syncToken.key === 'hype') {
-                    const priceData = await fetch(CONFIG.HL_API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ type: 'allMids' }),
-                    }).then(r => r.json()).catch(() => null);
+                    const priceData = await this.fetchHyperliquidInfo({ type: 'allMids' }).catch(() => null);
                     livePrice = priceData ? parseFloat(priceData[syncToken.hyperliquidCoin]) : null;
                     if (livePrice && syncRawData.circulatingSupply) {
                         liveMarketCap = livePrice * syncRawData.circulatingSupply;
@@ -13919,7 +14042,7 @@ const AutoBuy = (function() {
     function useZone(zone) {
         // Set trigger value based on zone
         const trigger = $('ab-pe-trigger');
-        const zones = { cheap: 8, fair: 13, expensive: 20 };
+        const zones = { cheap: 10, fair: 15, expensive: 21 };
         if (trigger && zones[zone] !== undefined) {
             trigger.value = zones[zone];
         }
@@ -13935,7 +14058,7 @@ const AutoBuy = (function() {
     function updateZoneBadge() {
         const badge = $('ab-zone-badge');
         if (!badge) return;
-        const zoneNames = { cheap: 'Cheap <8x', fair: 'Fair 12-14x', expensive: 'Expensive >20x' };
+        const zoneNames = { cheap: 'Cheap 1-10x', fair: 'Fair 11-20x', expensive: 'Expensive 21-50x' };
         const zoneColors = { cheap: 'var(--bull)', fair: 'var(--accent)', expensive: 'var(--bear)' };
         if (selectedZone && zoneNames[selectedZone]) {
             badge.textContent = zoneNames[selectedZone];
@@ -13951,7 +14074,7 @@ const AutoBuy = (function() {
 
     function updateSideLabels() {
         const peLabel = $('ab-pe-label');
-        const zoneNames = { cheap: 'Cheap <8x', fair: 'Fair 12-14x', expensive: 'Expensive >20x' };
+        const zoneNames = { cheap: 'Cheap 1-10x', fair: 'Fair 11-20x', expensive: 'Expensive 21-50x' };
         if (peLabel) {
             if (alertMetric === 'price') {
                 peLabel.textContent = side === 'buy'
@@ -14696,7 +14819,7 @@ const AutoBuy = (function() {
         const triggerDesc = isBuy
             ? (isPrice ? 'Buy HYPE when price drops below' : 'Buy HYPE when ' + metricLabel + ' drops below')
             : (isPrice ? 'Sell HYPE when price rises above' : 'Sell HYPE when ' + metricLabel + ' rises above');
-        const zoneLabels = { cheap: 'Cheap &lt;8x', fair: 'Fair 12-14x', expensive: 'Expensive &gt;20x' };
+        const zoneLabels = { cheap: 'Cheap 1-10x', fair: 'Fair 11-20x', expensive: 'Expensive 21-50x' };
         const triggerVal = isPrice
             ? '$' + c.pe_trigger
             : (selectedZone ? zoneLabels[selectedZone] + ' (' + c.pe_trigger + 'x)' : c.pe_trigger + 'x');

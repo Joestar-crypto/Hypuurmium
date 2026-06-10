@@ -1614,6 +1614,10 @@ app.get(['/docs', '/docs.html'], (_req, res) => {
   sendSiteFile(res, 'docs.html');
 });
 
+app.get(['/screener', '/screener/', '/screener.html'], (_req, res) => {
+  sendSiteFile(res, 'screener.html');
+});
+
 app.get(['/admin', '/admin.html'], (_req, res) => {
   sendSiteFile(res, 'admin.html');
 });

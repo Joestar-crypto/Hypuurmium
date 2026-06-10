@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hypurrmium | Token Screener</title>
+  <link rel="icon" href="Hypurrmium.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-0: #070e0a;
+      --bg-1: #0c1812;
+      --bg-2: #112018;
+      --bg-3: #172a1f;
+      --border: #1f3829;
+      --text-0: #ede9dc;
+      --text-1: #9ab3a3;
+      --text-2: #617566;
+      --accent: #e8b923;
+      --accent-2: #20d1a9;
+      --bull: #0ecb81;
+      --bear: #f6465d;
+      --warn: #f0b90b;
+      --panel: rgba(12, 24, 18, 0.94);
+      --panel-2: rgba(17, 32, 24, 0.86);
+      --shadow: 0 22px 70px rgba(0, 0, 0, 0.42);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg-0);
+      color: var(--text-0);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+      letter-spacing: 0;
+    }
+
+    body {
+      background-image:
+        radial-gradient(ellipse at 18% 0%, rgba(13, 82, 48, 0.18), transparent 58%),
+        radial-gradient(ellipse at 82% 12%, rgba(232, 185, 35, 0.09), transparent 44%),
+        linear-gradient(180deg, #07100b 0%, #060b08 100%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .shell {
+      width: min(1480px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 18px 0 26px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .brand img {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(232, 185, 35, 0.22);
+    }
+
+    .brand-word {
+      font-weight: 700;
+      font-size: 18px;
+      white-space: nowrap;
+    }
+
+    .brand-word span:last-child { font-weight: 300; color: var(--text-1); }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav a, .refresh-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 0 12px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: rgba(17, 32, 24, 0.86);
+      color: var(--text-1);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .refresh-btn { color: var(--text-0); }
+    .refresh-btn:disabled { opacity: 0.55; cursor: progress; }
+
+    .page-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 3.8vw, 48px);
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    .head-sub {
+      margin-top: 8px;
+      color: var(--text-1);
+      font-size: 13px;
+      max-width: 760px;
+    }
+
+    .score-model {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(100px, 1fr));
+      gap: 8px;
+      width: min(540px, 100%);
+    }
+
+    .model-chip {
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      border-radius: 7px;
+      padding: 9px 10px;
+    }
+
+    .model-chip b {
+      display: block;
+      font-size: 17px;
+      line-height: 1.1;
+      color: var(--accent);
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .model-chip span {
+      color: var(--text-2);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .summary-card, .top-card, .toolbar, .table-wrap {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      border-radius: 8px;
+    }
+
+    .summary-card {
+      padding: 14px;
+      min-height: 88px;
+    }
+
+    .summary-label {
+      color: var(--text-2);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .summary-value {
+      margin-top: 8px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-0);
+    }
+
+    .summary-note { margin-top: 6px; color: var(--text-2); font-size: 12px; }
+
+    .top-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .top-card {
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .top-token {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .token-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg-2);
+      border: 1px solid rgba(154, 179, 163, 0.22);
+      flex: 0 0 auto;
+      object-fit: cover;
+    }
+
+    .token-name {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .token-symbol {
+      display: block;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .token-protocol {
+      display: block;
+      color: var(--text-2);
+      font-size: 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .top-score {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 34px;
+      line-height: 1;
+      color: var(--accent);
+    }
+
+    .top-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      color: var(--text-1);
+      font-size: 12px;
+    }
+
+    .top-metrics b { display: block; color: var(--text-0); font-family: "JetBrains Mono", monospace; font-size: 13px; }
+    .top-metrics b.good, .summary-value.good { color: var(--bull); }
+    .top-metrics b.warn, .summary-value.warn { color: var(--warn); }
+    .top-metrics b.bad, .summary-value.bad { color: var(--bear); }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(200px, 1fr) auto auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      margin-bottom: 12px;
+    }
+
+    .search-box, .select-box {
+      min-height: 38px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: #08110c;
+      color: var(--text-0);
+      padding: 0 12px;
+      outline: none;
+    }
+
+    .search-box:focus, .select-box:focus { border-color: rgba(232, 185, 35, 0.56); }
+
+    .status-line {
+      color: var(--text-2);
+      font-size: 12px;
+      text-align: right;
+      min-width: 180px;
+    }
+
+    .progress {
+      height: 4px;
+      background: rgba(154, 179, 163, 0.12);
+      border-radius: 999px;
+      overflow: hidden;
+      margin: -4px 0 12px;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 0.22s ease;
+    }
+
+    .table-wrap { overflow: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1180px;
+    }
+
+    th, td {
+      padding: 12px 11px;
+      border-bottom: 1px solid rgba(31, 56, 41, 0.82);
+      text-align: left;
+      vertical-align: middle;
+      font-size: 13px;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #0c1812;
+      color: var(--text-2);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    th button {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      text-transform: inherit;
+    }
+
+    tbody tr:hover { background: rgba(232, 185, 35, 0.035); }
+
+    .rank { color: var(--text-2); font-family: "JetBrains Mono", monospace; width: 42px; }
+    .score { font-family: "JetBrains Mono", monospace; color: var(--accent); font-weight: 800; font-size: 16px; }
+    .mono { font-family: "JetBrains Mono", monospace; }
+    .muted { color: var(--text-2); }
+    .right { text-align: right; }
+
+    .row-token {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 190px;
+    }
+
+    .category-chip, .tone-chip, .link-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(154, 179, 163, 0.22);
+      background: rgba(154, 179, 163, 0.08);
+      color: var(--text-1);
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .tone-chip.good { color: var(--bull); border-color: rgba(14, 203, 129, 0.28); background: rgba(14, 203, 129, 0.09); }
+    .tone-chip.warn { color: var(--warn); border-color: rgba(240, 185, 11, 0.28); background: rgba(240, 185, 11, 0.09); }
+    .tone-chip.bad { color: var(--bear); border-color: rgba(246, 70, 93, 0.26); background: rgba(246, 70, 93, 0.08); }
+    .tone-chip.pe, .tone-chip.multiple { min-width: 58px; font-family: "JetBrains Mono", monospace; }
+    .link-chip.strong { color: var(--bull); }
+    .link-chip.medium { color: var(--warn); }
+    .link-chip.weak { color: var(--text-2); }
+
+    .bar-cell {
+      min-width: 126px;
+    }
+
+    .mini-bar {
+      height: 5px;
+      width: 100%;
+      border-radius: 999px;
+      background: rgba(154, 179, 163, 0.12);
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .mini-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--accent-2);
+    }
+
+    .empty-state {
+      padding: 32px;
+      color: var(--text-2);
+      text-align: center;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      color: var(--text-2);
+      font-size: 12px;
+    }
+
+    .footer a { color: var(--accent); }
+
+    @media (max-width: 1060px) {
+      .page-head { grid-template-columns: 1fr; align-items: start; }
+      .summary-grid, .top-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .score-model { width: 100%; }
+    }
+
+    @media (max-width: 720px) {
+      .shell { width: min(100vw - 20px, 1480px); padding-top: 12px; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .nav { justify-content: flex-start; }
+      .summary-grid, .top-list, .score-model { grid-template-columns: 1fr; }
+      .toolbar { grid-template-columns: 1fr; }
+      .status-line { text-align: left; min-width: 0; }
+      h1 { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="topbar">
+      <a class="brand" href="index.html" aria-label="Hypurrmium chart">
+        <img src="Hypurrmium.png" alt="Hypurrmium">
+        <div class="brand-word"><span>Hypurr</span><span>mium</span></div>
+      </a>
+      <nav class="nav" aria-label="Navigation">
+        <a href="index.html">Chart</a>
+        <a href="docs.html">Docs</a>
+        <button class="refresh-btn" id="refresh-btn" type="button">Refresh</button>
+      </nav>
+    </div>
+
+    <section class="page-head">
+      <div>
+        <h1>Token Screener</h1>
+        <div class="head-sub">Live valuation, revenue momentum, token-revenue alignment and FDV pressure across the Hypurrmium universe.</div>
+      </div>
+      <div class="score-model" aria-label="Score model">
+        <div class="model-chip"><b>35</b><span>P/E</span></div>
+        <div class="model-chip"><b>30</b><span>Revenue</span></div>
+        <div class="model-chip"><b>20</b><span>Link</span></div>
+        <div class="model-chip"><b>15</b><span>FDV</span></div>
+      </div>
+    </section>
+
+    <section class="summary-grid" id="summary-grid" aria-label="Market summary">
+      <div class="summary-card"><div class="summary-label">Loaded</div><div class="summary-value" id="summary-loaded">0/37</div><div class="summary-note">tokens</div></div>
+      <div class="summary-card"><div class="summary-label">Average Score</div><div class="summary-value" id="summary-score">-</div><div class="summary-note">100 max</div></div>
+      <div class="summary-card"><div class="summary-label">Cheapest P/E</div><div class="summary-value" id="summary-cheapest">-</div><div class="summary-note" id="summary-cheapest-note">-</div></div>
+      <div class="summary-card"><div class="summary-label">Strong Links</div><div class="summary-value" id="summary-links">-</div><div class="summary-note">direct or near-direct</div></div>
+    </section>
+
+    <section class="top-list" id="top-list" aria-label="Top ranked tokens"></section>
+
+    <section class="toolbar" aria-label="Filters">
+      <input class="search-box" id="search-input" type="search" placeholder="Search token or category" autocomplete="off">
+      <select class="select-box" id="category-select" aria-label="Category filter"></select>
+      <div class="status-line" id="status-line">Waiting for data</div>
+    </section>
+    <div class="progress" aria-hidden="true"><div class="progress-bar" id="progress-bar"></div></div>
+
+    <section class="table-wrap" aria-label="Token ranking">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th><button data-sort="symbol" type="button">Token</button></th>
+            <th><button data-sort="category" type="button">Category</button></th>
+            <th class="right"><button data-sort="score" type="button">Score</button></th>
+            <th class="right"><button data-sort="mcPe" type="button">MC P/E</button></th>
+            <th class="right"><button data-sort="fdvPe" type="button">FDV P/E</button></th>
+            <th><button data-sort="trend3m" type="button">3M Rev</button></th>
+            <th><button data-sort="trend6m" type="button">6M Rev</button></th>
+            <th><button data-sort="linkScore" type="button">Revenue Link</button></th>
+            <th class="right"><button data-sort="fdvGap" type="button">FDV/MC</button></th>
+            <th>Breakdown</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr><td colspan="11"><div class="empty-state">Loading screener data...</div></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer class="footer">
+      <span>Data: DefiLlama, CoinGecko, Hyperliquid and MegaFees where applicable.</span>
+      <span><a href="index.html">Back to chart</a></span>
+    </footer>
+  </main>
+
+  <script>
+    const TOKENS = [
+      { key: 'hype', symbol: 'HYPE', name: 'Hyperliquid', category: 'perps', route: '/hype', logo: 'https://coin-images.coingecko.com/coins/images/50882/small/hyperliquid.jpg?1729431300', priceSource: 'hyperliquid', hyperliquidCoin: 'HYPE', fees: ['hyperliquid'], supply: 333333333, fdvSupply: 1000000000, linkScore: 5, linkLabel: 'Buyback + burn', linkDetail: 'Protocol fees fund buybacks; burn tracked.' },
+      { key: 'lit', symbol: 'LIT', name: 'Lighter', category: 'perps', route: '/lit', logo: 'https://coin-images.coingecko.com/coins/images/71121/small/lighter.png?1765888098', coingeckoId: 'lighter', fees: ['lighter', 'lighter-perps'], supply: 250000000, fdvSupply: 1000000000, linkScore: 5, linkLabel: 'Buybacks', linkDetail: 'Treasury buyback model.' },
+      { key: 'pump', symbol: 'PUMP', name: 'Pump.fun', category: 'launchpad', route: '/pump', logo: 'https://coin-images.coingecko.com/coins/images/67164/small/pump.jpg?1751949376', coingeckoId: 'pump-fun', fees: ['pump'], supply: 590000000000, fdvSupply: 1000000000000, linkScore: 5, linkLabel: 'Buybacks', linkDetail: 'Protocol fee slice funds PUMP buybacks; DefiLlama reports positive holders revenue.' },
+      { key: 'sky', symbol: 'SKY', name: 'Sky', category: 'lending', route: '/sky', logo: 'https://coin-images.coingecko.com/coins/images/39925/small/sky.jpg?1724827980', coingeckoId: 'sky', fees: ['sky', 'makerdao'], supply: 23200955467, fdvSupply: 23462665147, linkScore: 3, linkLabel: 'Governance', linkDetail: 'Governance and staking engine exposure.' },
+      { key: 'aave', symbol: 'AAVE', name: 'Aave', category: 'lending', route: '/aave', logo: 'https://coin-images.coingecko.com/coins/images/12645/small/aave-token-round.png?1720472354', coingeckoId: 'aave', fees: ['aave'], supply: 15174755, fdvSupply: 16000000, linkScore: 3, linkLabel: 'Governance', linkDetail: 'Governance and Safety Module role.' },
+      { key: 'edge', symbol: 'EDGE', name: 'edgeX', category: 'perps', route: '/edge', logo: 'https://assets.coingecko.com/coins/images/102172616/standard/edgex.png?1774332310', coingeckoId: 'edgex', fees: ['edgex'], supply: 350000000, fdvSupply: 1000000000, linkScore: 2, linkLabel: 'Narrative', linkDetail: 'Exchange activity exposure.' },
+      { key: 'cars', symbol: 'CARDS', name: 'Collector Crypt', category: 'tcg', route: '/cars', logo: 'https://assets.coingecko.com/coins/images/68728/standard/cards-logo.jpeg?1756534539', coingeckoId: 'collector-crypt', fees: ['collector-crypt'], supply: 260000000, fdvSupply: 2000000000, linkScore: 2, linkLabel: 'Platform revenue', linkDetail: 'Gacha and marketplace revenue are tracked, but DefiLlama holders revenue is zero.' },
+      { key: 'aster', symbol: 'ASTER', name: 'Aster', category: 'perps', route: '/aster', logo: 'https://assets.coingecko.com/coins/images/69040/standard/_ASTER.png?1757326782', coingeckoId: 'aster-2', fees: ['aster'], supply: 2500000000, fdvSupply: 8000000000, linkScore: 2, linkLabel: 'Governance', linkDetail: 'Exchange fee exposure narrative; no DefiLlama dailyRevenue series currently available.' },
+      { key: 'link', symbol: 'LINK', name: 'Chainlink', category: 'oracle', route: '/link', logo: 'https://coin-images.coingecko.com/coins/images/877/small/Chainlink_Logo_500.png?1760023405', coingeckoId: 'chainlink', fees: ['chainlink'], supply: 727099970, fdvSupply: 1000000000, linkScore: 2, linkLabel: 'Utility', linkDetail: 'Network utility and governance exposure.' },
+      { key: 'uni', symbol: 'UNI', name: 'Uniswap', category: 'dex', route: '/uni', logo: 'https://coin-images.coingecko.com/coins/images/12504/small/uniswap-logo.png?1720676669', coingeckoId: 'uniswap', fees: ['uniswap'], supply: 633561604, fdvSupply: 1000000000, linkScore: 3, linkLabel: 'Governance', linkDetail: 'Fee switch and protocol settings.' },
+      { key: 'cake', symbol: 'CAKE', name: 'PancakeSwap', category: 'dex', route: '/cake', logo: 'https://coin-images.coingecko.com/coins/images/12632/small/pancakeswap-cake-logo_%281%29.png?1696512440', coingeckoId: 'pancakeswap-token', fees: ['pancakeswap'], supply: 327631629, fdvSupply: 400000000, linkScore: 3, linkLabel: 'Utility', linkDetail: 'Governance and ecosystem utility.' },
+      { key: 'lido', symbol: 'LDO', name: 'Lido', category: 'staking', route: '/lido', logo: 'https://coin-images.coingecko.com/coins/images/13573/small/Lido_DAO.png?1696513326', coingeckoId: 'lido-dao', fees: ['lido'], supply: 849190158, fdvSupply: 1000000000, linkScore: 3, linkLabel: 'Governance', linkDetail: 'Governance over protocol parameters.' },
+      { key: 'rhea', symbol: 'RHEA', name: 'Rhea Finance', category: 'dex', route: '/rhea', logo: 'https://coin-images.coingecko.com/coins/images/67682/small/RHEA_Logo.png?1753517263', coingeckoId: 'rhea-2', fees: ['rhea-finance'], supply: 200000000, fdvSupply: 1000000000, linkScore: 4, linkLabel: 'Revenue share', linkDetail: 'Rhea DEX revenue share model.' },
+      { key: 'railgun', symbol: 'RAIL', name: 'Railgun', category: 'privacy', route: '/railgun', logo: 'https://coin-images.coingecko.com/coins/images/16840/small/railgun.jpeg?1696516407', coingeckoId: 'railgun', fees: ['railgun'], supply: 57500000, fdvSupply: 57500000, linkScore: 5, linkLabel: 'Holder flow', linkDetail: 'Treasury flow to holders.' },
+      { key: 'ethfi', symbol: 'ETHFI', name: 'ether.fi', category: 'neobank', route: '/ethfi', logo: 'https://coin-images.coingecko.com/coins/images/35958/small/etherfi.jpeg?1710254562', coingeckoId: 'ether-fi', fees: ['ether.fi'], supply: 880665741, fdvSupply: 1000000000, linkScore: 5, linkLabel: 'Buybacks', linkDetail: 'Actual token buybacks referenced.' },
+      { key: 'metadao', symbol: 'META', name: 'MetaDAO', category: 'launchpad', route: '/metadao', logo: 'https://coin-images.coingecko.com/coins/images/68320/small/META.png?1755335883', coingeckoId: 'meta-2-2', fees: ['metadao'], supply: 22684698, fdvSupply: 22684698, linkScore: 4, linkLabel: 'Revenue share', linkDetail: 'Protocol revenue alignment.' },
+      { key: 'mega', symbol: 'MEGA', name: 'MegaETH', category: 'infra', route: '/mega', logo: 'https://icons.llamao.fi/icons/chains/rsz_megaeth.jpg', coingeckoId: 'megaeth', revenueSource: 'megafees', supply: 1128869357, fdvSupply: 10000000000, linkScore: 4, linkLabel: 'Buyback ref.', linkDetail: 'MegaFees references cumulative buybacks.' },
+      { key: 'ethereum', symbol: 'ETH', name: 'Ethereum', category: 'infra', route: '/ethereum', logo: 'https://icons.llamao.fi/icons/chains/rsz_ethereum.jpg', coingeckoId: 'ethereum', fees: ['ethereum'], supply: 120685456, fdvSupply: 120685456, linkScore: 4, linkLabel: 'Fee burn', linkDetail: 'EIP-1559 burn links fees to supply.' },
+      { key: 'arbitrum', symbol: 'ARB', name: 'Arbitrum', category: 'infra', route: '/arbitrum', logo: 'https://icons.llamao.fi/icons/chains/rsz_arbitrum.jpg', coingeckoId: 'arbitrum', fees: ['arbitrum'], supply: 5150000000, fdvSupply: 10000000000, linkScore: 2, linkLabel: 'Governance', linkDetail: 'DAO treasury and chain governance.' },
+      { key: 'solana', symbol: 'SOL', name: 'Solana', category: 'infra', route: '/solana', logo: 'https://icons.llamao.fi/icons/chains/rsz_solana.jpg', coingeckoId: 'solana', fees: ['solana'], supply: 609000000, fdvSupply: 612000000, linkScore: 3, linkLabel: 'Native asset', linkDetail: 'Fee burn and native gas role.' },
+      { key: 'tron', symbol: 'TRX', name: 'Tron', category: 'infra', route: '/tron', logo: 'https://icons.llamao.fi/icons/chains/rsz_tron.jpg', coingeckoId: 'tron', fees: ['tron'], supply: 94700000000, fdvSupply: 94700000000, linkScore: 3, linkLabel: 'Native asset', linkDetail: 'Fee burn and native gas role.' },
+      { key: 'bsc', symbol: 'BNB', name: 'BNB Smart Chain', category: 'infra', route: '/bsc', logo: 'https://icons.llamao.fi/icons/chains/rsz_bsc.jpg', coingeckoId: 'binancecoin', fees: ['bsc'], supply: 139290000, fdvSupply: 139290000, linkScore: 3, linkLabel: 'Burn model', linkDetail: 'BNB burn mechanics, not direct BSC revenue buyback.' },
+      { key: 'near', symbol: 'NEAR', name: 'NEAR', category: 'infra', route: '/near', logo: 'https://icons.llamao.fi/icons/chains/rsz_near.jpg', coingeckoId: 'near', fees: ['near', 'near-intents'], aggregate: 'sum', supply: 1296616712, fdvSupply: 1296616771, linkScore: 2, linkLabel: 'Native asset', linkDetail: 'Native gas and staking asset.' },
+      { key: 'limitless', symbol: 'LMTS', name: 'Limitless', category: 'prediction-market', route: '/limitless', logo: 'https://coin-images.coingecko.com/coins/images/69506/large/Green_-_Sign_%282%29_-_token-circle-200.png', coingeckoId: 'limitless-3', fees: ['limitless-exchange'], supply: 138800000, fdvSupply: 1000000000, linkScore: 2, linkLabel: 'Staking APY', linkDetail: 'LMTS staking and points boost exist; funding is not clearly tied to protocol revenue.' },
+      { key: 'opinion', symbol: 'OPN', name: 'Opinion', category: 'prediction-market', route: '/opinion', logo: 'https://coin-images.coingecko.com/coins/images/102171893/large/Opinon.jpg', coingeckoId: 'opinion', fees: ['opinion'], supply: 141160000, fdvSupply: 1000000000, linkScore: 2, linkLabel: 'Protocol fees', linkDetail: 'DefiLlama treats taker fees as revenue, but holders revenue is currently zero.' },
+      { key: 'bankr', symbol: 'BNKR', name: 'Bankr', category: 'ai', route: '/bankr', logo: 'https://coin-images.coingecko.com/coins/images/52626/large/bankr-static.png', coingeckoId: 'bankercoin-2', fees: ['bankr'], supply: 99390000000, fdvSupply: 100000000000, linkScore: 2, linkLabel: 'Protocol fees', linkDetail: 'Bankr reports protocol revenue from launches and integrations; holders revenue is currently zero.' },
+      { key: 'ore', symbol: 'ORE', name: 'ORE Protocol', category: 'mining', route: '/ore', logo: 'https://coin-images.coingecko.com/coins/images/36854/large/IMG_7340.png', coingeckoId: 'ore', fees: ['ore-protocol'], supply: 458800, fdvSupply: 21000000, linkScore: 5, linkLabel: 'Buyback + burn', linkDetail: 'DefiLlama reports 99% of ORE fees as buyback/burn and staker holders revenue.' },
+      { key: 'aerodrome', symbol: 'AERO', name: 'Aerodrome', category: 'dex', route: '/aerodrome', logo: 'https://coin-images.coingecko.com/coins/images/31745/large/token.png', coingeckoId: 'aerodrome-finance', fees: ['aerodrome'], supply: 944600000, fdvSupply: 1920000000, linkScore: 4, linkLabel: 've model', linkDetail: 've(3,3) routes incentives and fees.' },
+      { key: 'polygon', symbol: 'POL', name: 'Polygon', category: 'infra', route: '/polygon', logo: 'https://icons.llamao.fi/icons/chains/rsz_polygon.jpg', coingeckoId: 'polygon-ecosystem-token', fees: ['polygon', 'polygon-zkevm'], aggregate: 'sum', supply: 10740000000, fdvSupply: 10740000000, linkScore: 2, linkLabel: 'Native asset', linkDetail: 'Native gas and staking asset.' },
+      { key: 'maple', symbol: 'SYRUP', name: 'Maple', category: 'lending', route: '/maple', logo: 'https://coin-images.coingecko.com/coins/images/51232/large/_syrup_token_logo.png', coingeckoId: 'syrup', fees: ['maple'], supply: 1160000000, fdvSupply: 1160000000, linkScore: 3, linkLabel: 'Governance', linkDetail: 'Governance and staking exposure.' },
+      { key: 'meteora', symbol: 'MET', name: 'Meteora', category: 'dex', route: '/meteora', logo: 'https://coin-images.coingecko.com/coins/images/69110/large/meteora.png', coingeckoId: 'meteora', fees: ['meteora'], supply: 523464764, fdvSupply: 1000000000, linkScore: 2, linkLabel: 'Governance', linkDetail: 'Liquidity activity exposure.' },
+      { key: 'pendle', symbol: 'PENDLE', name: 'Pendle', category: 'yield', route: '/pendle', logo: 'https://coin-images.coingecko.com/coins/images/15069/large/Pendle_Logo_Normal-03.png?1696514728', coingeckoId: 'pendle', fees: ['pendle'], supply: 170644372, fdvSupply: 258446029, linkScore: 4, linkLabel: 'vePENDLE', linkDetail: 'vePENDLE directs incentives and fees.' },
+      { key: 'jito', symbol: 'JTO', name: 'Jito', category: 'staking', route: '/jito', logo: 'https://coin-images.coingecko.com/coins/images/33228/large/jto.png?1701137022', coingeckoId: 'jito-governance-token', fees: ['jito'], supply: 476809751, fdvSupply: 1000000000, linkScore: 3, linkLabel: 'Governance', linkDetail: 'Governance over network and treasury.' },
+      { key: 'jupiter', symbol: 'JUP', name: 'Jupiter', category: 'dex', route: '/jupiter', logo: 'https://coin-images.coingecko.com/coins/images/34188/large/jup.png?1704266489', coingeckoId: 'jupiter-exchange-solana', fees: ['jupiter'], supply: 3320312968, fdvSupply: 7000000000, linkScore: 5, linkLabel: 'Buybacks', linkDetail: 'Referenced 50% protocol fee buybacks.' },
+      { key: 'raydium', symbol: 'RAY', name: 'Raydium', category: 'dex', route: '/raydium', logo: 'https://coin-images.coingecko.com/coins/images/13928/large/PSigc4ie_400x400.jpg?1696513668', coingeckoId: 'raydium', fees: ['raydium'], supply: 268977952, fdvSupply: 555000000, linkScore: 5, linkLabel: 'Buybacks', linkDetail: 'Protocol fee share supports buybacks.' },
+      { key: 'fluid', symbol: 'FLUID', name: 'Fluid', category: 'lending', route: '/fluid', logo: 'https://coin-images.coingecko.com/coins/images/14688/large/Logo_1_%28brighter%29.png?1734430693', coingeckoId: 'instadapp', fees: ['fluid'], supply: 77946997, fdvSupply: 100000000, linkScore: 3, linkLabel: 'Governance', linkDetail: 'Governance exposure to lending and DEX revenue.' },
+      { key: 'kamino', symbol: 'KMNO', name: 'Kamino', category: 'lending', route: '/kamino', logo: 'https://coin-images.coingecko.com/coins/images/35801/large/Kamino_200x200.png?1767944671', coingeckoId: 'kamino', fees: ['kamino'], supply: 4710959169, fdvSupply: 10000000000, linkScore: 2, linkLabel: 'Governance', linkDetail: 'Lending and liquidity activity exposure.' }
+    ];
+
+    const CATEGORY_LABELS = {
+      ai: 'AI', dex: 'DEX', infra: 'Infra', lending: 'Lending', launchpad: 'Launchpad', mining: 'Mining', neobank: 'Neobank', oracle: 'Oracle', perps: 'Perps', privacy: 'Privacy', 'prediction-market': 'Prediction Market', staking: 'Staking', tcg: 'TCG', yield: 'Yield'
+    };
+
+    const state = {
+      rows: [],
+      loading: false,
+      loaded: 0,
+      sortKey: 'score',
+      sortDir: 'desc',
+      category: 'all',
+      search: ''
+    };
+
+    const els = {
+      body: document.getElementById('table-body'),
+      status: document.getElementById('status-line'),
+      progress: document.getElementById('progress-bar'),
+      refresh: document.getElementById('refresh-btn'),
+      search: document.getElementById('search-input'),
+      category: document.getElementById('category-select'),
+      topList: document.getElementById('top-list'),
+      summaryLoaded: document.getElementById('summary-loaded'),
+      summaryScore: document.getElementById('summary-score'),
+      summaryCheapest: document.getElementById('summary-cheapest'),
+      summaryCheapestNote: document.getElementById('summary-cheapest-note'),
+      summaryLinks: document.getElementById('summary-links')
+    };
+
+    function normalizeBackendApiUrl(value) {
+      const normalized = String(value || '').trim().replace(/\/+$/, '');
+      if (!normalized) return '';
+      return /\/api$/i.test(normalized) ? normalized : normalized + '/api';
+    }
+
+    function isLocalRuntime() {
+      return location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    }
+
+    function resolveBackendApiUrl() {
+      const params = new URLSearchParams(location.search || '');
+      const queryValue = params.get('backendApi');
+      const globalValue = window.HYPURRMIUM_BACKEND_API_URL || window.__HYPURRMIUM_BACKEND_API_URL || '';
+      let storedValue = '';
+      try { storedValue = localStorage.getItem('hypurrmium.backendApiUrl') || ''; } catch (error) {}
+      if (queryValue) {
+        const normalizedQuery = normalizeBackendApiUrl(queryValue);
+        if (normalizedQuery) return normalizedQuery;
+      }
+      const override = [globalValue, storedValue].find((value) => typeof value === 'string' && value.trim());
+      if (override) return normalizeBackendApiUrl(override);
+      return isLocalRuntime() ? '' : '/api';
+    }
+
+    const API = resolveBackendApiUrl();
+    const DAY_MS = 86400000;
+    const CACHE_KEY = 'hypurrmium.screener.v3';
+    const CACHE_MAX_AGE_MS = 5 * 60 * 1000;
+
+    function apiUrl(path) { return API ? API + path : ''; }
+
+    function shouldSkipProxyUrl(url) {
+      if (!url || !isLocalRuntime()) return false;
+      try {
+        const hostname = new URL(url, location.href).hostname;
+        return hostname === 'hypurrmium.xyz' || hostname.endsWith('.hypurrmium.xyz');
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function uniqueUrls(urls) {
+      return urls.filter(Boolean).filter((url, index, list) => list.indexOf(url) === index);
+    }
+
+    function fetchCandidates(proxyPath, directUrl) {
+      const proxyUrl = apiUrl(proxyPath);
+      return uniqueUrls([
+        shouldSkipProxyUrl(proxyUrl) ? '' : proxyUrl,
+        directUrl
+      ]);
+    }
+
+    async function fetchJson(url, options = {}) {
+      if (!url) throw new Error('Missing URL');
+      const response = await fetch(url, options);
+      const text = await response.text();
+      if (!response.ok) throw new Error(`${response.status} ${url}`);
+      try { return JSON.parse(text); } catch (error) { throw new Error(`Invalid JSON ${url}`); }
+    }
+
+    async function fetchJsonFirst(urls, options = {}) {
+      let lastError = null;
+      for (const url of uniqueUrls(urls)) {
+        try {
+          return await fetchJson(url, options);
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      throw lastError || new Error('No data source available');
+    }
+
+    function buildDirectDefiLlamaFeesUrl(slug, dataType) {
+      return `https://api.llama.fi/summary/fees/${encodeURIComponent(slug)}?dataType=${encodeURIComponent(dataType)}`;
+    }
+
+    function buildDirectCoinGeckoSimplePriceUrl(id) {
+      const params = new URLSearchParams({
+        ids: id,
+        vs_currencies: 'usd',
+        include_market_cap: 'true',
+        include_24hr_change: 'true'
+      });
+      return `https://api.coingecko.com/api/v3/simple/price?${params.toString()}`;
+    }
+
+    function buildDirectCoinGeckoMarketChartUrl(id, days = 180, interval = 'daily') {
+      const params = new URLSearchParams({
+        vs_currency: 'usd',
+        days: String(days),
+        interval
+      });
+      return `https://api.coingecko.com/api/v3/coins/${encodeURIComponent(id)}/market_chart?${params.toString()}`;
+    }
+
+    function buildCoinsLlamaCurrentPriceUrl(id) {
+      return `https://coins.llama.fi/prices/current/coingecko:${encodeURIComponent(id)}`;
+    }
+
+    function flattenDefiLlamaChartValue(value) {
+      const numeric = Number(value);
+      if (Number.isFinite(numeric)) return numeric;
+      if (Array.isArray(value)) return value.reduce((sum, entry) => sum + flattenDefiLlamaChartValue(entry), 0);
+      if (!value || typeof value !== 'object') return 0;
+      return Object.values(value).reduce((sum, entry) => sum + flattenDefiLlamaChartValue(entry), 0);
+    }
+
+    function tsToDate(tsSeconds) {
+      const date = new Date(tsSeconds * 1000);
+      return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
+    }
+
+    function dateToMs(dateKey) { return Date.parse(`${dateKey}T00:00:00Z`); }
+
+    function currentDateKey() { return tsToDate(Math.floor(Date.now() / 1000)); }
+
+    function buildFeesByDate(chart = []) {
+      const feesByDate = {};
+      for (const point of chart || []) {
+        if (!Array.isArray(point) || point.length < 2) continue;
+        const value = flattenDefiLlamaChartValue(point[1]);
+        if (!Number.isFinite(value)) continue;
+        feesByDate[tsToDate(Number(point[0]))] = value;
+      }
+      return feesByDate;
+    }
+
+    function getSortedDates(series) { return Object.keys(series || {}).sort(); }
+
+    function buildDailyDateKeys(startDate, endDate = currentDateKey()) {
+      const start = dateToMs(startDate);
+      const end = dateToMs(endDate);
+      if (!Number.isFinite(start) || !Number.isFinite(end) || start > end) return [];
+      const dates = [];
+      for (let cursor = start; cursor <= end; cursor += DAY_MS) dates.push(tsToDate(cursor / 1000));
+      return dates;
+    }
+
+    function averageWindow(series, latestDate, { days = 30, offsetDays = 0 } = {}) {
+      const latestMs = dateToMs(latestDate);
+      if (!Number.isFinite(latestMs)) return null;
+      const endMs = latestMs - (offsetDays * DAY_MS);
+      const startMs = endMs - ((days - 1) * DAY_MS);
+      const values = getSortedDates(series)
+        .filter((date) => {
+          const ms = dateToMs(date);
+          return ms >= startMs && ms <= endMs;
+        })
+        .map((date) => Math.max(Number(series[date]) || 0, 0));
+      const minPoints = Math.max(7, Math.floor(days * 0.45));
+      if (values.length < minPoints) return null;
+      return values.reduce((sum, value) => sum + value, 0) / values.length;
+    }
+
+    function percentChange(current, previous) {
+      if (!Number.isFinite(current) || !Number.isFinite(previous) || previous <= 0) return null;
+      return ((current - previous) / previous) * 100;
+    }
+
+    async function fetchDefiLlamaFees(slug, dataType = 'dailyRevenue') {
+      const params = new URLSearchParams({ slug, dataType });
+      let data;
+      try {
+        data = await fetchJsonFirst(fetchCandidates(
+          `/defillama/fees?${params.toString()}`,
+          buildDirectDefiLlamaFeesUrl(slug, dataType)
+        ));
+      } catch (error) {
+        if (dataType === 'dailyRevenue') throw new Error('Revenue unavailable on DefiLlama');
+        throw error;
+      }
+      const chart = Array.isArray(data?.totalDataChart) ? data.totalDataChart : [];
+      return { slug, data, series: buildFeesByDate(chart), count: chart.length };
+    }
+
+    function chooseBestRevenuePayload(payloads) {
+      const valid = payloads.filter((payload) => payload && getSortedDates(payload.series).length);
+      if (!valid.length) return null;
+      valid.sort((left, right) => {
+        const leftDates = getSortedDates(left.series);
+        const rightDates = getSortedDates(right.series);
+        return String(rightDates[rightDates.length - 1] || '').localeCompare(String(leftDates[leftDates.length - 1] || '')) || right.count - left.count;
+      });
+      return valid[0];
+    }
+
+    function sumRevenuePayloads(payloads) {
+      const valid = payloads.filter((payload) => payload && getSortedDates(payload.series).length);
+      if (!valid.length) return null;
+      const lastDates = valid.map((payload) => getSortedDates(payload.series).slice(-1)[0]).filter(Boolean).sort();
+      const maxCompleteDate = lastDates[0] || null;
+      const combined = {};
+      for (const payload of valid) {
+        Object.entries(payload.series).forEach(([date, value]) => {
+          if (maxCompleteDate && date > maxCompleteDate) return;
+          const numeric = Number(value);
+          if (Number.isFinite(numeric)) combined[date] = (combined[date] || 0) + numeric;
+        });
+      }
+      return { slug: valid.map((payload) => payload.slug).join('+'), series: combined, count: getSortedDates(combined).length };
+    }
+
+    async function fetchMegaFeesRevenueSeries() {
+      const economicsPromise = fetchJson('https://megafees.com/data/economics-dashboard-data.json').catch(() => null);
+      const usdmParams = new URLSearchParams({ id: 'megausd', vs_currency: 'usd', days: '180', interval: 'daily' });
+      const usdmPromise = fetchJsonFirst(fetchCandidates(
+        `/coingecko/market_chart?${usdmParams.toString()}`,
+        buildDirectCoinGeckoMarketChartUrl('megausd', 180, 'daily')
+      )).catch(() => null);
+      const [economics, usdmMarketChart] = await Promise.all([economicsPromise, usdmPromise]);
+      const usdmSupply = Number(economics?.usdm?.supply);
+      const usdmPrice = Number(economics?.usdm?.priceUsd) || 1;
+      const currentUsdmTvl = usdmSupply > 0 ? usdmSupply * usdmPrice : 0;
+      const apy = 0.90 * 0.99 * 0.0347;
+      const tvlByDate = {};
+      for (const entry of usdmMarketChart?.market_caps || []) {
+        if (!Array.isArray(entry) || entry.length < 2) continue;
+        const ts = Number(entry[0]) > 1e12 ? Math.floor(Number(entry[0]) / 1000) : Math.floor(Number(entry[0]));
+        const value = Number(entry[1]);
+        if (ts && value > 0) tvlByDate[tsToDate(ts)] = value;
+      }
+      const today = currentDateKey();
+      if (currentUsdmTvl > 0) tvlByDate[today] = currentUsdmTvl;
+      const dates = buildDailyDateKeys('2026-02-09', today);
+      const series = {};
+      let lastTvl = currentUsdmTvl > 0 ? currentUsdmTvl : null;
+      dates.forEach((date) => {
+        const tvl = Number(tvlByDate[date]);
+        if (tvl > 0) lastTvl = tvl;
+        const usdmYield = lastTvl > 0 ? (lastTvl * apy) / 365 : 0;
+        series[date] = usdmYield;
+      });
+      return { slug: 'megafees', series, count: dates.length };
+    }
+
+    async function fetchRevenueSeries(token) {
+      if (token.revenueSource === 'megafees') return fetchMegaFeesRevenueSeries();
+      const dataType = token.feesDataType || 'dailyRevenue';
+      const payloads = await Promise.all((token.fees || []).map((slug) => fetchDefiLlamaFees(slug, dataType).catch(() => null)));
+      if (token.aggregate === 'sum') return sumRevenuePayloads(payloads);
+      return chooseBestRevenuePayload(payloads);
+    }
+
+    async function fetchMarketData(token) {
+      if (token.priceSource === 'hyperliquid') {
+        const data = await fetchJsonFirst(fetchCandidates('/hl-info', 'https://api.hyperliquid.xyz/info'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'allMids' })
+        });
+        const price = Number(data?.[token.hyperliquidCoin]);
+        return {
+          price,
+          marketCap: price > 0 ? price * token.supply : null,
+          fdv: price > 0 ? price * token.fdvSupply : null
+        };
+      }
+      const params = new URLSearchParams({
+        ids: token.coingeckoId,
+        vs_currencies: 'usd',
+        include_market_cap: 'true',
+        include_24hr_change: 'true'
+      });
+      let entry = {};
+      try {
+        const data = await fetchJsonFirst(fetchCandidates(
+          `/coingecko/simple/price?${params.toString()}`,
+          buildDirectCoinGeckoSimplePriceUrl(token.coingeckoId)
+        ));
+        entry = data?.[token.coingeckoId] || {};
+      } catch (error) {
+        const llamaData = await fetchJson(buildCoinsLlamaCurrentPriceUrl(token.coingeckoId));
+        const llamaEntry = llamaData?.coins?.[`coingecko:${token.coingeckoId}`] || {};
+        entry = { usd: llamaEntry.price };
+      }
+      const price = Number(entry.usd);
+      const marketCap = Number(entry.usd_market_cap) || (price > 0 ? price * token.supply : null);
+      const fdv = price > 0 ? price * token.fdvSupply : null;
+      return { price, marketCap, fdv };
+    }
+
+    function valuationScore(pe) {
+      const value = Number(pe);
+      if (!Number.isFinite(value) || value <= 0) return 0;
+      if (value <= 10) return 35;
+      if (value <= 20) return 26;
+      if (value <= 50) return 12;
+      if (value <= 75) return 6;
+      if (value <= 120) return 3;
+      return 0;
+    }
+
+    function trendScore(change) {
+      const value = Number(change);
+      if (!Number.isFinite(value)) return 0;
+      if (value >= 100) return 15;
+      if (value >= 50) return 13;
+      if (value >= 20) return 10;
+      if (value >= 5) return 7;
+      if (value >= -10) return 4;
+      if (value >= -30) return 1;
+      return 0;
+    }
+
+    function fdvScore(gap) {
+      const value = Number(gap);
+      if (!Number.isFinite(value) || value <= 0) return 0;
+      if (value <= 1.1) return 15;
+      if (value <= 1.5) return 12;
+      if (value <= 2.5) return 8;
+      if (value <= 4) return 4;
+      if (value <= 8) return 1;
+      return 0;
+    }
+
+    function computeRow(token, revenuePayload, market) {
+      const series = revenuePayload?.series || {};
+      const dates = getSortedDates(series);
+      const latestDate = dates[dates.length - 1] || null;
+      const currentAvg = latestDate ? averageWindow(series, latestDate, { days: 30, offsetDays: 0 }) : null;
+      const avg3m = latestDate ? averageWindow(series, latestDate, { days: 30, offsetDays: 90 }) : null;
+      const avg6m = latestDate ? averageWindow(series, latestDate, { days: 30, offsetDays: 180 }) : null;
+      const trend3m = percentChange(currentAvg, avg3m);
+      const trend6m = percentChange(currentAvg, avg6m);
+      const annualRevenue = Number(currentAvg) > 0 ? currentAvg * 365 : null;
+      const marketCap = Number(market.marketCap);
+      const fdv = Number(market.fdv);
+      const mcPe = annualRevenue > 0 && marketCap > 0 ? marketCap / annualRevenue : null;
+      const fdvPe = annualRevenue > 0 && fdv > 0 ? fdv / annualRevenue : null;
+      const fdvGap = marketCap > 0 && fdv > 0 ? fdv / marketCap : null;
+      const pePoints = valuationScore(mcPe);
+      const trend3Points = trendScore(trend3m);
+      const trend6Points = trendScore(trend6m);
+      const linkPoints = Math.round((Number(token.linkScore) || 0) * 4);
+      const fdvPoints = fdvScore(fdvGap);
+      const score = pePoints + trend3Points + trend6Points + linkPoints + fdvPoints;
+      return {
+        ...token,
+        price: market.price,
+        marketCap,
+        fdv,
+        annualRevenue,
+        mcPe,
+        fdvPe,
+        fdvGap,
+        trend3m,
+        trend6m,
+        latestDate,
+        sourceSlug: revenuePayload?.slug || '',
+        score,
+        points: { pe: pePoints, trend: trend3Points + trend6Points, link: linkPoints, fdv: fdvPoints },
+        error: null
+      };
+    }
+
+    async function loadToken(token) {
+      try {
+        const [revenuePayload, market] = await Promise.all([fetchRevenueSeries(token), fetchMarketData(token)]);
+        if (!revenuePayload || !getSortedDates(revenuePayload.series).length) throw new Error('No revenue history');
+        if (!market || !(Number(market.marketCap) > 0)) throw new Error('No market data');
+        return computeRow(token, revenuePayload, market);
+      } catch (error) {
+        return { ...token, score: 0, points: { pe: 0, trend: 0, link: Math.round((Number(token.linkScore) || 0) * 4), fdv: 0 }, error: error.message || 'Data unavailable' };
+      }
+    }
+
+    function formatNumber(value, { digits = 1, suffix = '' } = {}) {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) return '-';
+      if (Math.abs(numeric) >= 1e12) return `${(numeric / 1e12).toFixed(digits)}T${suffix}`;
+      if (Math.abs(numeric) >= 1e9) return `${(numeric / 1e9).toFixed(digits)}B${suffix}`;
+      if (Math.abs(numeric) >= 1e6) return `${(numeric / 1e6).toFixed(digits)}M${suffix}`;
+      if (Math.abs(numeric) >= 1e3) return `${(numeric / 1e3).toFixed(digits)}K${suffix}`;
+      return `${numeric.toFixed(digits)}${suffix}`;
+    }
+
+    function formatPe(value) {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric) || numeric <= 0) return '-';
+      if (numeric >= 1000) return `${(numeric / 1000).toFixed(1)}kx`;
+      if (numeric >= 100) return `${Math.round(numeric)}x`;
+      return `${numeric.toFixed(1)}x`;
+    }
+
+    function formatPct(value) {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) return 'n/a';
+      const sign = numeric > 0 ? '+' : '';
+      return `${sign}${numeric.toFixed(Math.abs(numeric) >= 100 ? 0 : 1)}%`;
+    }
+
+    function toneForTrend(value) {
+      if (!Number.isFinite(Number(value))) return 'warn';
+      if (value >= 5) return 'good';
+      if (value >= -10) return 'warn';
+      return 'bad';
+    }
+
+    function bandForMultiple(value, emptyLabel = 'No multiple data') {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric) || numeric <= 0) return { tone: '', label: emptyLabel };
+      if (numeric <= 10) return { tone: 'good', label: 'Cheap 1-10x' };
+      if (numeric <= 20) return { tone: 'warn', label: 'Fair 11-20x' };
+      return { tone: 'bad', label: numeric <= 50 ? 'Expensive 21-50x' : 'Above expensive band' };
+    }
+
+    function linkTone(score) {
+      if (score >= 4) return 'strong';
+      if (score >= 2) return 'medium';
+      return 'weak';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+    }
+
+    function getFilteredRows() {
+      const query = state.search.trim().toLowerCase();
+      return state.rows.filter((row) => {
+        if (state.category !== 'all' && row.category !== state.category) return false;
+        if (!query) return true;
+        return [row.symbol, row.name, row.category, CATEGORY_LABELS[row.category], row.linkLabel].filter(Boolean).join(' ').toLowerCase().includes(query);
+      });
+    }
+
+    function getSortValue(row, key) {
+      if (key === 'category') return CATEGORY_LABELS[row.category] || row.category;
+      if (key === 'symbol') return row.symbol;
+      return Number(row[key]);
+    }
+
+    function sortRows(rows) {
+      const direction = state.sortDir === 'asc' ? 1 : -1;
+      return [...rows].sort((left, right) => {
+        const leftValue = getSortValue(left, state.sortKey);
+        const rightValue = getSortValue(right, state.sortKey);
+        if (typeof leftValue === 'string' || typeof rightValue === 'string') {
+          return String(leftValue || '').localeCompare(String(rightValue || '')) * direction;
+        }
+        const leftNumber = Number.isFinite(leftValue) ? leftValue : -Infinity;
+        const rightNumber = Number.isFinite(rightValue) ? rightValue : -Infinity;
+        return (leftNumber - rightNumber) * direction || String(left.symbol).localeCompare(String(right.symbol));
+      });
+    }
+
+    function renderTopCards(rows) {
+      const topRows = rows.filter((row) => !row.error).slice(0, 3);
+      if (!topRows.length) {
+        els.topList.innerHTML = '';
+        return;
+      }
+      els.topList.innerHTML = topRows.map((row) => {
+        const mcPeBand = bandForMultiple(row.mcPe, 'No P/E data');
+        const fdvGapBand = bandForMultiple(row.fdvGap);
+        return `
+          <a class="top-card" href="${escapeHtml(row.route)}">
+            <div class="top-token">
+              <img class="token-logo" src="${escapeHtml(row.logo)}" alt="${escapeHtml(row.symbol)} icon" loading="lazy">
+              <div class="token-name">
+                <div class="token-symbol">${escapeHtml(row.symbol)}</div>
+                <div class="token-protocol">${escapeHtml(row.name)}</div>
+              </div>
+            </div>
+            <div class="top-score">${Math.round(row.score)}</div>
+            <div class="top-metrics">
+              <span><b class="${mcPeBand.tone}" title="${escapeHtml(mcPeBand.label)}">${formatPe(row.mcPe)}</b>MC P/E</span>
+              <span><b>${formatPct(row.trend3m)}</b>3M rev</span>
+              <span><b class="${fdvGapBand.tone}" title="${escapeHtml(fdvGapBand.label)}">${Number.isFinite(row.fdvGap) ? row.fdvGap.toFixed(2) + 'x' : '-'}</b>FDV/MC</span>
+            </div>
+          </a>
+        `;
+      }).join('');
+    }
+
+    function renderSummary(rows) {
+      const loadedRows = state.rows.filter((row) => !row.error);
+      els.summaryLoaded.textContent = `${loadedRows.length}/${TOKENS.length}`;
+      const avgScore = loadedRows.length ? loadedRows.reduce((sum, row) => sum + row.score, 0) / loadedRows.length : null;
+      els.summaryScore.textContent = Number.isFinite(avgScore) ? avgScore.toFixed(1) : '-';
+      const cheapest = loadedRows.filter((row) => Number.isFinite(row.mcPe)).sort((a, b) => a.mcPe - b.mcPe)[0];
+      const cheapestBand = cheapest ? bandForMultiple(cheapest.mcPe, 'No P/E data') : { tone: '', label: '' };
+      els.summaryCheapest.textContent = cheapest ? formatPe(cheapest.mcPe) : '-';
+      els.summaryCheapest.className = `summary-value${cheapestBand.tone ? ' ' + cheapestBand.tone : ''}`;
+      els.summaryCheapest.title = cheapestBand.label;
+      els.summaryCheapestNote.textContent = cheapest ? `${cheapest.symbol} - ${formatNumber(cheapest.annualRevenue, { digits: 1 })} annualized` : '-';
+      els.summaryLinks.textContent = String(loadedRows.filter((row) => row.linkScore >= 4).length || '-');
+      renderTopCards(rows);
+    }
+
+    function renderTable() {
+      const rows = sortRows(getFilteredRows());
+      const rankedRows = [...state.rows]
+        .filter((row) => !row.error)
+        .sort((left, right) => right.score - left.score || String(left.symbol).localeCompare(String(right.symbol)));
+      renderSummary(rankedRows);
+      if (!rows.length) {
+        els.body.innerHTML = '<tr><td colspan="11"><div class="empty-state">No tokens match the current filter.</div></td></tr>';
+        return;
+      }
+      els.body.innerHTML = rows.map((row, index) => {
+        const trend3Tone = toneForTrend(row.trend3m);
+        const trend6Tone = toneForTrend(row.trend6m);
+        const gapBand = bandForMultiple(row.fdvGap);
+        const mcPeBand = bandForMultiple(row.mcPe, 'No P/E data');
+        const fdvPeBand = bandForMultiple(row.fdvPe, 'No P/E data');
+        const linkClass = linkTone(row.linkScore);
+        const scoreWidth = Math.max(0, Math.min(100, row.score));
+        return `
+          <tr>
+            <td class="rank">${index + 1}</td>
+            <td>
+              <a class="row-token" href="${escapeHtml(row.route)}">
+                <img class="token-logo" src="${escapeHtml(row.logo)}" alt="${escapeHtml(row.symbol)} icon" loading="lazy">
+                <span class="token-name"><span class="token-symbol">${escapeHtml(row.symbol)}</span><span class="token-protocol">${escapeHtml(row.name)}</span></span>
+              </a>
+            </td>
+            <td><span class="category-chip">${escapeHtml(CATEGORY_LABELS[row.category] || row.category)}</span></td>
+            <td class="right bar-cell"><span class="score">${Math.round(row.score)}</span><div class="mini-bar"><div class="mini-fill" style="width:${scoreWidth}%"></div></div></td>
+            <td class="right"><span class="tone-chip pe ${mcPeBand.tone}" title="${escapeHtml(mcPeBand.label)}">${formatPe(row.mcPe)}</span></td>
+            <td class="right"><span class="tone-chip pe ${fdvPeBand.tone}" title="${escapeHtml(fdvPeBand.label)}">${formatPe(row.fdvPe)}</span></td>
+            <td><span class="tone-chip ${trend3Tone}">${formatPct(row.trend3m)}</span></td>
+            <td><span class="tone-chip ${trend6Tone}">${formatPct(row.trend6m)}</span></td>
+            <td><span class="link-chip ${linkClass}" title="${escapeHtml(row.linkDetail)}">${escapeHtml(row.linkLabel)}</span></td>
+            <td class="right"><span class="tone-chip multiple ${gapBand.tone}" title="${escapeHtml(gapBand.label)}">${Number.isFinite(row.fdvGap) ? row.fdvGap.toFixed(2) + 'x' : '-'}</span></td>
+            <td class="muted">P/E ${row.points.pe}/35 - Rev ${row.points.trend}/30 - Link ${row.points.link}/20 - FDV ${row.points.fdv}/15${row.error ? ' - ' + escapeHtml(row.error) : ''}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function populateCategoryFilter() {
+      const categories = Array.from(new Set(TOKENS.map((token) => token.category))).sort((a, b) => String(CATEGORY_LABELS[a] || a).localeCompare(String(CATEGORY_LABELS[b] || b)));
+      els.category.innerHTML = `<option value="all">All categories</option>${categories.map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(CATEGORY_LABELS[category] || category)}</option>`).join('')}`;
+    }
+
+    function writeCache(rows) {
+      try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), rows })); } catch (error) {}
+    }
+
+    function readCache() {
+      try {
+        const cached = JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null');
+        if (!cached || !Array.isArray(cached.rows) || Date.now() - Number(cached.savedAt || 0) > CACHE_MAX_AGE_MS) return null;
+        return cached.rows;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    async function runQueue(items, limit, worker) {
+      let index = 0;
+      const runners = Array.from({ length: limit }, async () => {
+        while (index < items.length) {
+          const currentIndex = index++;
+          await worker(items[currentIndex], currentIndex);
+        }
+      });
+      await Promise.all(runners);
+    }
+
+    async function loadAll({ force = false } = {}) {
+      if (state.loading) return;
+      state.loading = true;
+      state.loaded = 0;
+      els.refresh.disabled = true;
+      els.status.textContent = 'Loading live data';
+      els.progress.style.width = '0%';
+
+      const cachedRows = !force ? readCache() : null;
+      if (cachedRows) {
+        state.rows = cachedRows;
+        state.loaded = cachedRows.length;
+        els.progress.style.width = '100%';
+        els.status.textContent = 'Loaded from session cache';
+        renderTable();
+        state.loading = false;
+        els.refresh.disabled = false;
+        return;
+      }
+
+      state.rows = [];
+      renderTable();
+      await runQueue(TOKENS, 5, async (token) => {
+        const row = await loadToken(token);
+        state.rows.push(row);
+        state.loaded += 1;
+        els.summaryLoaded.textContent = `${state.loaded}/${TOKENS.length}`;
+        els.progress.style.width = `${Math.round((state.loaded / TOKENS.length) * 100)}%`;
+        els.status.textContent = `Loaded ${state.loaded}/${TOKENS.length}`;
+        renderTable();
+      });
+      writeCache(state.rows);
+      state.loading = false;
+      els.refresh.disabled = false;
+      els.status.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
+
+    document.querySelectorAll('th button[data-sort]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const key = button.dataset.sort;
+        if (state.sortKey === key) state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+        else {
+          state.sortKey = key;
+          state.sortDir = ['symbol', 'category'].includes(key) ? 'asc' : 'desc';
+        }
+        renderTable();
+      });
+    });
+
+    els.search.addEventListener('input', () => {
+      state.search = els.search.value;
+      renderTable();
+    });
+
+    els.category.addEventListener('change', () => {
+      state.category = els.category.value;
+      renderTable();
+    });
+
+    els.refresh.addEventListener('click', () => loadAll({ force: true }));
+
+    populateCategoryFilter();
+    loadAll();
+  </script>
+</body>
+</html>
