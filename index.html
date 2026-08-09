@@ -1522,6 +1522,27 @@
         .pe-overlay-toggle.visible {
             display: inline-flex;
         }
+        .usdc-overlay-toggle {
+            display: none;
+            border: 1px solid rgba(32, 209, 169, 0.35);
+            background: rgba(32, 209, 169, 0.06);
+            color: rgba(32, 209, 169, 0.85);
+        }
+        .usdc-overlay-toggle.visible {
+            display: inline-flex;
+        }
+        .usdc-overlay-toggle:hover {
+            border-color: rgba(32, 209, 169, 0.6);
+            background: rgba(32, 209, 169, 0.12);
+            color: #20d1a9;
+        }
+        .usdc-overlay-toggle.active {
+            border-color: rgba(32, 209, 169, 0.7);
+            background: rgba(32, 209, 169, 0.18);
+            color: #20d1a9;
+            box-shadow: inset 0 0 0 1px rgba(32,209,169,0.45), 0 0 10px rgba(32,209,169,0.22);
+            text-shadow: 0 0 10px rgba(32,209,169,0.6);
+        }
         .controls-right {
             display: flex;
             align-items: center;
@@ -4992,6 +5013,7 @@
                     </div>
                     <button class="val-btn revenue-overlay-toggle" id="revenue-overlay-toggle" style="display:none;">+HYPEUSD</button>
                     <button class="val-btn pe-overlay-toggle" id="pe-overlay-toggle">+HYPEUSD</button>
+                    <button class="val-btn usdc-overlay-toggle" id="usdc-overlay-toggle">+ USDC future yield</button>
                 </div>
             </div>
             <div class="controls-right" style="position:relative;">
@@ -7622,6 +7644,7 @@
             this.chartWidthDays = 0;
             this.revenueOverlayEnabled = true;
             this.peOverlayEnabled = false;
+            this.usdcOverlayEnabled = false;
             this.zoneConfig = this.normalizeZoneConfigMap(cloneZoneConfig(CONFIG.ZONES));
             this.applyStaticZoneConfigOverride();
             this.activeFeesSlug = this.token.defillamaFeesCandidates?.[0] || this.token.revenueSource || null;
@@ -9591,6 +9614,24 @@
             return this.smoothRevenueSeries(gapFilled);
         }
 
+        getUsdcDailyYield() {
+            const tvl = Number(this.rawData?.protocolTvl) || 0;
+            if (!(tvl > 0) || !this.usdcOverlayEnabled) return 0;
+            // TVL earns 3.5% APY, minus 10% Coinbase fee = 3.15% effective APY
+            return tvl * 0.0315 / 365;
+        }
+
+        getUsdcAdjustedFeesByDate(feesByDate) {
+            if (!this.usdcOverlayEnabled) return feesByDate;
+            const usdcDaily = this.getUsdcDailyYield();
+            if (!(usdcDaily > 0)) return feesByDate;
+            const adjusted = {};
+            for (const date of Object.keys(feesByDate)) {
+                adjusted[date] = (Number(feesByDate[date]) || 0) + usdcDaily;
+            }
+            return adjusted;
+        }
+
         mergeSeriesBySwitchDate(primarySeriesByDate, fallbackSeriesByDate, switchDate = null) {
             const merged = {};
             const allDates = Array.from(new Set([
@@ -10017,6 +10058,10 @@
             const lastDate = allDates[allDates.length - 1];
             const lastPrice = lastDate ? Number(candlesByDate[lastDate]?.c) || null : null;
             const dlMcap = protocolRes?.mcap ? Number(protocolRes.mcap) : null;
+            // Use Hyperliquid L1 TVL only (excludes Arbitrum, HyperEVM, etc.)
+            const protocolTvl = Number(protocolRes?.tvlL1) || Number(protocolRes?.tvl?.[protocolRes?.tvl?.length - 1]?.totalLiquidityUSD) || 0;
+
+            console.log(`[${this.token.symbol}] Hyperliquid L1 TVL`, { protocolTvl });
 
             return {
                 feesByDate,
@@ -10026,6 +10071,7 @@
                 circulatingSupply,
                 totalSupply,
                 dlMcap,
+                protocolTvl,
                 currentMarketCap: dlMcap || (lastPrice ? lastPrice * circulatingSupply : null),
                 currentFDV: lastPrice ? lastPrice * totalSupply : null,
                 circulatingSupplyByDate: null,
@@ -10160,6 +10206,13 @@
                 circulatingSupply,
                 totalSupply,
                 dlMcap: Number(protocolRes?.mcap) || currentMarketCap || null,
+                // DefiLlama returns tvl as an array of {date, totalLiquidityUSD}, extract latest
+                protocolTvl: (() => {
+                    const tvlArray = protocolRes?.tvl;
+                    return Array.isArray(tvlArray) && tvlArray.length
+                        ? Number(tvlArray[tvlArray.length - 1]?.totalLiquidityUSD) || 0
+                        : 0;
+                })(),
                 currentMarketCap,
                 currentFDV,
                 circulatingSupplyByDate,
@@ -11074,6 +11127,52 @@
                 displaySmaData.push({ time: displayPeCandles[i].time, value: sum / 20 });
             }
 
+            // USDC future yield: adjust only the last candle / data point
+            if (this.usdcOverlayEnabled && displayPeCandles.length > 0) {
+                const usdcDaily = this.getUsdcDailyYield();
+                if (usdcDaily > 0) {
+                    const lastDate = displayPeCandles[displayPeCandles.length - 1].time;
+                    const lastSupply = effectiveSupply[effectiveSupply.length - 1];
+                    const lastRollingIdx = rollingAvg.length - 1;
+
+                    // Adjust rolling average and annual revenue for the last position only
+                    rollingAvg[lastRollingIdx] = (rollingAvg[lastRollingIdx] || 0) + usdcDaily;
+                    if (annualRevenueByDate[lastDate] != null) {
+                        annualRevenueByDate[lastDate] += usdcDaily * 365;
+                    }
+
+                    // Recompute only the last P/E candle — open stays at previous close
+                    // for visual continuity, close drops to USDC-adjusted P/E (red candle)
+                    const lastCandle = candlesByDate[lastDate];
+                    if (lastCandle && lastSupply > 0 && displayPeCandles.length >= 2) {
+                        const prevClose = displayPeCandles[displayPeCandles.length - 2].close;
+                        const adjAnnualRevPerToken = (rollingAvg[lastRollingIdx] * 365) / lastSupply;
+                        if (adjAnnualRevPerToken > 0) {
+                            const adjPeClose = lastCandle.c / adjAnnualRevPerToken;
+                            displayPeCandles[displayPeCandles.length - 1] = {
+                                time: lastDate,
+                                open: prevClose,
+                                high: Math.max(prevClose, adjPeClose),
+                                low: Math.min(prevClose, adjPeClose),
+                                close: adjPeClose,
+                            };
+                        }
+                    }
+
+                    // Adjust volume bar for the last day
+                    if (displayVolumeData.length > 0) {
+                        const lastVol = displayVolumeData[displayVolumeData.length - 1];
+                        if (lastVol) lastVol.value = (feesByDate[lastDate] || 0) + usdcDaily;
+                    }
+
+                    // Recompute SMA for the last point
+                    if (displaySmaData.length > 0) {
+                        const lastSMA = displaySmaData[displaySmaData.length - 1];
+                        lastSMA.value = displayPeCandles.slice(-20).reduce((s, c) => s + c.close, 0) / 20;
+                    }
+                }
+            }
+
             // Update series
             this.candleSeries.setData(displayPeCandles);
             this.volumeSeries.setData(displayVolumeData);
@@ -11731,8 +11830,11 @@
                 const hoverCandle = this.findSeriesCandleByTime(this._peCandles, param.time);
                 const dateKey = this.getSeriesDateKey(hoverCandle || param.time);
                 const candle = dateKey ? this.rawData?.candlesByDate?.[dateKey] : null;
-                const fee = dateKey ? this.rawData?.feesByDate?.[dateKey] : null;
+                const rawFee = dateKey ? this.rawData?.feesByDate?.[dateKey] : null;
+                const usdcDaily = this.getUsdcDailyYield();
+                const fee = rawFee != null ? (Number(rawFee) + usdcDaily) : null;
                 const annualizedRevenue = dateKey ? this._annualRevenueByDate?.[dateKey] : null;
+                const annualizedRevenueAdjusted = Number.isFinite(annualizedRevenue) ? annualizedRevenue + (usdcDaily * 365) : null;
                 const valuation = dateKey ? this._valuationByDate?.[dateKey] : null;
                 const valuationLabel = this.useFDV ? 'FDV' : 'Market Cap';
                 const hover = this.getCandleHoverMetrics(param.time, this._peCandles);
@@ -11761,7 +11863,7 @@
                 tooltip.innerHTML = `
                     ${dateKey ? `<div class="tt-row"><span class="tt-label">Date</span><span class="tt-val">${this.formatChartTime(hoverCandle || dateKey)}</span></div>` : ''}
                     ${fee ? `<div class="tt-row"><span class="tt-label">Revenue</span><span class="tt-val">$${(fee / 1e6).toFixed(2)}M</span></div>` : ''}
-                    ${Number.isFinite(annualizedRevenue) ? `<div class="tt-row"><span class="tt-label">Annualized Revenue</span><span class="tt-val">${this.formatCompactUsd(annualizedRevenue)}</span></div>` : ''}
+                    ${Number.isFinite(annualizedRevenueAdjusted) ? `<div class="tt-row"><span class="tt-label">Annualized Revenue</span><span class="tt-val">${this.formatCompactUsd(annualizedRevenueAdjusted)}</span></div>` : Number.isFinite(annualizedRevenue) ? `<div class="tt-row"><span class="tt-label">Annualized Revenue</span><span class="tt-val">${this.formatCompactUsd(annualizedRevenue)}</span></div>` : ''}
                     ${Number.isFinite(valuation) ? `<div class="tt-row"><span class="tt-label">${valuationLabel}</span><span class="tt-val">${this.formatCompactUsd(valuation)}</span></div>` : ''}
                     ${candle ? `<div class="tt-row"><span class="tt-label">Price</span><span class="tt-val">${this.formatUsdPrice(candle.c)}</span></div>` : ''}
                     <div class="tt-row"><span class="tt-label">P/E Ratio</span><span class="tt-val">${pe.close.toFixed(1)}x</span></div>
@@ -11799,7 +11901,7 @@
             const previousPriceDate = priceDates[priceDates.length - 2] || prevDate;
             const latestPriceCandle = candlesByDate[latestPriceDate] || lastCandle;
             const previousPriceCandle = candlesByDate[previousPriceDate] || prevCandle;
-            const lastFee = feesByDate[lastDate];
+            const lastFee = (feesByDate[lastDate] || 0) + this.getUsdcDailyYield();
             const lastAvg = rollingAvg[rollingAvg.length - 1];
             const baseSupply = this.useFDV
                 ? (Number(this.rawData.totalSupply) || CONFIG.FDV_SUPPLY)
@@ -11845,9 +11947,16 @@
                 ? (this.includeBurnInPe ? 'Adj. FDV' : 'FDV')
                 : (this.includeBurnInPe ? 'Adj. MCap' : 'MCap');
             const valuationInfo = `${valuationLabel}: ${this.formatCompactUsd(valuation)}`;
+            let extraInfo = '';
+            if (this.usdcOverlayEnabled) {
+                const usdcDaily = this.getUsdcDailyYield();
+                if (usdcDaily > 0) {
+                    extraInfo = `<br>USDC yield: $${(usdcDaily / 1e6).toFixed(2)}M/day (${(usdcDaily * 365 / 1e6).toFixed(0)}M/yr)`;
+                }
+            }
             document.getElementById('mcap-info').innerHTML = this.token.supportsBurnHistory
-                ? `${valuationInfo}<br>Burned: ${burnedHype > 0 ? (burnedHype / 1e6).toFixed(1) + 'M ' + this.token.symbol : '—'}`
-                : valuationInfo;
+                ? `${valuationInfo}<br>Burned: ${burnedHype > 0 ? (burnedHype / 1e6).toFixed(1) + 'M ' + this.token.symbol : '—'}${extraInfo}`
+                : valuationInfo + extraInfo;
 
             const tokenRightBuybacks = document.getElementById('token-right-buybacks');
             const tokenRightPct = document.getElementById('token-right-buyback-pct');
@@ -12196,7 +12305,9 @@
 
         getForecastSnapshot() {
             if (!this.rawData) return null;
-            const { feesByDate, candlesByDate } = this.rawData;
+            const rawFeesByDate = this.rawData.feesByDate;
+            const feesByDate = this.getUsdcAdjustedFeesByDate(rawFeesByDate);
+            const { candlesByDate } = this.rawData;
             const allDates = Object.keys(feesByDate).filter(d => candlesByDate[d]).sort();
             if (!allDates.length) return null;
 
@@ -12781,6 +12892,16 @@
                 });
             }
 
+            const usdcOverlayBtn = document.getElementById('usdc-overlay-toggle');
+            if (usdcOverlayBtn) {
+                usdcOverlayBtn.addEventListener('click', () => {
+                    this.usdcOverlayEnabled = !this.usdcOverlayEnabled;
+                    usdcOverlayBtn.classList.toggle('active', this.usdcOverlayEnabled);
+                    if (this.chartMode === 'pe') this.updateData();
+                    else this.renderChartMode();
+                });
+            }
+
             this.updateModeControls();
         }
 
@@ -12831,6 +12952,14 @@
                 const showOverlay = this.chartMode === 'pe' || this.chartMode === 'buyback' || this.chartMode === 'revenue';
                 peOverlayBtn.classList.toggle('visible', showOverlay);
                 peOverlayBtn.classList.toggle('active', this._getOverlayEnabledForMode());
+            }
+
+            // USDC Overlay toggle — visible on PE, buyback, revenue, forecast (affects revenue calculations)
+            const usdcOverlayBtn = document.getElementById('usdc-overlay-toggle');
+            if (usdcOverlayBtn) {
+                const showUsdc = this.chartMode === 'pe' || this.chartMode === 'buyback' || this.chartMode === 'revenue' || this.chartMode === 'forecast';
+                usdcOverlayBtn.classList.toggle('visible', showUsdc);
+                usdcOverlayBtn.classList.toggle('active', this.usdcOverlayEnabled);
             }
         }
 
@@ -13151,6 +13280,20 @@
                         return { time: timeVal, value: (Number(feesByDate[date]) || 0) * 365 };
                     }
                 }).filter(Boolean);
+
+                // USDC future yield: adjust only the last data point
+                if (this.usdcOverlayEnabled && lineData.length > 0) {
+                    const usdcDaily = this.getUsdcDailyYield();
+                    if (usdcDaily > 0) {
+                        const last = lineData[lineData.length - 1];
+                        if (isBuyback) {
+                            last.value += usdcDaily;
+                        } else {
+                            last.value += usdcDaily * 365;
+                        }
+                    }
+                }
+
                 this._metricLine.setData(lineData);
                 this._metricLineData = lineData;
                 this.setCurrentTimeBoundsFromSeries(lineData);

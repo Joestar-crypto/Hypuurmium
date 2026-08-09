@@ -672,6 +672,14 @@ function setCachedJson(cacheKey, data, ttlMs) {
 function summarizeDefiLlamaProtocol(data) {
   if (!data || typeof data !== 'object') return {};
 
+  // Extract Hyperliquid L1 TVL specifically (exclude Arbitrum, HyperEVM, etc)
+  const chainTvls = data.chainTvls || {};
+  const l1ChainData = chainTvls['Hyperliquid L1'];
+  const l1TvlArray = l1ChainData?.tvl;
+  const l1Tvl = Array.isArray(l1TvlArray) && l1TvlArray.length
+    ? Number(l1TvlArray[l1TvlArray.length - 1]?.totalLiquidityUSD) || 0
+    : 0;
+
   return {
     id: data.id ?? null,
     name: data.name ?? null,
@@ -679,6 +687,8 @@ function summarizeDefiLlamaProtocol(data) {
     gecko_id: data.gecko_id ?? null,
     mcap: data.mcap ?? null,
     fdv: data.fdv ?? null,
+    tvl: data.tvl ?? null,
+    tvlL1: l1Tvl || null,
   };
 }
 
