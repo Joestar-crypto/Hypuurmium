@@ -12954,10 +12954,12 @@
                 peOverlayBtn.classList.toggle('active', this._getOverlayEnabledForMode());
             }
 
-            // USDC Overlay toggle — visible on PE, buyback, revenue, forecast (affects revenue calculations)
+            // USDC Overlay toggle — HYPE only, visible on PE, buyback, revenue, forecast
             const usdcOverlayBtn = document.getElementById('usdc-overlay-toggle');
             if (usdcOverlayBtn) {
-                const showUsdc = this.chartMode === 'pe' || this.chartMode === 'buyback' || this.chartMode === 'revenue' || this.chartMode === 'forecast';
+                const showUsdc = this.token.key === 'hype' && (
+                    this.chartMode === 'pe' || this.chartMode === 'buyback' || this.chartMode === 'revenue' || this.chartMode === 'forecast'
+                );
                 usdcOverlayBtn.classList.toggle('visible', showUsdc);
                 usdcOverlayBtn.classList.toggle('active', this.usdcOverlayEnabled);
             }
