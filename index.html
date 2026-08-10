@@ -8139,6 +8139,7 @@
 
                 applyHeadMetadata(this.token);
                 this.applyTokenUi();
+                this.updateModeControls();
                 this.syncChartModeUi('pe');
                 this.updateChartWidthControls();
                 this.updateBurnLegendToggle();
@@ -8170,6 +8171,7 @@
                 this.chartWidthDays = previousState.chartWidthDays;
                 applyHeadMetadata(this.token);
                 this.applyTokenUi();
+                this.updateModeControls();
                 this.syncChartModeUi(this.chartMode);
                 this.updateChartWidthControls();
                 this.updateBurnLegendToggle();
